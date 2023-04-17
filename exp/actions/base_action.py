@@ -12,3 +12,4 @@ class BaseAction:
 
     def run(self, *args, **kwargs):
         raise NotImplementedError
+

@@ -93,6 +93,18 @@ class GPT_35_API(ApiBase):
 
     def get_backend(self):
         return "gpt-3.5-turbo"
+    
+    
+# TODO 
+class ChatGLM_API(ApiBase):
+    """_summary_
+
+    Args:
+        ApiBase (_type_): _description_
+
+    Returns:
+        _type_: _description_
+    """
 
 
 class CustomModelApi(ApiBase):
