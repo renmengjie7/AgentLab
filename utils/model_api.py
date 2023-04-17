@@ -8,23 +8,26 @@ import openai
 import collections
 
 
-class ModelApiRegister(dict):
+class ApiRegister(dict):
     def __init__(self):
         super().__init__()
         self._dict = {}
 
     def register(self, name):
-        def wrapper(model_class):
-            self._dict[name] = model_class
-            return model_class
+        def wrapper(api_class):
+            self._dict[name] = api_class
+            return api_class
 
         return wrapper
 
-    def list_models(self):
+    def list_members(self):
         return list(self._dict.keys())
 
 
-class ModelApiBase:
+class ApiBase:
+    def __init__(self, config=None, *args, **kwargs):
+        self.target = config.get("target", "global")
+
     def get(self, **kwargs):
         raise NotImplementedError
 
@@ -34,19 +37,24 @@ class ModelApiBase:
     def chat(self, **kwargs):
         raise NotImplementedError
 
-    def __str__(self):
-        return self.__class__.__name__.replace("_API", "")
+    def finetune(self, **kwargs):
+        raise NotImplementedError
 
-    def __repr__(self):
-        return self.__str__()
+    def get_backend(self):
+        raise NotImplementedError
+
+    def get_target(self):
+        return self.target
 
 
 # @ModelApiRegister.register("chatgpt")
-class GPT_35_API(ModelApiBase):
-    def __init__(self, model_config=None):
+class GPT_35_API(ApiBase):
+    def __init__(self, config=None, *args, **kwargs):
         # TODO 自己的不需要导入key
         # self.api_key=config.key
-        self.temp = model_config.get("temp", 0.7)
+        super().__init__(config)
+        self.temp = config.get("temp", 0.7)
+        self.target = kwargs.get("agent_id")
         openai.api_base = "http://8.219.106.213:5556/v1"
         openai.api_key = ""
 
@@ -73,6 +81,7 @@ class GPT_35_API(ModelApiBase):
         #         }
         #     ]
         # }
+        # TODO 详细处理返回内容
         content = message
         completion = openai.ChatCompletion.create(
             model="gpt-3.5-turbo",
@@ -82,10 +91,15 @@ class GPT_35_API(ModelApiBase):
         )
         return completion
 
+    def get_backend(self):
+        return "gpt-3.5-turbo"
 
-class CustomModelApi(ModelApiBase):
-    def __init__(self, model_config=None):
-        self.model_config = model_config
+
+class CustomModelApi(ApiBase):
+    def __init__(self, config=None, *args, **kwargs):
+        super().__init__(config)
+        self.model_config = config
+        self.target = kwargs.get("agent_id")
 
     def finetune(self, **kwargs):
         pass
@@ -93,26 +107,43 @@ class CustomModelApi(ModelApiBase):
     def chat(self, message: str, *args, **kwargs):
         pass
 
+    def get_backend(self):
+        return "custom"
+
+
+class ExternalToolkitApi(ApiBase):
+    def __init__(self, toolkit_config=None, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.toolkit_config = toolkit_config
+        self.toolkit_api = toolkit_config["api"]
+        self.target = toolkit_config["target"]
+
+    def chat(self, message: str, *args, **kwargs):
+        pass
+
+    def get_backend(self):
+        return self.toolkit_config["name"]
+
 
 # TODO use userdict
 ModelNameDict = {"chatgpt": GPT_35_API, "gpt3.5": GPT_35_API, "gpt3.5turbo": GPT_35_API}
 
 
 def get_model_apis(agnet_model_dict: dict):
-    # 让我们约定，对于每个agent，都会新建一个model_name，名称为agent_id_F/P_model_name，其中F表示finetune，P表示prompt
-    # 例如，agent_id=0，Fine_tune=True,model_name=gpt3.5，那么就会新建一个model_api，名称为0_F_gpt35
-    # 例如，agent_id=0，Fine_tune=False,model_name=gpt3.5，那么就会新建一个model_api，名称为0_P_gpt35
-    model_register = ModelApiRegister()
+    model_register = ApiRegister()
     for agent_id, model_settings in agnet_model_dict.items():
         inner_model_name = ModelNameDict[model_settings["model_name"]]
         print(inner_model_name.__name__)
         if model_settings["fine_tune"]:
-            model_name = "{agent_id}_{method}_{inner_model_name}".format(agent_id=agent_id, method="F",
-                                                                         inner_model_name=inner_model_name.__name__)
-            model_register[model_name] = CustomModelApi(model_config=model_settings["config"])
+            model_register[str(agent_id)] = CustomModelApi(config=model_settings["config"], agnet_id=agent_id)
         else:
-            model_name = "{agent_id}_{method}_{inner_model_name}".format(agent_id=agent_id, method="P",
-                                                                         inner_model_name=inner_model_name.__name__)
-            print(model_name)
-            model_register[model_name] = inner_model_name(model_config=model_settings["config"])
+            model_register[str(agent_id)] = inner_model_name(model_config=model_settings["config"], agent_id=agent_id)
     return model_register
+
+
+def get_toolkit_apis(toolkit_dict: dict):
+    toolkit_api_register = ApiRegister()
+    for toolkit_name, toolkit_config in toolkit_dict.items():
+        toolkit_api_register[toolkit_name] = toolkit_config["api"]
+
+    return toolkit_api_register

@@ -8,7 +8,8 @@ import json
 import os
 
 import utils.scripts as scripts
-from utils.model_api import get_model_apis
+from experiment import start_experiment
+from utils.model_api import get_model_apis, get_toolkit_apis
 
 from fastapi import FastAPI, File, UploadFile, Body
 
@@ -46,7 +47,7 @@ async def upload_json(file: UploadFile = File(...)):
         os.makedirs(agent_path, exist_ok=True)
         with open(os.path.join(agent_path, "agnet_config.json"), "w") as f:
             json.dump(agent, f)
-        agnet_model_dict[idx] = agent["model"]
+        agnet_model_dict[idx] = agent["model_settings"]
         role_list.add(agent["role"])
 
     json_data["agnet_model_dict"] = agnet_model_dict
@@ -55,11 +56,12 @@ async def upload_json(file: UploadFile = File(...)):
     with open(os.path.join("experiments", experiment_id, "config.json"), "w") as f:
         json.dump(json_data, f)
 
+    # 现在只返回了id
     return {"status": "success", "experiment_id": experiment_id}
 
 
 @app.post("/start")
-def start_experiments(expe_id: str = Body(...)):
+def prepare_for_experiment(expe_id: str = Body(...)):
     # curl -X POST -d "2023-4-17-14-42-2" http://127.0.0.1:8000/start
     try:
         with open(os.path.join("experiments", expe_id, "config.json"), "r") as f:
@@ -67,5 +69,9 @@ def start_experiments(expe_id: str = Body(...)):
     except:
         return {"status": "failed", "msg": "experiment id {} not found".format(expe_id)}
     model_apis = get_model_apis(expe_config_json["agnet_model_dict"])
+    external_toolkit_apis = get_toolkit_apis(expe_config_json["external_toolkit_dict"])
+
+    start_experiment(expe_config_json, model_apis, external_toolkit_apis)
+
     test_chat = model_apis["0_P_GPT_35_API"].chat("hello world")
     return {"status": "success", "msg": "experiment id {} start".format(expe_id), "test_chat": test_chat}

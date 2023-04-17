@@ -1,6 +1,32 @@
 {
-  "experiment": "test experiment",
+  "experiment_name": "test experiment",
   "description": "this is only for test",
+  "experiment_settings": {
+    "round_nums": 10,
+    "pipeline": [
+      {
+        "action": "rs",
+        "times": 10
+      },
+      {
+        "action": "relection",
+        "times": 1
+      }
+    ]
+  },
+  "external_toolkit": {
+    "enable_external_toolkit": false,
+    "external_settings": [
+      {
+        "name": "recommendation system",
+        "description": "this is a recommendation system",
+        "config": {
+          "api": "",
+          "target": "0"
+        }
+      }
+    ]
+  },
   "agent_list": [
     {
       "name": "ALice",
@@ -14,7 +40,7 @@
         "In her free time, Alice enjoys contributing to open-source projects and mentoring aspiring software engineers.",
         "Alice is passionate about diversity and inclusion in the tech industry and is involved in various initiatives to promote it."
       ],
-      "model": {
+      "model_settings": {
         "model_name": "chatgpt",
         "fine_tune": false,
         "config": {
@@ -33,7 +59,7 @@
         "Bob is known for his creativity and innovation in the kitchen, and he enjoys experimenting with new ingredients and techniques.",
         "When he's not cooking, Bob enjoys traveling to different parts of the world to explore different food cultures and gain inspiration for his dishes."
       ],
-      "model": {
+      "model_settings": {
         "model_name": "chatgpt",
         "fine_tune": false,
         "config": {
