@@ -26,9 +26,9 @@ def read_item(item_id: int):
     return {"item_id": item_id}
 
 
-@app.post("/upload/experiment")
+@app.post("/experiment/create")
 async def upload_json(file: UploadFile = File(...)):
-    # 现在做测试可以：curl -X POST -F "file=@/home/guoshiguang2021/AISimulation/files4test/expe_config.json" http://127.0.0.1:8000/upload/experiment
+    # 现在做测试可以：curl -X POST -F "file=@/home/guoshiguang2021/AISimulation/files4test/expe_config.json" http://127.0.0.1:8000/experiment/create
     content = await file.read()
     json_data = json.loads(content)
     # 应该不需要检查id是否重复
@@ -60,6 +60,7 @@ async def upload_json(file: UploadFile = File(...)):
     return {"status": "success", "experiment_id": experiment_id}
 
 
+# TODO
 @app.post("/start")
 def prepare_for_experiment(expe_id: str = Body(...)):
     # curl -X POST -d "2023-4-17-14-42-2" http://127.0.0.1:8000/start
@@ -75,3 +76,4 @@ def prepare_for_experiment(expe_id: str = Body(...)):
 
     test_chat = model_apis["0_P_GPT_35_API"].chat("hello world")
     return {"status": "success", "msg": "experiment id {} start".format(expe_id), "test_chat": test_chat}
+
