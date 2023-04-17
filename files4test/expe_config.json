@@ -14,7 +14,13 @@
         "In her free time, Alice enjoys contributing to open-source projects and mentoring aspiring software engineers.",
         "Alice is passionate about diversity and inclusion in the tech industry and is involved in various initiatives to promote it."
       ],
-      "model": "chatglm"
+      "model": {
+        "model_name": "chatgpt",
+        "fine_tune": false,
+        "config": {
+          "temperature": 0.7
+        }
+      }
     },
     {
       "name": "Bob",
@@ -27,7 +33,13 @@
         "Bob is known for his creativity and innovation in the kitchen, and he enjoys experimenting with new ingredients and techniques.",
         "When he's not cooking, Bob enjoys traveling to different parts of the world to explore different food cultures and gain inspiration for his dishes."
       ],
-      "model": "chatglm"
+      "model": {
+        "model_name": "chatgpt",
+        "fine_tune": false,
+        "config": {
+          "temperature": 0.7
+        }
+      }
     }
   ],
   "envs": {}
