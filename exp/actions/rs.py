@@ -5,11 +5,14 @@
 @time: 2023/4/17 18:14
 @description: recommend system
 """
-
-from actions.base_action import BaseAction
+from exp.actions.base_action import BaseAction
 
 
 class RS(BaseAction):
+    """
+    推荐系统的实现
+    """
+
     def __init__(self, config):
         super().__init__(config)
 

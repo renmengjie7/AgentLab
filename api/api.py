@@ -9,6 +9,7 @@ import os
 
 import utils.scripts as scripts
 from experiment import start_experiment
+from store.text.logger import Logger
 from utils.model_api import get_model_apis, get_toolkit_apis
 
 from fastapi import FastAPI, File, UploadFile, Body
@@ -19,11 +20,6 @@ app = FastAPI()
 @app.get("/")
 def read_root():
     return {"Hello": "World"}
-
-
-@app.get("/items/{item_id}")
-def read_item(item_id: int):
-    return {"item_id": item_id}
 
 
 @app.post("/experiment/create")
@@ -64,6 +60,7 @@ async def upload_json(file: UploadFile = File(...)):
 @app.post("/start")
 def prepare_for_experiment(expe_id: str = Body(...)):
     # curl -X POST -d "2023-4-17-14-42-2" http://127.0.0.1:8000/start
+    # 从expe_id中读取config.json,创建model_api,external_toolkit_api,然后调用start_experiment开始实验
     try:
         with open(os.path.join("experiments", expe_id, "config.json"), "r") as f:
             expe_config_json = json.load(f)
@@ -74,6 +71,19 @@ def prepare_for_experiment(expe_id: str = Body(...)):
 
     start_experiment(expe_config_json, model_apis, external_toolkit_apis)
 
-    test_chat = model_apis["0_P_GPT_35_API"].chat("hello world")
+    test_chat = model_apis["0"].chat("hello world")
     return {"status": "success", "msg": "experiment id {} start".format(expe_id), "test_chat": test_chat}
 
+
+@app.post("/test/log")
+def test_log(test_log: str = Body(...)):
+    # curl -X POST -d "test log" http://127.0.0.1:8000/test/log
+    # 测试log
+    logger = Logger()
+    logger.debug(test_log, log_console=True, log_file=False)
+    logger.info("info", log_console=False, log_file=True)
+    logger.warning("warning", log_console=True, log_file=True)
+    logger2 = Logger()
+    logger2.error("error", log_console=False, log_file=False)
+    logger2.critical("critical", log_console=True, log_file=True)
+    return {"status": "success", "msg": "test log"}

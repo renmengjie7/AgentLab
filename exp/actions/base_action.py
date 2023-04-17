@@ -7,9 +7,12 @@
 
 
 class BaseAction:
+    """
+    Base class for all actions
+    """
+
     def __init__(self, config):
         self.config = config
 
     def run(self, *args, **kwargs):
         raise NotImplementedError
-

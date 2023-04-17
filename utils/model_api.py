@@ -25,8 +25,8 @@ class ApiRegister(dict):
 
 
 class ApiBase:
-    def __init__(self, config=None, *args, **kwargs):
-        self.target = config.get("target", "global")
+    def __init__(self, *args, **kwargs):
+        self.target = None
 
     def get(self, **kwargs):
         raise NotImplementedError
@@ -149,7 +149,7 @@ def get_model_apis(agnet_model_dict: dict):
         if model_settings["fine_tune"]:
             model_register[str(agent_id)] = CustomModelApi(config=model_settings["config"], agnet_id=agent_id)
         else:
-            model_register[str(agent_id)] = inner_model_name(model_config=model_settings["config"], agent_id=agent_id)
+            model_register[str(agent_id)] = inner_model_name(config=model_settings["config"], agent_id=agent_id)
     return model_register
 
 
