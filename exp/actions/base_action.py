@@ -11,8 +11,8 @@ class BaseAction:
     Base class for all actions
     """
 
-    def __init__(self, agent_setup, models, config):
-        self.config = config
+    def __init__(self, expe_info):
+        self.expe_info = expe_info
 
     def run(self, *args, **kwargs):
         raise NotImplementedError

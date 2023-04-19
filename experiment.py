@@ -8,6 +8,8 @@ import importlib
 import inspect
 import os
 
+from exp.agents.agent import Agent
+from exp.expe_info import ExpeInfo
 from store.text.logger import Logger
 
 
@@ -47,41 +49,43 @@ def start_experiment(experiment_config, model_api, external_toolkit_api):
         pipeline.append(step["action"] * int(step["times"]))
 
     # TODO 完善执行逻辑
-    agent_setup = {}
+    agents_list = []
     for agent in experiment_config["agent_list"]:
-        agent_setup[agent["agent_id"]] = {"profile": agent["profile"], "role": agent["role"]}
-    global_toolkit = [item for item in experiment_config["toolkit"] if item.get_target == "global"]
+        agents_list.append(Agent(id=agent["agent_id"], role=agent["role"], profile=agent["profile"]))
+
+    exp_info = ExpeInfo(agents=agents_list, models=model_api, toolkit=external_toolkit_api,
+                        config=experiment_config)
 
     actions = register_action()
 
     for expe_round in range(experiment_config["round_num"]):
         for step in pipeline:
             actions[step].run()
-        while True:
-            logger.info("Round {} finished".format(expe_round), )
-            user_input = input("press Enter to continue or check agnents' status")
-            if user_input.strip() == "":
-                break
-            elif user_input.strip().startswith("probe"):
-                # TODO check if  agent_id is valid
-                try:
-                    agent_id = int(user_input.strip().split()[1])
-                    probe_message = user_input.strip().split()[2]
-                except:
-                    logger.warning("Invalid input, usage: probe [agent_id] [message]")
-                if agent_id not in agent_setup:
-                    logger.warning("Invalid agent_id")
-                    logger.info("Valid agent_id: {}".format(agent_setup.keys()))
-                actions["probe"].run(agent_id, probe_message)
-            elif user_input.strip().startswith("instuct"):
-                try:
-                    agent_id = int(user_input.strip().split()[1])
-                    instuct_message = user_input.strip().split()[2]
-                except:
-                    logger.warning("Invalid input, usage: instuct [agent_id] [message]")
-                if agent_id not in agent_setup:
-                    logger.warning("Invalid agent_id")
-                    logger.info("Valid agent_id: {}".format(agent_setup.keys()))
-                actions["instuct"].run(agent_id, instuct_message)
-            else:
-                logger.warning("Invalid input")
+            while True:
+                logger.info("Round {} finished".format(expe_round), )
+                user_input = input("press Enter to continue or check agnents' status")
+                if user_input.strip() == "":
+                    break
+                elif user_input.strip().startswith("probe"):
+                    # TODO check if  agent_id is valid
+                    try:
+                        agent_id = int(user_input.strip().split()[1])
+                        probe_message = user_input.strip().split()[2]
+                        if agent_id not in exp_info.get_agent_ids():
+                            logger.warning("Invalid agent_id")
+                            logger.info("Valid agent_id: {}".format(exp_info.get_agent_ids()))
+                        actions["probe"].run(agent_id, probe_message)
+                    except:
+                        logger.warning("Invalid input, usage: probe [agent_id] [message]")
+                elif user_input.strip().startswith("instuct"):
+                    try:
+                        agent_id = int(user_input.strip().split()[1])
+                        instuct_message = user_input.strip().split()[2]
+                        if agent_id not in exp_info.get_agent_ids():
+                            logger.warning("Invalid agent_id")
+                            logger.info("Valid agent_id: {}".format(exp_info.get_agent_ids()))
+                        actions["instuct"].run(agent_id, instuct_message)
+                    except:
+                        logger.warning("Invalid input, usage: instuct [agent_id] [message]")
+                else:
+                    logger.warning("Invalid input")
