@@ -7,6 +7,8 @@
 import openai
 import collections
 
+from store.text.logger import Logger
+
 
 class ApiRegister(dict):
     def __init__(self):
@@ -27,6 +29,7 @@ class ApiRegister(dict):
 class ApiBase:
     def __init__(self, *args, **kwargs):
         self.target = None
+        self.logger = Logger()
 
     def get(self, **kwargs):
         raise NotImplementedError
@@ -58,7 +61,11 @@ class GPT_35_API(ApiBase):
         openai.api_base = "http://8.219.106.213:5556/v1"
         openai.api_key = ""
 
-    def chat(self, message: str, *args, **kwargs):
+    # TODO 加入多轮对话
+    # TODO 设置system
+    # TODO 测试长对话，目前没有找到返回为length的例子
+    def chat(self, content: str, *args, **kwargs):
+        # https://learn.microsoft.com/zh-cn/azure/cognitive-services/openai/how-to/chatgpt?pivots=programming-language-chat-completions
         # 返回结果为
         # {
         #     "id": "chatcmpl-76DCzykJS606GA3ZmbELzI5SOelwJ",
@@ -82,14 +89,45 @@ class GPT_35_API(ApiBase):
         #     ]
         # }
         # TODO 详细处理返回内容
-        content = message
+        self.logger.info("GPT-3.5-turbo: chat start")
+        agent_id = kwargs.get("agent_id", "")
+        message = [
+            {"role": "user", "content": content}
+        ]
         completion = openai.ChatCompletion.create(
             model="gpt-3.5-turbo",
-            messages=[
-                {"role": "user", "content": content}
-            ]
+            messages=message,
         )
-        return completion
+        # TODO 处理choices大于一的情况
+
+        answer = completion["choices"][0]["message"]["content"]
+
+        while True:
+            if completion["choices"][0]["finish_reason"] == "content_filter":
+                self.logger.warning("GPT-3.5-turbo: chat terminated by content filter")
+                if agent_id is not None:
+                    self.logger.warning("GPT-3.5-turbo: agent_id triggers the problem is '{}'".format(agent_id))
+                self.logger.warning("GPT-3.5-turbo: message triggers the problem is '{}'".format(content))
+                break
+            elif completion["choices"][0]["finish_reason"] == "length":
+                self.logger.info(
+                    "GPT-3.5-turbo: chat stop abnormally due to length limit,sending continue automatically")
+                message.append({"role": "assistant", "content": answer})
+                message.append({"role": "user", "content": "continue"})
+                completion = openai.ChatCompletion.create(
+                    model="gpt-3.5-turbo",
+                    messages=message,
+                )
+                answer = answer + " " + completion["choices"][0]["message"]["content"]
+            elif completion["choices"][0]["finish_reason"] == "stop":
+                self.logger.info("GPT-3.5-turbo: chat stop normally")
+                break
+            else:
+                self.logger.error("GPT-3.5-turbo: chat stop abnormally")
+                self.logger.error("GPT-3.5-turbo: message triggers the problem is '{}'".format(content))
+                break
+
+        return answer
 
     def get_backend(self):
         return "gpt-3.5-turbo"
@@ -145,7 +183,6 @@ def get_model_apis(agnet_model_dict: dict):
     model_register = ApiRegister()
     for agent_id, model_settings in agnet_model_dict.items():
         inner_model_name = ModelNameDict[model_settings["model_name"]]
-        print(inner_model_name.__name__)
         if model_settings["fine_tune"]:
             model_register[int(agent_id)] = CustomModelApi(config=model_settings["config"], agnet_id=agent_id)
         else:

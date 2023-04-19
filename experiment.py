@@ -51,7 +51,7 @@ def start_experiment(experiment_config, model_api, external_toolkit_api):
     # TODO 完善执行逻辑
     agents_list = []
     for agent in experiment_config["agent_list"]:
-        agents_list.append(Agent(id=agent["agent_id"], role=agent["role"], profile=agent["profile"]))
+        agents_list.append(Agent(agent_id=agent["agent_id"], role=agent["role"], profile=agent["profile"]))
 
     exp_info = ExpeInfo(agents=agents_list, models=model_api, toolkit=external_toolkit_api,
                         config=experiment_config)

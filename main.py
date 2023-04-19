@@ -44,11 +44,11 @@ def process_json(content: str):
 
 
 if __name__ == '__main__':
-    # with open("files4test/expe_config.json", "r") as f:
-    #     content = f.read()
-    # experiment_id = process_json(content)
+    with open("test/files4test/expe_config.json", "r") as f:
+        content = f.read()
+    experiment_id = process_json(content)
 
-    experiment_id = "20210417_1703_00"
+    # experiment_id = "20210417_1703_00"
     try:
         with open(os.path.join("experiments", experiment_id, "config.json"), "r") as f:
             expe_config_json = json.load(f)
@@ -56,9 +56,10 @@ if __name__ == '__main__':
         print("experiment id {} not found".format(experiment_id))
         assert False
     model_apis = get_model_apis(expe_config_json["agnet_model_dict"])
-    external_toolkit_apis = get_toolkit_apis(expe_config_json["external_toolkit_dict"])
+    external_toolkit_apis = get_toolkit_apis(expe_config_json["external_toolkit"])
 
-    start_experiment(expe_config_json, model_apis, external_toolkit_apis)
+    # start_experiment(expe_config_json, model_apis, external_toolkit_apis)
 
-    test_chat = model_apis[0].chat("hello world")
-    print(test_chat)
+    # test_chat = model_apis[0].chat(
+    #     "write a passage about the life of a person who has made a difference to the world,at least 5000 words")
+    # print(test_chat)

@@ -6,9 +6,12 @@
 """
 import json
 
+from exp.agents.agent import Agent
+from utils.model_api import ApiBase
+
 
 class ExpeInfo:
-    def __init__(self, agents: list, models: list, toolkit: list, config: json):
+    def __init__(self, agents: list[Agent], models: list[ApiBase], toolkit: list[ApiBase], config: json):
         self.agents = agents
         self.models = models
         self.toolkit = toolkit
