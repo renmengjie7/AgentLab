@@ -11,7 +11,7 @@ class BaseAction:
     Base class for all actions
     """
 
-    def __init__(self, config):
+    def __init__(self, agent_setup, models, config):
         self.config = config
 
     def run(self, *args, **kwargs):

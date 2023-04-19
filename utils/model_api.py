@@ -93,8 +93,8 @@ class GPT_35_API(ApiBase):
 
     def get_backend(self):
         return "gpt-3.5-turbo"
-    
-    
+
+
 # TODO 
 class ChatGLM_API(ApiBase):
     """_summary_
@@ -147,9 +147,9 @@ def get_model_apis(agnet_model_dict: dict):
         inner_model_name = ModelNameDict[model_settings["model_name"]]
         print(inner_model_name.__name__)
         if model_settings["fine_tune"]:
-            model_register[str(agent_id)] = CustomModelApi(config=model_settings["config"], agnet_id=agent_id)
+            model_register[int(agent_id)] = CustomModelApi(config=model_settings["config"], agnet_id=agent_id)
         else:
-            model_register[str(agent_id)] = inner_model_name(config=model_settings["config"], agent_id=agent_id)
+            model_register[int(agent_id)] = inner_model_name(config=model_settings["config"], agent_id=agent_id)
     return model_register
 
 

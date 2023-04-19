@@ -1,7 +1,7 @@
 """
 @author: Guo Shiguang
 @software: PyCharm
-@file: api.py
+@file: api_deprecated.py
 @time: 2023/4/16 23:22
 """
 import json

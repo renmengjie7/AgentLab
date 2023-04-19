@@ -21,6 +21,8 @@ def register_action(action_path='exp/actions'):
 
     for root, dirs, files in os.walk(action_path):
         for file in files:
+            if file == "base_action.py":
+                continue
             if file.endswith('.py'):
                 module_name = root.replace('/', '.') + '.' + file[:-3]
                 module = importlib.import_module(module_name)
@@ -54,7 +56,7 @@ def start_experiment(experiment_config, model_api, external_toolkit_api):
 
     for expe_round in range(experiment_config["round_num"]):
         for step in pipeline:
-            actions["step"].run()
+            actions[step].run()
         while True:
             logger.info("Round {} finished".format(expe_round), )
             user_input = input("press Enter to continue or check agnents' status")
