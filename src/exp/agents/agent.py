@@ -4,6 +4,8 @@
 @file: agent.py
 @time: 2023/4/19 9:22
 """
+import os.path
+
 from src.exp.agents.memory import Memory
 
 
@@ -12,8 +14,8 @@ class Agent:
     储存agent的信息   
     """
 
-    def __init__(self, agent_id: int, profile: str, role: str, memory_path: str):
+    def __init__(self, agent_id: int, profile: str, role: str, agent_path: str):
         self.agent_id = agent_id
         self.profile = profile
         self.role = role
-        self.memory = Memory(memory_path=memory_path)
+        self.memory = Memory(memory_path=os.path.join(agent_path, "memory.jsonl"))

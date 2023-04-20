@@ -8,12 +8,13 @@ import importlib
 import inspect
 import os
 
+from src.exp.actions import BaseAction
 from src.exp.agents.agent import Agent
 from src.exp.expe_info import ExpeInfo
 from src.store.text.logger import Logger
 
 
-def register_action(action_path='exp/actions'):
+def register_action(expinfo: ExpeInfo, action_path='../src/exp/actions'):
     """
     遍历指定目录下所有文件，将所有action类注册到actions字典中
     :param action_path:
@@ -23,14 +24,14 @@ def register_action(action_path='exp/actions'):
 
     for root, dirs, files in os.walk(action_path):
         for file in files:
-            if file == "base_action.py":
-                continue
             if file.endswith('.py'):
+                # TODO 更好的提取文件的方式
                 module_name = root.replace('/', '.') + '.' + file[:-3]
+                module_name = module_name.replace('...', '')
                 module = importlib.import_module(module_name)
                 for name, obj in inspect.getmembers(module):
-                    if inspect.isclass(obj):
-                        actions[name] = obj
+                    if inspect.isclass(obj) and issubclass(obj, BaseAction):
+                        actions[name] = obj(expinfo)
 
     return actions
 
@@ -44,22 +45,23 @@ def start_experiment(experiment_config, model_api, external_toolkit_api=None):
     """
     logger = Logger()
 
-    pipeline = ["setup"]
-    for step in experiment_config["pipeline"]:
-        pipeline.append(step["action"] * int(step["times"]))
+    pipeline = ["Setup"]
+    experiment_settings = experiment_config['experiment_settings']
+    for step in experiment_settings["pipeline"]:
+        pipeline.extend([step["action"]] * int(step["times"]))
 
     # TODO 完善执行逻辑
     agents_list = []
     for agent in experiment_config["agent_list"]:
         agents_list.append(Agent(agent_id=agent["agent_id"], role=agent["role"], profile=agent["profile"],
-                                 memory_path=agent["memory_path"]))
+                                 agent_path=agent["agent_path"]))
 
     exp_info = ExpeInfo(agents=agents_list, models=model_api, toolkits=external_toolkit_api,
                         config=experiment_config)
 
-    actions = register_action()
+    actions = register_action(exp_info, )
 
-    for expe_round in range(experiment_config["round_num"]):
+    for expe_round in range(experiment_settings["round_nums"]):
         for step in pipeline:
             actions[step].run()
             while True:

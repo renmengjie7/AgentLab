@@ -5,11 +5,11 @@
     "round_nums": 10,
     "pipeline": [
       {
-        "action": "rs",
+        "action": "RS",
         "times": 10
       },
       {
-        "action": "relection",
+        "action": "ReflectionAction",
         "times": 1
       }
     ]
