@@ -1,8 +1,8 @@
 import json
 import time
-from string import Template
 
 
+# TODO 加入随时写入文件的功能
 class Memory:
     """
     文本形式储存记忆,大多数的时候，记忆储存在变量中，在调用export_memory的时候，将记忆导出到文件中

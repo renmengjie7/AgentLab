@@ -62,11 +62,16 @@ def start_experiment(experiment_config, model_api, external_toolkit_api=None):
 
     actions = register_action(exp_info, )
 
+    # TODO 优化参数传递方式
+    paras = [
+        {},
+    ]
+
     for expe_round in range(experiment_settings["round_nums"]):
-        for step in pipeline:
-            actions[step].run()
+        for step, para in zip(pipeline, paras):
+            actions[step].run(**para)
             while True:
-                logger.info("Round {} finished".format(expe_round), )
+                logger.info("Action {} of Round {} finished".format(step, expe_round))
                 user_input = input("press Enter to continue or check agnents' status")
                 if user_input.strip() == "":
                     break

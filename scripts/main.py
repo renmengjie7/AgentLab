@@ -3,7 +3,6 @@ import os
 
 import src.utils.scripts as scripts
 from scripts.experiment import start_experiment
-from src.store.text.logger import Logger
 from src.utils.model_api import get_model_apis, get_toolkit_apis
 
 

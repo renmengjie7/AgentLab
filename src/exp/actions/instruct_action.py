@@ -1,5 +1,6 @@
-from src.exp.actions.base_action import BaseAction
 from typing import List
+
+from src.exp.actions.base_action import BaseAction
 
 
 class InstructAction(BaseAction):
@@ -14,7 +15,7 @@ class InstructAction(BaseAction):
     def run(self, instructions: List[dict], *args, **kwargs):
         """
         为多个agent下达指令
-        :param instructions:[{"agnet_id":"instuctions"}]
+        :param instructions:[{"agent_id":"instuctions"}]
         :param args:
         :param kwargs:
         :return:

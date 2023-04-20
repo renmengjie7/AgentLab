@@ -5,7 +5,6 @@
 @time: 2023/4/17 8:33
 """
 import openai
-import collections
 import requests
 
 from src.store.text.logger import Logger
@@ -137,7 +136,7 @@ class GPT_35_API(ApiBase):
 
     def get_backend(self):
         return "gpt-3.5-turbo"
-    
+
     def finetune(self, exp: str, agent: str, file: str):
         """
         对某个实验下某个agent使用某个文件finetune
@@ -168,8 +167,8 @@ class ChatGLMAPI(ApiBase):
 
 
 class LLaMAAPI(ApiBase):
-    
-    def finetune(self, exp: str, agent: str, file: str, url: str):
+
+    def finetune(self, exp: str, agent: str, file: str, url: str) -> str:
         """
         :param file是文件路径
         LLaMA的数据格式是
@@ -178,20 +177,19 @@ class LLaMAAPI(ApiBase):
         """
         with open(file, 'rb') as f:
             files = {'file': f}
-        params = {"exp":exp, "agent": agent}
+        params = {"exp": exp, "agent": agent}
         response = requests.post(url, params=params, files=files)
         # TODO 测试一下返回值
-        print(response)
+        self.logger.info(response)
         return response
-        
+
     def chat(self, exp: str, agent: str, query: str, instruction: str, history: list, url: str):
-        params = {"exp":exp, "agent": agent, "query": query, "instruction": instruction}
+        params = {"exp": exp, "agent": agent, "query": query, "instruction": instruction}
         response = requests.post(url, params=params, data=history)
         # TODO 测试一下返回值
         print(response)
         return response
-        
-    
+
     def get_backend(self):
         return "LLaMA"
 
@@ -257,12 +255,12 @@ ToolkitNameDict = {"recommend": RecommendSystemApi}
 
 
 # TODO 修正custom和finetune的关系
-def get_model_apis(agnet_model_dict: dict):
+def get_model_apis(agent_model_dict: dict):
     model_register = ApiRegister()
-    for agent_id, model_settings in agnet_model_dict.items():
+    for agent_id, model_settings in agent_model_dict.items():
         inner_model_name = ModelNameDict[model_settings["model_name"]]
         if model_settings["fine_tune"]:
-            model_register[int(agent_id)] = CustomModelApi(config=model_settings["config"], agnet_id=agent_id)
+            model_register[int(agent_id)] = CustomModelApi(config=model_settings["config"], agent_id=agent_id)
         else:
             model_register[int(agent_id)] = inner_model_name(config=model_settings["config"], agent_id=agent_id)
     return model_register

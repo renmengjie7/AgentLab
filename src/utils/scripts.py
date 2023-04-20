@@ -11,6 +11,7 @@ def generate_experiment_id():
     now = datetime.now()
     return "{}-{}-{}-{}-{}-{}".format(now.year, now.month, now.day, now.hour, now.minute, now.second)
 
+
 def set_seed(seed):
     import random
     # import numpy as np

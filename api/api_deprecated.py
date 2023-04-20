@@ -9,10 +9,9 @@ import os
 
 import utils.scripts as scripts
 from experiment import start_experiment
+from fastapi import FastAPI, File, UploadFile, Body
 from store.text.logger import Logger
 from utils.model_api import get_model_apis, get_toolkit_apis
-
-from fastapi import FastAPI, File, UploadFile, Body
 
 app = FastAPI()
 
@@ -35,18 +34,18 @@ async def upload_json(file: UploadFile = File(...)):
     json_data["agents_num"] = len(json_data["agent_list"])
     format_num_len = max(2, json_data["agents_num"])
 
-    agnet_model_dict = dict()
+    agent_model_dict = dict()
     role_list = set()
     for idx, agent in enumerate(json_data["agent_list"]):
         agent["agent_id"] = idx
         agent_path = os.path.join("experiments", experiment_id, f"agent_{idx:0{format_num_len}}")
         os.makedirs(agent_path, exist_ok=True)
-        with open(os.path.join(agent_path, "agnet_config.json"), "w") as f:
+        with open(os.path.join(agent_path, "agent_config.json"), "w") as f:
             json.dump(agent, f)
-        agnet_model_dict[idx] = agent["model_settings"]
+        agent_model_dict[idx] = agent["model_settings"]
         role_list.add(agent["role"])
 
-    json_data["agnet_model_dict"] = agnet_model_dict
+    json_data["agent_model_dict"] = agent_model_dict
     json_data["role_list"] = list(role_list)
 
     with open(os.path.join("experiments", experiment_id, "config.json"), "w") as f:
@@ -66,7 +65,7 @@ def prepare_for_experiment(expe_id: str = Body(...)):
             expe_config_json = json.load(f)
     except:
         return {"status": "failed", "msg": "experiment id {} not found".format(expe_id)}
-    model_apis = get_model_apis(expe_config_json["agnet_model_dict"])
+    model_apis = get_model_apis(expe_config_json["agent_model_dict"])
     external_toolkit_apis = get_toolkit_apis(expe_config_json["external_toolkit_dict"])
 
     start_experiment(expe_config_json, model_apis, external_toolkit_apis)

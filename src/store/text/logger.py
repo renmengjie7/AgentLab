@@ -1,9 +1,10 @@
+import logging
 import multiprocessing
 import os
-import logging
 import threading
 
 
+# TODO 加入memory的功能
 class Logger():
     """
     日志记录器，实现了单例模式（线程安全和进程安全）
@@ -51,6 +52,7 @@ class Logger():
                         formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
                         cls._instance.log_handler.setFormatter(formatter)
                         cls._instance.console_handler.setFormatter(formatter)
+                        cls._instance.history_handler.setFormatter(formatter)
 
                         # 将处理器添加到日志记录器中
                         cls._instance.logger.addHandler(cls._instance.log_handler)
