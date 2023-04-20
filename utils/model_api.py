@@ -6,6 +6,7 @@
 """
 import openai
 import collections
+import requests
 
 from store.text.logger import Logger
 
@@ -136,6 +137,12 @@ class GPT_35_API(ApiBase):
 
     def get_backend(self):
         return "gpt-3.5-turbo"
+    
+    def finetune(self, exp: str, agent: str, file: str):
+        """
+        对某个实验下某个agent使用某个文件finetune
+        """
+        pass
 
 
 # TODO 实现ChatGlmAPI
@@ -158,6 +165,35 @@ class ChatGLMAPI(ApiBase):
 
     def get(self, **kwargs):
         pass
+
+
+class LLaMAAPI(ApiBase):
+    
+    def finetune(self, exp: str, agent: str, file: str, url: str):
+        """
+        :param file是文件路径
+        LLaMA的数据格式是
+        [{ "instruction": "Give three tips for staying healthy.",
+        "input": "", "output": "1. Eat a balanced }]
+        """
+        with open(file, 'rb') as f:
+            files = {'file': f}
+        params = {"exp":exp, "agent": agent}
+        response = requests.post(url, params=params, files=files)
+        # TODO 测试一下返回值
+        print(response)
+        return response
+        
+    def chat(self, exp: str, agent: str, query: str, instruction: str, history: list, url: str):
+        params = {"exp":exp, "agent": agent, "query": query, "instruction": instruction}
+        response = requests.post(url, params=params, data=history)
+        # TODO 测试一下返回值
+        print(response)
+        return response
+        
+    
+    def get_backend(self):
+        return "LLaMA"
 
 
 class CustomModelApi(ApiBase):
