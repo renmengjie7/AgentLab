@@ -5,7 +5,7 @@ import threading
 
 
 # TODO 加入memory的功能
-class Logger():
+class Logger:
     """
     日志记录器，实现了单例模式（线程安全和进程安全）
     日志包括debug、info、warning、error、critical五个级别,

@@ -18,12 +18,21 @@ class RS(BaseAction):
         super().__init__(expe_info)
 
     def run(self, *args, **kwargs):
+        """
+        一个简单的例子实现可能的推荐系统交互流程
+        :param args:
+        :param kwargs:
+        :return:
+        """
         pass
         # for rs in self.expe_info.toolkits:
         #     for target_id in rs.target_id:
         #         recommendation = rs.get_recommend(target_id)
         #         prompt = self.generate_prompt(recommendation)
         #         feedback = self.expe_info.models[target_id].chat(prompt)
+        #         self.expe_info.agents[target_id].memory.store(interactant=target_id, question=prompt, answer=feedback)
+        #         self.logger.history("user: {}".format(prompt))
+        #         self.logger.history("agent_{}: {}".format(target_id, feedback))
 
     def generate_prompt(self, *args, **kwargs) -> str:
         pass

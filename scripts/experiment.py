@@ -18,6 +18,7 @@ from src.store.text.logger import Logger
 def register_action(expinfo: ExpeInfo, action_path='../src/exp/actions'):
     """
     遍历指定目录下所有文件，将所有action类注册到actions字典中
+    :param expinfo:
     :param action_path:
     :return:
     """

@@ -169,10 +169,13 @@ class LLaMAAPI(ApiBase):
 
     def finetune(self, exp: str, agent: str, file: str, url: str) -> str:
         """
-        :param file是文件路径
         LLaMA的数据格式是
         [{ "instruction": "Give three tips for staying healthy.",
         "input": "", "output": "1. Eat a balanced }]
+        :param url:
+        :param agent:
+        :param exp:
+        :param file是文件路径
         """
         with open(file, 'rb') as f:
             files = {'file': f}
@@ -212,6 +215,7 @@ class CustomModelApi(ApiBase):
 class ExternalToolkitApi(ApiBase):
     def __init__(self, toolkit_config=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.target_id = None
         self.toolkit_config = toolkit_config
         self.toolkit_api = toolkit_config["api"]
         self.target_name = toolkit_config["target"]
