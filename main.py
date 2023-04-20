@@ -25,7 +25,7 @@ def process_json(content: str):
     agnet_model_dict = dict()
     role_list = set()
     for idx, agent in enumerate(json_data["agent_list"]):
-        agent["agent_id"] = idx
+        agent["agent_id"] = idx + 1
         pwd = os.getcwd()
         agent_path = os.path.join(pwd, "experiments", experiment_id, f"agent_{idx:0{format_num_len}}")
         os.makedirs(agent_path, exist_ok=True)

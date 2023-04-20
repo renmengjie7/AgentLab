@@ -18,6 +18,11 @@ class RS(BaseAction):
         super().__init__(expe_info)
 
     def run(self, *args, **kwargs):
-        for item in self.expe_info.toolkits:
-            for target_id in item.target_id:
-                item.get_reco(target_id)
+        for rs in self.expe_info.toolkits:
+            for target_id in rs.target_id:
+                recommendation = rs.get_recommend(target_id)
+                prompt = self.generate_prompt(recommendation)
+                feedback = self.expe_info.models[target_id].chat(prompt)
+
+    def generate_prompt(self, *args, **kwargs) -> str:
+        pass

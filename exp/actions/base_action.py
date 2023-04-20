@@ -5,6 +5,7 @@
 @time: 2023/4/17 18:14
 """
 from exp.expe_info import ExpeInfo
+from store.text.logger import Logger
 
 
 class BaseAction:
@@ -14,6 +15,7 @@ class BaseAction:
 
     def __init__(self, expe_info: ExpeInfo):
         self.expe_info = expe_info
+        self.logger = Logger()
 
     def run(self, *args, **kwargs):
         raise NotImplementedError

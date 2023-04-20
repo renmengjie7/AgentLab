@@ -57,7 +57,7 @@ class GPT_35_API(ApiBase):
         logger = Logger()
         logger.warning("GPT-3.5 does not support finetune")
 
-    def __init__(self, config=None, *args, **kwargs):
+    def __init__(self, agent_id, config=None, *args, **kwargs):
         # TODO 自己的不需要导入key
         # self.api_key=config.key
         super().__init__(config)
@@ -68,8 +68,8 @@ class GPT_35_API(ApiBase):
 
     # TODO 加入多轮对话
     # TODO 设置system
-    # TODO 测试长对话，目前没有找到返回为length的例子
     def chat(self, content: str, *args, **kwargs):
+
         # https://learn.microsoft.com/zh-cn/azure/cognitive-services/openai/how-to/chatgpt?pivots=programming-language-chat-completions
         # 返回结果为
         # {
@@ -107,6 +107,7 @@ class GPT_35_API(ApiBase):
 
         answer = completion["choices"][0]["message"]["content"]
 
+        # TODO 测试长对话，目前没有找到返回为length的例子
         while True:
             if completion["choices"][0]["finish_reason"] == "content_filter":
                 self.logger.warning("GPT-3.5-turbo: chat terminated by content filter")
@@ -217,8 +218,8 @@ class RecommendSystemApi(ExternalToolkitApi):
 
 
 # TODO use userdict
-ModelNameDict = {"chatgpt": GPT_35_API, "gpt3.5": GPT_35_API, "gpt3.5turbo": GPT_35_API}
-ToolkitNameDict = {"recommend": RecommendSystemApi}
+ModelNameDict = {"chatgpt": GPT_35_API, "chatglm": ChatGLMAPI}
+ToolkitNameDict = {"rs": RecommendSystemApi}
 
 
 # TODO 修正custom和finetune的关系
@@ -230,13 +231,14 @@ def get_model_apis(agnet_model_dict: dict):
             model_register[int(agent_id)] = CustomModelApi(config=model_settings["config"], agnet_id=agent_id)
         else:
             model_register[int(agent_id)] = inner_model_name(config=model_settings["config"], agent_id=agent_id)
+        model_register[0] = GPT_35_API(agent_id=0)
     return model_register
 
 
 def get_toolkit_apis(toolkit_list: list):
     toolkit_api_register = ApiRegister()
     for item in toolkit_list:
-        toolkit_api_register[item["name"]] = ExternalToolkitApi(toolkit_config=item["config"])
+        toolkit_api_register[item["name"]] = toolkit_list[item["name"]](toolkit_config=item["config"])
 
     for item in toolkit_api_register.values():
         item.transfor_name2id(toolkit_api_register)
