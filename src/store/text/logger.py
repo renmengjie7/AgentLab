@@ -49,10 +49,11 @@ class Logger():
                         cls._instance.console_handler.setLevel(logging.DEBUG)
 
                         # 创建格式器，设置日志格式
-                        formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
-                        cls._instance.log_handler.setFormatter(formatter)
-                        cls._instance.console_handler.setFormatter(formatter)
-                        cls._instance.history_handler.setFormatter(formatter)
+                        formatter_history = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+                        cls._instance.log_handler.setFormatter(formatter_history)
+                        cls._instance.console_handler.setFormatter(formatter_history)
+                        formatter_history = logging.Formatter('%(asctime)s -  %(message)s')
+                        cls._instance.history_handler.setFormatter(formatter_history)
 
                         # 将处理器添加到日志记录器中
                         cls._instance.logger.addHandler(cls._instance.log_handler)
@@ -148,6 +149,7 @@ class Logger():
 
     def history(self, message):
         self.logger.removeHandler(self.console_handler)
+        self.logger.info(message)  # 额外在log中保存一份
         self.logger.removeHandler(self.log_handler)
         self.logger.addHandler(self.history_handler)
         self.logger.info(message)

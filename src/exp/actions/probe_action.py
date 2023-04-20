@@ -14,7 +14,7 @@ class ProbeAction(BaseAction):
     def run(self, probes: List[dict], *args, **kwargs):
         """
         为多个agent下达指令
-        :param probes:
+        :param probes:[id,message,save]
         :param args:
         :param kwargs:
         :return:
@@ -23,6 +23,6 @@ class ProbeAction(BaseAction):
             agent_id = int(item["agent_id"])
             message = item["message"]
             answer = self.expe_info.models[agent_id].chat(message)
-            self.logger.history(answer)
-            self.logger.info(answer)
+            self.logger.history("user: {}".format(message))
+            self.logger.history("agent_{}: {}".format(agent_id, answer))
             return answer

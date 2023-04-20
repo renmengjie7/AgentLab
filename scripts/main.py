@@ -3,6 +3,7 @@ import os
 
 import src.utils.scripts as scripts
 from scripts.experiment import start_experiment
+from src.store.text.logger import Logger
 from src.utils.model_api import get_model_apis, get_toolkit_apis
 
 
@@ -16,7 +17,10 @@ def process_json(content: str):
     # 应该不需要检查id是否重复
     experiment_id = scripts.generate_experiment_id()
     json_data["experiment_id"] = experiment_id
-    os.makedirs(os.path.join("experiments", experiment_id), exist_ok=True)
+    expe_dir = os.path.join("experiments", experiment_id)
+    os.makedirs(expe_dir, exist_ok=True)
+    # 实例化一个logger，控制文件位置
+    logger = Logger(log_file=os.path.join(expe_dir, "log.txt"), history_file=os.path.join(expe_dir, "history.txt"))
 
     json_data["agents_num"] = len(json_data["agent_list"])
     format_num_len = max(2, json_data["agents_num"])
