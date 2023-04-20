@@ -5,7 +5,7 @@ import time
 # TODO 加入随时写入文件的功能
 class Memory:
     """
-    文本形式储存记忆,大多数的时候，记忆储存在变量中，在调用export_memory的时候，将记忆导出到文件中
+    文本形式储存记忆,记忆储存在变量中，同时会以append的形式储存到对应的agent文件夹下，在调用export_memory的时候，将记忆导出到文件中
     """
 
     def __init__(self, memory_path: str):
@@ -17,15 +17,21 @@ class Memory:
         self.memory_list = []
         self.memory_path = memory_path
 
-    def store(self, interactant, action, ):
+    def store(self, interactant, question, answer, *args, **kwargs):
         """
-        json格式存储记忆，字段包括自增id，交互对象，具体行为，时间
-        :param interactant:交互对象
-        :param action: 具体行为
+        json格式存储记忆，字段包括自增id，交互对象，对话的两端，时间
+        :param interactant: 交互对象
+        :param question:
+        :param answer:
+        :param args:
+        :param kwargs:
         :return:
         """
         current_time = time.time()
-        memory_item = {"id": self.memory_id, "interactant": interactant, "action": action, "time": str(current_time)}
+        memory_item = {"id": self.memory_id, "interactant": interactant, "question": question, "answer": answer,
+                       "time": str(current_time)}
+        with open(self.memory_path, "a", encoding="utf-8") as f:
+            f.write(json.dumps(memory_item, ensure_ascii=False) + "\n")
         self.memory_list.append(memory_item)
         self.memory_id += 1
 

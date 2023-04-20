@@ -48,6 +48,7 @@ def start_experiment(experiment_config, model_api, external_toolkit_api=None):
 
     pipeline = ["Setup"]
     experiment_settings = experiment_config['experiment_settings']
+    # TODO 修改此阶段代码
     for step in experiment_settings["pipeline"]:
         pipeline.extend([step["action"]] * int(step["times"]))
 
@@ -70,32 +71,44 @@ def start_experiment(experiment_config, model_api, external_toolkit_api=None):
     for expe_round in range(experiment_settings["round_nums"]):
         for step, para in zip(pipeline, paras):
             actions[step].run(**para)
+            logger.info("Action {} of Round {} finished".format(step, expe_round))
             while True:
-                logger.info("Action {} of Round {} finished".format(step, expe_round))
-                user_input = input("press Enter to continue or check agnents' status")
+                user_input = input("press Enter to continue or check agents' status")
                 if user_input.strip() == "":
                     break
+                elif user_input.strip().startswith("probe_save"):
+                    try:
+                        agent_id = int(user_input.strip().split()[1])
+                        probe_message = " ".join(user_input.strip().split()[2:])
+                        if agent_id not in exp_info.get_agent_ids():
+                            logger.warning("Invalid agent_id")
+                            logger.info("Valid agent_id: {}".format(exp_info.get_agent_ids()))
+                        actions["ProbeAction"].run([{"agent_id": agent_id, "message": probe_message, "save": True}])
+                    except:
+                        print(traceback.format_exc())
+                        logger.warning("Invalid input, usage: probe_save [agent_id] [message]")
                 elif user_input.strip().startswith("probe"):
                     # TODO check if  agent_id is valid
                     try:
                         agent_id = int(user_input.strip().split()[1])
-                        probe_message = user_input.strip().split()[2]
+                        probe_message = " ".join(user_input.strip().split()[2:])
                         if agent_id not in exp_info.get_agent_ids():
                             logger.warning("Invalid agent_id")
                             logger.info("Valid agent_id: {}".format(exp_info.get_agent_ids()))
-                        actions["ProbeAction"].run([{"agent_id": agent_id, "message": probe_message}])
+                        actions["ProbeAction"].run([{"agent_id": agent_id, "message": probe_message, "save": False}])
                     except:
                         print(traceback.format_exc())
                         logger.warning("Invalid input, usage: probe [agent_id] [message]")
-                elif user_input.strip().startswith("instuct"):
+                elif user_input.strip().startswith("instruct"):
                     try:
                         agent_id = int(user_input.strip().split()[1])
-                        instuct_message = user_input.strip().split()[2]
+                        instruct_message = " ".join(user_input.strip().split()[2:])
                         if agent_id not in exp_info.get_agent_ids():
                             logger.warning("Invalid agent_id")
                             logger.info("Valid agent_id: {}".format(exp_info.get_agent_ids()))
-                        actions["InstructAction"].run([{"agent_id": agent_id, "message": instuct_message}])
+                        actions["InstructAction"].run([{"agent_id": agent_id, "message": instruct_message}])
                     except:
-                        logger.warning("Invalid input, usage: instuct [agent_id] [message]")
+                        print(traceback.format_exc())
+                        logger.warning("Invalid input, usage: instruct [agent_id] [message]")
                 else:
                     logger.warning("Invalid input")

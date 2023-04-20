@@ -93,7 +93,6 @@ class GPT_35_API(ApiBase):
         #         }
         #     ]
         # }
-        # TODO 详细处理返回内容
         self.logger.info("GPT-3.5-turbo: chat start")
         agent_id = kwargs.get("agent_id", "")
         message = [
@@ -263,6 +262,7 @@ def get_model_apis(agent_model_dict: dict):
             model_register[int(agent_id)] = CustomModelApi(config=model_settings["config"], agent_id=agent_id)
         else:
             model_register[int(agent_id)] = inner_model_name(config=model_settings["config"], agent_id=agent_id)
+    model_register[-1] = GPT_35_API(agent_id=-1)
     return model_register
 
 

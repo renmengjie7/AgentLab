@@ -15,13 +15,14 @@ class InstructAction(BaseAction):
     def run(self, instructions: List[dict], *args, **kwargs):
         """
         为多个agent下达指令
-        :param instructions:[{"agent_id":"instuctions"}]
+        :param instructions:[{"agent_id":"instructions"}]
         :param args:
         :param kwargs:
         :return:
         """
         for item in instructions:
-            self.instruct(int(item["agent_id"]), item["instructions"])
+            self.instruct(int(item["agent_id"]), item["message"])
 
     def instruct(self, agent_id: int, instructions):
-        self.expe_info.agents[agent_id].memory.store(agent_id, instructions)
+        self.logger.info("written in agent_{}'s memory : {}".format(agent_id, instructions))
+        self.expe_info.agents[agent_id].memory.store(interactant=agent_id, question="", answer=instructions)

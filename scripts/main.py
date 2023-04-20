@@ -28,7 +28,7 @@ def process_json(content: str):
     agent_model_dict = dict()
     role_list = set()
     for idx, agent in enumerate(json_data["agent_list"]):
-        agent["agent_id"] = idx + 1
+        agent["agent_id"] = idx
         pwd = os.getcwd()
         agent_path = os.path.join(pwd, "experiments", experiment_id, f"agent_{idx:0{format_num_len}}")
         os.makedirs(agent_path, exist_ok=True)
@@ -54,6 +54,7 @@ if __name__ == '__main__':
     experiment_id = process_json(content)
 
     # experiment_id = "2023-4-20-20-47-3"
+
     try:
         with open(os.path.join("experiments", experiment_id, "config.json"), "r") as f:
             expe_config_json = json.load(f)

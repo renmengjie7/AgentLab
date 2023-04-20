@@ -22,7 +22,10 @@ class ProbeAction(BaseAction):
         for item in probes:
             agent_id = int(item["agent_id"])
             message = item["message"]
+            save_in_memory = item["save"]
             answer = self.expe_info.models[agent_id].chat(message)
             self.logger.history("user: {}".format(message))
             self.logger.history("agent_{}: {}".format(agent_id, answer))
+            if save_in_memory:
+                self.expe_info.agents[agent_id].memory.store(interactant=agent_id, question=message, answer=answer)
             return answer
