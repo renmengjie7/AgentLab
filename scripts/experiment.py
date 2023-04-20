@@ -15,10 +15,10 @@ from src.exp.expe_info import ExpeInfo
 from src.store.text.logger import Logger
 
 
-def register_action(expinfo: ExpeInfo, action_path='../src/exp/actions'):
+def register_action(expe_info: ExpeInfo, action_path='../src/exp/actions'):
     """
     遍历指定目录下所有文件，将所有action类注册到actions字典中
-    :param expinfo:
+    :param expe_info:
     :param action_path:
     :return:
     """
@@ -33,7 +33,7 @@ def register_action(expinfo: ExpeInfo, action_path='../src/exp/actions'):
                 module = importlib.import_module(module_name)
                 for name, obj in inspect.getmembers(module):
                     if inspect.isclass(obj) and issubclass(obj, BaseAction):
-                        actions[name] = obj(expinfo)
+                        actions[name] = obj(expe_info)
 
     return actions
 
