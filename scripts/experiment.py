@@ -8,9 +8,9 @@ import importlib
 import inspect
 import os
 
-from exp.agents.agent import Agent
-from exp.expe_info import ExpeInfo
-from store.text.logger import Logger
+from src.exp.agents.agent import Agent
+from src.exp.expe_info import ExpeInfo
+from src.store.text.logger import Logger
 
 
 def register_action(action_path='exp/actions'):
