@@ -54,7 +54,7 @@ def start_experiment(experiment_config, model_api, external_toolkit_api=None):
         agents_list.append(Agent(agent_id=agent["agent_id"], role=agent["role"], profile=agent["profile"],
                                  memory_path=agent["memory_path"]))
 
-    exp_info = ExpeInfo(agents=agents_list, models=model_api, toolkit=external_toolkit_api,
+    exp_info = ExpeInfo(agents=agents_list, models=model_api, toolkits=external_toolkit_api,
                         config=experiment_config)
 
     actions = register_action()

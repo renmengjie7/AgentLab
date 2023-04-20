@@ -26,6 +26,7 @@ class ApiRegister(dict):
         return list(self._dict.keys())
 
 
+# TODO 调整为model和toolkit继承不同的基类，但都继承自ApiBase
 class ApiBase:
     def __init__(self, *args, **kwargs):
         self.target = None
@@ -183,6 +184,13 @@ class ExternalToolkitApi(ApiBase):
         self.target_name = toolkit_config["target"]
 
     def chat(self, message: str, *args, **kwargs):
+        """
+
+        :param message:
+        :param args:
+        :param kwargs:
+        :return:
+        """
         pass
 
     def get_backend(self):
@@ -192,8 +200,25 @@ class ExternalToolkitApi(ApiBase):
         self.target_id = [name2id[item] for item in self.target_name]
 
 
+class RecommendSystemApi(ExternalToolkitApi):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def get_recommend(self, id: int, message: str, *args, **kwargs) -> str:
+        """
+
+        :param id:
+        :param message:
+        :param args:
+        :param kwargs:
+        :return:
+        """
+        pass
+
+
 # TODO use userdict
 ModelNameDict = {"chatgpt": GPT_35_API, "gpt3.5": GPT_35_API, "gpt3.5turbo": GPT_35_API}
+ToolkitNameDict = {"recommend": RecommendSystemApi}
 
 
 # TODO 修正custom和finetune的关系
@@ -212,5 +237,8 @@ def get_toolkit_apis(toolkit_list: list):
     toolkit_api_register = ApiRegister()
     for item in toolkit_list:
         toolkit_api_register[item["name"]] = ExternalToolkitApi(toolkit_config=item["config"])
+
+    for item in toolkit_api_register.values():
+        item.transfor_name2id(toolkit_api_register)
 
     return toolkit_api_register

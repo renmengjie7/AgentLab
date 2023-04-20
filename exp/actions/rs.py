@@ -6,6 +6,7 @@
 @description: recommend system
 """
 from exp.actions.base_action import BaseAction
+from exp.expe_info import ExpeInfo
 
 
 class RS(BaseAction):
@@ -13,8 +14,10 @@ class RS(BaseAction):
     推荐系统的实现
     """
 
-    def __init__(self, config):
-        super().__init__(config)
+    def __init__(self, expe_info: ExpeInfo):
+        super().__init__(expe_info)
 
     def run(self, *args, **kwargs):
-        raise NotImplementedError
+        for item in self.expe_info.toolkits:
+            for target_id in item.target_id:
+                item.get_reco(target_id)

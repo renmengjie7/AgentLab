@@ -7,14 +7,14 @@
 import json
 
 from exp.agents.agent import Agent
-from utils.model_api import ApiBase
+from utils.model_api import ApiBase, ExternalToolkitApi
 
 
 class ExpeInfo:
-    def __init__(self, agents: list[Agent], models: list[ApiBase], toolkit: list[ApiBase], config: json):
+    def __init__(self, agents: list[Agent], models: list[ApiBase], toolkits: list[ExternalToolkitApi], config: json):
         self.agents = agents
         self.models = models
-        self.toolkit = toolkit
+        self.toolkits = toolkits
         self.config = config
 
     def get_agent_ids(self):

@@ -15,7 +15,7 @@ class Logger():
     _process_lock = multiprocessing.Lock()
     _instance = None
 
-    def __new__(cls, log_file=None):
+    def __new__(cls, log_file=None, history_file=None):
         """
         单例模式，保证只有一个日志记录器
         :param log_file: 日志文件路径，如果不指定则默认为当前目录下的log.txt
@@ -33,8 +33,15 @@ class Logger():
                             log_file_path = os.path.abspath(log_file)
                         else:
                             log_file_path = os.path.abspath('log.txt')
-                        cls._instance.file_handler = logging.FileHandler(log_file_path)
-                        cls._instance.file_handler.setLevel(logging.DEBUG)
+                        cls._instance.log_handler = logging.FileHandler(log_file_path)
+                        cls._instance.log_handler.setLevel(logging.DEBUG)
+
+                        if history_file:
+                            history_file_path = os.path.abspath(history_file)
+                        else:
+                            history_file_path = os.path.abspath('history.txt')
+                        cls._instance.history_handler = logging.FileHandler(history_file_path)
+                        cls._instance.history_handler.setLevel(logging.DEBUG)
 
                         # 创建控制台处理器，将日志打印到控制台
                         cls._instance.console_handler = logging.StreamHandler()
@@ -42,11 +49,11 @@ class Logger():
 
                         # 创建格式器，设置日志格式
                         formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
-                        cls._instance.file_handler.setFormatter(formatter)
+                        cls._instance.log_handler.setFormatter(formatter)
                         cls._instance.console_handler.setFormatter(formatter)
 
                         # 将处理器添加到日志记录器中
-                        cls._instance.logger.addHandler(cls._instance.file_handler)
+                        cls._instance.logger.addHandler(cls._instance.log_handler)
                         cls._instance.logger.addHandler(cls._instance.console_handler)
         return cls._instance
 
@@ -61,9 +68,9 @@ class Logger():
         if log_console and log_file:
             self.logger.debug(message)
         elif log_console:
-            self.logger.removeHandler(self.file_handler)
+            self.logger.removeHandler(self.log_handler)
             self.logger.debug(message)
-            self.logger.addHandler(self.file_handler)
+            self.logger.addHandler(self.log_handler)
         elif log_file:
             self.logger.removeHandler(self.console_handler)
             self.logger.debug(message)
@@ -75,9 +82,9 @@ class Logger():
         if log_console and log_file:
             self.logger.info(message)
         elif log_console:
-            self.logger.removeHandler(self.file_handler)
+            self.logger.removeHandler(self.log_handler)
             self.logger.info(message)
-            self.logger.addHandler(self.file_handler)
+            self.logger.addHandler(self.log_handler)
         elif log_file:
             self.logger.removeHandler(self.console_handler)
             self.logger.info(message)
@@ -89,9 +96,9 @@ class Logger():
         if log_console and log_file:
             self.logger.warning(message)
         elif log_console:
-            self.logger.removeHandler(self.file_handler)
+            self.logger.removeHandler(self.log_handler)
             self.logger.warning(message)
-            self.logger.addHandler(self.file_handler)
+            self.logger.addHandler(self.log_handler)
         elif log_file:
             self.logger.removeHandler(self.console_handler)
             self.logger.warning(message)
@@ -103,9 +110,9 @@ class Logger():
         if log_console and log_file:
             self.logger.error(message)
         elif log_console:
-            self.logger.removeHandler(self.file_handler)
+            self.logger.removeHandler(self.log_handler)
             self.logger.error(message)
-            self.logger.addHandler(self.file_handler)
+            self.logger.addHandler(self.log_handler)
         elif log_file:
             self.logger.removeHandler(self.console_handler)
             self.logger.error(message)
@@ -117,9 +124,9 @@ class Logger():
         if log_console and log_file:
             self.logger.critical(message)
         elif log_console:
-            self.logger.removeHandler(self.file_handler)
+            self.logger.removeHandler(self.log_handler)
             self.logger.critical(message)
-            self.logger.addHandler(self.file_handler)
+            self.logger.addHandler(self.log_handler)
         elif log_file:
             self.logger.removeHandler(self.console_handler)
             self.logger.critical(message)
@@ -136,3 +143,12 @@ class Logger():
         :return:
         """
         self.warning(message, log_console, log_file)
+
+    def history(self, message):
+        self.logger.removeHandler(self.console_handler)
+        self.logger.removeHandler(self.log_handler)
+        self.logger.addHandler(self.history_handler)
+        self.logger.info(message)
+        self.logger.removeHandler(self.history_handler)
+        self.logger.addHandler(self.log_handler)
+        self.logger.addHandler(self.console_handler)
