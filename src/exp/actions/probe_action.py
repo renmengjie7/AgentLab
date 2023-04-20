@@ -14,7 +14,7 @@ class ProbeAction(BaseAction):
     def run(self, probes: List[dict], *args, **kwargs):
         """
         为多个agent下达指令
-        :param probes:[id,message,save]
+        :param probes:["agent_id":agent_id,"message":message","save":save_in_memory]
         :param args:
         :param kwargs:
         :return:

@@ -148,8 +148,8 @@ class Logger:
         self.warning(message, log_console, log_file)
 
     def history(self, message):
-        self.logger.removeHandler(self.console_handler)
         self.logger.info(message)  # 额外在log中保存一份
+        self.logger.removeHandler(self.console_handler)
         self.logger.removeHandler(self.log_handler)
         self.logger.addHandler(self.history_handler)
         self.logger.info(message)

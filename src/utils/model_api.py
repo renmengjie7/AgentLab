@@ -61,7 +61,8 @@ class GPT_35_API(ApiBase):
         # TODO 自己的不需要导入key
         # self.api_key=config.key
         super().__init__(config)
-        self.temp = config.get("temp", 0.7)
+        if config is not None:
+            self.temp = config.get("temp", 0.7)
         self.target = kwargs.get("agent_id")
         openai.api_base = "http://8.219.106.213:5556/v1"
         openai.api_key = ""
