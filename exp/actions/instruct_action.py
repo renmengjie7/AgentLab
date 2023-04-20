@@ -22,4 +22,4 @@ class InstructionAction(BaseAction):
             self.instruct(int(item["agent_id"]), item["instructions"])
 
     def instruct(self, agent_id: int, instructions):
-        self.expe_info.memory.store(agent_id, instructions)
+        self.expe_info.agents[agent_id].memory.store(agent_id, instructions)

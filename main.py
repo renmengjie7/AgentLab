@@ -26,8 +26,10 @@ def process_json(content: str):
     role_list = set()
     for idx, agent in enumerate(json_data["agent_list"]):
         agent["agent_id"] = idx
-        agent_path = os.path.join("experiments", experiment_id, f"agent_{idx:0{format_num_len}}")
+        pwd = os.getcwd()
+        agent_path = os.path.join(pwd, "experiments", experiment_id, f"agent_{idx:0{format_num_len}}")
         os.makedirs(agent_path, exist_ok=True)
+        agent["agent_path"] = agent_path
         with open(os.path.join(agent_path, "agnet_config.json"), "w") as f:
             json.dump(agent, f)
         agnet_model_dict[idx] = agent["model_settings"]
@@ -56,9 +58,11 @@ if __name__ == '__main__':
         print("experiment id {} not found".format(experiment_id))
         assert False
     model_apis = get_model_apis(expe_config_json["agnet_model_dict"])
-    external_toolkit_apis = get_toolkit_apis(expe_config_json["external_toolkit"])
 
-    # start_experiment(expe_config_json, model_apis, external_toolkit_apis)
+    toolkit = expe_config_json["external_toolkit"]
+    external_toolkit_apis = get_toolkit_apis(toolkit["external_settings"]) if bool(toolkit) and toolkit[
+        "enable_external_toolkit"] else None
+    start_experiment(expe_config_json, model_apis, external_toolkit_apis)
 
     # test_chat = model_apis[0].chat(
     #     "write a passage about the life of a person who has made a difference to the world,at least 5000 words")

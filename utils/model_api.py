@@ -52,6 +52,10 @@ class ApiBase:
 
 # @ModelApiRegister.register("chatgpt")
 class GPT_35_API(ApiBase):
+    def finetune(self, **kwargs):
+        logger = Logger()
+        logger.warning("GPT-3.5 does not support finetune")
+
     def __init__(self, config=None, *args, **kwargs):
         # TODO 自己的不需要导入key
         # self.api_key=config.key
@@ -133,16 +137,26 @@ class GPT_35_API(ApiBase):
         return "gpt-3.5-turbo"
 
 
-# TODO 
-class ChatGLM_API(ApiBase):
-    """_summary_
-
-    Args:
-        ApiBase (_type_): _description_
-
-    Returns:
-        _type_: _description_
+# TODO 实现ChatGlmAPI
+class ChatGLMAPI(ApiBase):
     """
+
+    """
+
+    def post(self, **kwargs):
+        pass
+
+    def chat(self, **kwargs):
+        pass
+
+    def finetune(self, **kwargs):
+        pass
+
+    def get_backend(self):
+        return "chatglm"
+
+    def get(self, **kwargs):
+        pass
 
 
 class CustomModelApi(ApiBase):
@@ -166,7 +180,7 @@ class ExternalToolkitApi(ApiBase):
         super().__init__(*args, **kwargs)
         self.toolkit_config = toolkit_config
         self.toolkit_api = toolkit_config["api"]
-        self.target = toolkit_config["target"]
+        self.target_name = toolkit_config["target"]
 
     def chat(self, message: str, *args, **kwargs):
         pass
@@ -174,11 +188,15 @@ class ExternalToolkitApi(ApiBase):
     def get_backend(self):
         return self.toolkit_config["name"]
 
+    def transfor_name2id(self, name2id):
+        self.target_id = [name2id[item] for item in self.target_name]
+
 
 # TODO use userdict
 ModelNameDict = {"chatgpt": GPT_35_API, "gpt3.5": GPT_35_API, "gpt3.5turbo": GPT_35_API}
 
 
+# TODO 修正custom和finetune的关系
 def get_model_apis(agnet_model_dict: dict):
     model_register = ApiRegister()
     for agent_id, model_settings in agnet_model_dict.items():
@@ -190,9 +208,9 @@ def get_model_apis(agnet_model_dict: dict):
     return model_register
 
 
-def get_toolkit_apis(toolkit_dict: dict):
+def get_toolkit_apis(toolkit_list: list):
     toolkit_api_register = ApiRegister()
-    for toolkit_name, toolkit_config in toolkit_dict.items():
-        toolkit_api_register[toolkit_name] = toolkit_config["api"]
+    for item in toolkit_list:
+        toolkit_api_register[item["name"]] = ExternalToolkitApi(toolkit_config=item["config"])
 
     return toolkit_api_register

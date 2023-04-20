@@ -35,7 +35,7 @@ def register_action(action_path='exp/actions'):
     return actions
 
 
-def start_experiment(experiment_config, model_api, external_toolkit_api):
+def start_experiment(experiment_config, model_api, external_toolkit_api=None):
     """
     :param experiment_config:
     :param model_api:
@@ -51,7 +51,8 @@ def start_experiment(experiment_config, model_api, external_toolkit_api):
     # TODO 完善执行逻辑
     agents_list = []
     for agent in experiment_config["agent_list"]:
-        agents_list.append(Agent(agent_id=agent["agent_id"], role=agent["role"], profile=agent["profile"]))
+        agents_list.append(Agent(agent_id=agent["agent_id"], role=agent["role"], profile=agent["profile"],
+                                 memory_path=agent["memory_path"]))
 
     exp_info = ExpeInfo(agents=agents_list, models=model_api, toolkit=external_toolkit_api,
                         config=experiment_config)

@@ -8,8 +8,12 @@ from exp.agents.memory import Memory
 
 
 class Agent:
-    def __init__(self, agent_id, profile, role):
+    """
+    储存agent的信息   
+    """
+
+    def __init__(self, agent_id: int, profile: str, role: str, memory_path: str):
         self.agent_id = agent_id
         self.profile = profile
         self.role = role
-        self.memory = Memory()
+        self.memory = Memory(memory_path=memory_path)

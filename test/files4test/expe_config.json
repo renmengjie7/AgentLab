@@ -22,7 +22,9 @@
         "description": "this is a recommendation system",
         "config": {
           "api": "",
-          "target": "0"
+          "target": [
+            "Alice"
+          ]
         }
       }
     ]

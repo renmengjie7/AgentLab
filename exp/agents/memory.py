@@ -8,13 +8,14 @@ class Memory:
     文本形式储存记忆,大多数的时候，记忆储存在变量中，在调用export_memory的时候，将记忆导出到文件中
     """
 
-    def __init__(self):
+    def __init__(self, memory_path: str):
         """
         memory_id: 自增id，为每个记忆分配唯一id
         memory_list: 记忆列表，每个元素是一个字典，包括id，交互对象，具体行为，时间
         """
         self.memory_id = 0
         self.memory_list = []
+        self.memory_path = memory_path
 
     def store(self, interactant, action, ):
         """
@@ -65,6 +66,6 @@ class Memory:
         将记忆导出到文件中
         :return:
         """
-        with open('memory.jsonl', 'w') as f:
+        with open(self.memory_path, 'w') as f:
             for memory_item in self.memory_list:
                 f.write(json.dumps(memory_item) + "\n")
