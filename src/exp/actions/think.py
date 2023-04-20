@@ -5,7 +5,7 @@
 @time: 2023/4/20 16:32
 """
 from exp.actions.base_action import BaseAction
-from exp.expe_info import ExpeInfo
+from src.exp.expe_info import ExpeInfo
 
 
 class ThinkAndAct(BaseAction):
