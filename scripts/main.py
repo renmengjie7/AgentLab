@@ -46,11 +46,11 @@ def process_json(content: str):
 
 
 if __name__ == '__main__':
-    # with open("../test/files4test/expe_config.json", "r") as f:
-    #     content = f.read()
-    # experiment_id = process_json(content)
+    with open("../test/files4test/expe_config.json", "r") as f:
+        content = f.read()
+    experiment_id = process_json(content)
 
-    experiment_id = "2023-4-20-20-47-3"
+    # experiment_id = "2023-4-20-20-47-3"
     try:
         with open(os.path.join("experiments", experiment_id, "config.json"), "r") as f:
             expe_config_json = json.load(f)

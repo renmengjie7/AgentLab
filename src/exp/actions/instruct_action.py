@@ -2,7 +2,7 @@ from src.exp.actions.base_action import BaseAction
 from typing import List
 
 
-class InstructionAction(BaseAction):
+class InstructAction(BaseAction):
     """
     给agent下发指令，该指令会影响agent
     该部分不涉及LLM交互，仅是将指令存储到memory中

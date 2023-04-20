@@ -16,4 +16,6 @@ class ProbeAction(BaseAction):
             agent_id = int(item["agent_id"])
             message = item["message"]
             answer = self.expe_info.models[agent_id].chat(message)
+            self.logger.history(answer)
+            self.logger.info(answer)
             return answer

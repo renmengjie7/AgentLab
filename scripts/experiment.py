@@ -7,6 +7,7 @@
 import importlib
 import inspect
 import os
+import traceback
 
 from src.exp.actions import BaseAction
 from src.exp.agents.agent import Agent
@@ -77,8 +78,9 @@ def start_experiment(experiment_config, model_api, external_toolkit_api=None):
                         if agent_id not in exp_info.get_agent_ids():
                             logger.warning("Invalid agent_id")
                             logger.info("Valid agent_id: {}".format(exp_info.get_agent_ids()))
-                        actions["probe"].run(agent_id, probe_message)
+                        actions["ProbeAction"].run([{"agent_id": agent_id, "message": probe_message}])
                     except:
+                        print(traceback.format_exc())
                         logger.warning("Invalid input, usage: probe [agent_id] [message]")
                 elif user_input.strip().startswith("instuct"):
                     try:
@@ -87,7 +89,7 @@ def start_experiment(experiment_config, model_api, external_toolkit_api=None):
                         if agent_id not in exp_info.get_agent_ids():
                             logger.warning("Invalid agent_id")
                             logger.info("Valid agent_id: {}".format(exp_info.get_agent_ids()))
-                        actions["instuct"].run(agent_id, instuct_message)
+                        actions["InstructAction"].run([{"agent_id": agent_id, "message": instuct_message}])
                     except:
                         logger.warning("Invalid input, usage: instuct [agent_id] [message]")
                 else:
