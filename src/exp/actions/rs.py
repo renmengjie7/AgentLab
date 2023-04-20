@@ -5,7 +5,7 @@
 @time: 2023/4/17 18:14
 @description: recommend system
 """
-from exp.actions.base_action import BaseAction
+from src.exp.actions.base_action import BaseAction
 from src.exp.expe_info import ExpeInfo
 
 

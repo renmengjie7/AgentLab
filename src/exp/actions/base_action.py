@@ -4,8 +4,8 @@
 @file: base_action.py
 @time: 2023/4/17 18:14
 """
-from exp.expe_info import ExpeInfo
-from store.text.logger import Logger
+from src.exp.expe_info import ExpeInfo
+from src.store.text.logger import Logger
 
 
 class BaseAction:

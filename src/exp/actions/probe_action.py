@@ -1,5 +1,6 @@
-from exp.actions.base_action import BaseAction
-from exp.expe_info import ExpeInfo
+from src.exp.actions.base_action import BaseAction
+from src.exp.expe_info import ExpeInfo
+from typing import List
 
 
 class ProbeAction(BaseAction):
@@ -10,7 +11,7 @@ class ProbeAction(BaseAction):
     def __init__(self, expe_info):
         super().__init__(expe_info)
 
-    def run(self, probes: list[dict], *args, **kwargs):
+    def run(self, probes: List[dict], *args, **kwargs):
         for item in probes:
             agent_id = int(item["agent_id"])
             message = item["message"]

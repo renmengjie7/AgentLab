@@ -5,13 +5,13 @@
 @time: 2023/4/18 16:32
 """
 import json
-
-from exp.agents.agent import Agent
-from utils.model_api import ApiBase, ExternalToolkitApi
+from typing import List
+from src.exp.agents.agent import Agent
+from src.utils.model_api import ApiBase, ExternalToolkitApi
 
 
 class ExpeInfo:
-    def __init__(self, agents: list[Agent], models: list[ApiBase], toolkits: list[ExternalToolkitApi], config: json):
+    def __init__(self, agents: List[Agent], models: List[ApiBase], toolkits: List[ExternalToolkitApi], config: json):
         self.agents = agents
         self.models = models
         self.toolkits = toolkits

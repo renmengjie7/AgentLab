@@ -4,7 +4,7 @@
 @file: agent.py
 @time: 2023/4/19 9:22
 """
-from exp.agents.memory import Memory
+from src.exp.agents.memory import Memory
 
 
 class Agent:

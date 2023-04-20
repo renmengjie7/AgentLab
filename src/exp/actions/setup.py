@@ -4,7 +4,7 @@
 @file: setup.py
 @time: 2023/4/17 19:24
 """
-from exp.actions.base_action import BaseAction
+from src.exp.actions.base_action import BaseAction
 
 
 class Setup(BaseAction):

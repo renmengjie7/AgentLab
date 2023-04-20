@@ -1,4 +1,5 @@
-from exp.actions.base_action import BaseAction
+from src.exp.actions.base_action import BaseAction
+from typing import List
 
 
 class InstructionAction(BaseAction):
@@ -10,7 +11,7 @@ class InstructionAction(BaseAction):
     def __init__(self, expe_info):
         super().__init__(expe_info)
 
-    def run(self, instructions: list[dict], *args, **kwargs):
+    def run(self, instructions: List[dict], *args, **kwargs):
         """
         为多个agent下达指令
         :param instructions:[{"agnet_id":"instuctions"}]
