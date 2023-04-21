@@ -1,3 +1,3 @@
-from . import exp, store, utils
+from . import exp, store, utils, model
 
-__all__ = ['exp', 'store', 'utils']
+__all__ = ['exp', 'store', 'utils', 'model']

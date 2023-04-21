@@ -6,6 +6,7 @@ import time
 class Memory:
     """
     文本形式储存记忆,记忆储存在变量中，同时会以append的形式储存到对应的agent文件夹下，在调用export_memory的时候，将记忆导出到文件中
+    记忆以对话的形式存储
     """
 
     def __init__(self, memory_path: str):
@@ -28,8 +29,13 @@ class Memory:
         :return:
         """
         current_time = time.time()
-        memory_item = {"id": self.memory_id, "interactant": interactant, "question": question, "answer": answer,
-                       "time": str(current_time)}
+        memory_item = {
+            "id": self.memory_id, 
+            "interactant": interactant, 
+            "question": question, 
+            "answer": answer,
+            "time": str(current_time)
+        }
         with open(self.memory_path, "a", encoding="utf-8") as f:
             f.write(json.dumps(memory_item, ensure_ascii=False) + "\n")
         self.memory_list.append(memory_item)

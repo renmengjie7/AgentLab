@@ -11,14 +11,14 @@ import traceback
 
 from src.exp.actions import BaseAction
 from src.exp.agents.agent import Agent
-from src.exp.expe_info import ExpeInfo
+from src.exp.experiment import Experiment
 from src.store.text.logger import Logger
 
 
-def register_action(expe_info: ExpeInfo, action_path='../src/exp/actions'):
+def register_action(expe: Experiment, action_path='../src/exp/actions'):
     """
     遍历指定目录下所有文件，将所有action类注册到actions字典中
-    :param expe_info:
+    :param expe:
     :param action_path:
     :return:
     """
@@ -33,7 +33,7 @@ def register_action(expe_info: ExpeInfo, action_path='../src/exp/actions'):
                 module = importlib.import_module(module_name)
                 for name, obj in inspect.getmembers(module):
                     if inspect.isclass(obj) and issubclass(obj, BaseAction):
-                        actions[name] = obj(expe_info)
+                        actions[name] = obj(expe)
 
     return actions
 
@@ -56,13 +56,17 @@ def start_experiment(experiment_config, model_api, external_toolkit_api=None):
     # TODO 完善执行逻辑
     agents_list = []
     for agent in experiment_config["agent_list"]:
-        agents_list.append(Agent(agent_id=agent["agent_id"], role=agent["role"], profile=agent["profile"],
-                                 agent_path=agent["agent_path"]))
+        agents_list.append(Agent(agent_id=agent["agent_id"], 
+                                 name=agent["name"],
+                                 role=agent["role"], 
+                                 profile=agent["profile"],
+                                 agent_path=agent["agent_path"],
+                                 config=agent['model_settings']['config']))
 
-    exp_info = ExpeInfo(agents=agents_list, models=model_api, toolkits=external_toolkit_api,
+    exp_info = Experiment(agents=agents_list, models=model_api,
                         config=experiment_config)
 
-    actions = register_action(exp_info, )
+    actions = register_action(exp_info, 'src/exp/actions')
 
     # TODO 优化参数传递方式
     paras = [

@@ -2,30 +2,51 @@ from typing import List
 
 from src.exp.actions.base_action import BaseAction
 
-
+# TODO 探测的prompt应该需要实现可配置
 class ProbeAction(BaseAction):
     """
     运行过程中通过对话的形式检查agent的状态，该动作不会影响agent
     """
 
-    def __init__(self, expe_info):
-        super().__init__(expe_info)
+    def __init__(self, expe):
+        super().__init__(expe)
 
     def run(self, probes: List[dict], *args, **kwargs):
         """
         为多个agent下达指令
-        :param probes:["agent_id":agent_id,"message":message","save":save_in_memory]
+        :param probes:[{"agent_id":agent_id,"input":input}]
         :param args:
         :param kwargs:
         :return:
         """
+        answers = []
         for item in probes:
             agent_id = int(item["agent_id"])
-            message = item["message"]
-            save_in_memory = item["save"]
-            answer = self.expe_info.models[agent_id].chat(message)
-            self.logger.history("user: {}".format(message))
-            self.logger.history("agent_{}: {}".format(agent_id, answer))
-            if save_in_memory:
-                self.expe_info.agents[agent_id].memory.store(interactant=agent_id, question=message, answer=answer)
-            return answer
+            input = item["input"]
+            answer = self.probe(agent_id=agent_id, input=input)
+            answers.append(answer)
+        return answers
+
+    def probe(self, 
+              agent_id: str,
+              input: str,
+              prompt: str="Your name is {}\n Your profile: {}. Now I will interview you. \n{}"):
+        """_summary_ 采访, 不会留下记忆
+
+        Args:
+            agent_id (str): _description_
+            input (str): _description_
+            prompt (_type_, optional): _description_. Defaults to "Your name is {}\n Your profile: {}. Now I will interview you. \n{}". 需要根据任务自己设计
+
+        Returns:
+            _type_: _description_ 
+        """
+        name = self.expe.agents[agent_id].name
+        profile = ''.join(self.expe.agents[agent_id].profile)
+        whole_input = prompt.format(name, profile, input)
+        answer = self.expe.models[agent_id].chat(whole_input, 
+                                                 config=self.expe.agents[agent_id].config)
+        self.logger.history("user probe: {}".format(input))
+        self.logger.history("whole input:\n {}".format(whole_input))
+        self.logger.history("agent_{}: {}".format(agent_id, answer))
+        return answer

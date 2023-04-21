@@ -6,7 +6,7 @@
 @description: recommend system
 """
 from src.exp.actions.base_action import BaseAction
-from src.exp.expe_info import ExpeInfo
+from src.exp.experiment import Experiment
 
 
 class RS(BaseAction):
@@ -14,8 +14,8 @@ class RS(BaseAction):
     推荐系统的实现
     """
 
-    def __init__(self, expe_info: ExpeInfo):
-        super().__init__(expe_info)
+    def __init__(self, expe: Experiment):
+        super().__init__(expe)
 
     def run(self, *args, **kwargs):
         """
@@ -25,12 +25,12 @@ class RS(BaseAction):
         :return:
         """
         pass
-        # for rs in self.expe_info.toolkits:
+        # for rs in self.expe.toolkits:
         #     for target_id in rs.target_id:
         #         recommendation = rs.get_recommend(target_id)
         #         prompt = self.generate_prompt(recommendation)
-        #         feedback = self.expe_info.models[target_id].chat(prompt)
-        #         self.expe_info.agents[target_id].memory.store(interactant=target_id, question=prompt, answer=feedback)
+        #         feedback = self.expe.models[target_id].chat(prompt)
+        #         self.expe.agents[target_id].memory.store(interactant=target_id, question=prompt, answer=feedback)
         #         self.logger.history("user: {}".format(prompt))
         #         self.logger.history("agent_{}: {}".format(target_id, feedback))
 

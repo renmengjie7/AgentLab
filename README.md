@@ -33,7 +33,7 @@ def chat(self, content: str, *args, **kwargs) -> str:
   return completion.choices[0].text
 ```
 
-实验开始时，会为每个agent构建一个model，储存在`ExpeInfo`中的字典`models`
+实验开始时，会为每个agent构建一个model，储存在`Experiment`中的字典`models`
 中，key为agent的id，value为model的实例。在每次交互时，可以根据agent的id从字典中取出对应的model，然后调用`chat`等方法
 
 ### External_ToolKit
@@ -58,12 +58,12 @@ def chat(self, content: str, *args, **kwargs) -> str:
 的类储存在`actions`
 字典中，key为类名，value为类的实例。实验过程中可以调用对应的`run`方法。
 
-### Expe_info
+### Experiment
 
-`src/exp/expe_info.py`文件。该部分主要用于储存实验相关变量。`BaseAction`中储存了`expe_info`，需要的话可以直接调用
+`src/exp/experiment.py`文件。该部分主要用于储存实验相关变量。`BaseAction`中储存了`expe`，需要的话可以直接调用
 
 ```python
-class ExpeInfo:
+class Experiment:
   def __init__(self, agents: List[Agent], models: List[ApiBase], toolkits: List[ExternalToolkitApi], config: json):
     self.agents = agents
     self.models = models

@@ -5,12 +5,12 @@
 @time: 2023/4/20 16:32
 """
 from src.exp.actions.base_action import BaseAction
-from src.exp.expe_info import ExpeInfo
+from src.exp.experiment import Experiment
 
 
 class ThinkAndAct(BaseAction):
-    def __init__(self, expe_info: ExpeInfo):
-        super().__init__(expe_info)
+    def __init__(self, expe: Experiment):
+        super().__init__(expe)
 
     def run(self, *args, **kwargs):
         pass

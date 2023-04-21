@@ -1,10 +1,10 @@
 import json
 import os
 
-import src.utils.scripts as scripts
+import src.utils.utils as utils
 from scripts.experiment import start_experiment
 from src.store.text.logger import Logger
-from src.utils.model_api import get_model_apis, get_toolkit_apis
+from src.model.register import get_model_apis
 
 
 def process_json(content: str):
@@ -15,7 +15,7 @@ def process_json(content: str):
     """
     json_data = json.loads(content)
     # 应该不需要检查id是否重复
-    experiment_id = scripts.generate_experiment_id()
+    experiment_id = utils.generate_experiment_id()
     json_data["experiment_id"] = experiment_id
     expe_dir = os.path.join("experiments", experiment_id)
     os.makedirs(expe_dir, exist_ok=True)
@@ -49,7 +49,7 @@ def process_json(content: str):
 
 
 if __name__ == '__main__':
-    with open("../test/files4test/expe_config.json", "r") as f:
+    with open("test/files4test/expe_config.json", "r") as f:
         content = f.read()
     experiment_id = process_json(content)
 
