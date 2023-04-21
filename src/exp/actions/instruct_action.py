@@ -18,7 +18,7 @@ class InstructAction(BaseAction):
     def run(self, instructions: List[dict], *args, **kwargs):
         """
         为多个agent下达指令
-        :param instructions:[{"agent_id":agent_id,"message":message"}]
+        :param instructions:[{"agent_id":agent_id,"question":question,"answer":answer}]
         :param args:
         :param kwargs:
         :return:

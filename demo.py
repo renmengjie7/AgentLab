@@ -4,13 +4,14 @@ from src.exp.experiment import Experiment
 from src.store.text.logger import Logger
 from src.exp.actions import InstructAction, ProbeAction, ReflectionAction
 
+
 def get_action(exp):
     instructAction = InstructAction(expe=exp)
     probeAction = ProbeAction(expe=exp)
     reflectionAction = ReflectionAction(expe=exp)
     return instructAction, probeAction, reflectionAction
 
-
+    
 def main():
     exp = Experiment.load_exp(file="test/files4test/expe_config.json", 
                               output_dir="experiments")

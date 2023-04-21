@@ -14,8 +14,7 @@ class ReflectionAction(BaseAction):
     def run(self, 
             reflections: List[dict], *args, **kwargs):
         """
-        :param input 记忆流中的input内容 (对话的输入)
-        :param output 记忆流中的output内容 (对话的输出)
+        : param reflections [{"num":num,"input":bool, "output": bool, "prompt": prompt}]
         对最近的多少条进行反思? 
         """
         # 一个简单的反思
