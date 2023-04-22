@@ -26,9 +26,10 @@ class FinetuneAction(BaseAction):
                  agent_id: int,
                  num: int):
         recent_memory = self.expe.agents[agent_id].memory.retrive_by_recentness(num)
-
+        self.logger.info(f"start finetuning agent_{agent_id} based on recent {num} memories")
         # 需要把finetune所使用的memory存储起来, 以便后续查看
         self.expe.models[agent_id].finetune(exp=self.expe.id,
                                             path=self.expe.agents[agent_id].path,
                                             agent=agent_id,
                                             config=self.expe.agents[agent_id].config, datas=recent_memory)
+        self.logger.info(f"successfully finetuned agent_{agent_id} based on recent {num} memories")
