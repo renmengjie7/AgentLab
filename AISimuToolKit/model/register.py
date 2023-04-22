@@ -24,6 +24,7 @@ class ApiRegister(dict):
     def list_members(self):
         return list(self._dict.keys())
     
+    
 def get_model_by_name(ModelNameDict: dict, name: str):
     """_summary_ 根据model的名称找到model类
 

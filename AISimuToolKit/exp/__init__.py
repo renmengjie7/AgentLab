@@ -1,4 +1,4 @@
-from . import actions, agents
+from . import actions, agents, toolkit
 from .experiment import Experiment
 
-__all__ = ['actions', 'agents', 'Experiment']
+__all__ = ['actions', 'agents', 'Experiment', 'toolkit']
