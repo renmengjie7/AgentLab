@@ -112,6 +112,8 @@ def chat(self, query: str, config: dict, *args, **kwargs):
   * 参数为`[{"agent_id":agent_id,"input":input, "prompt": prompt}]`
 * `ReflectionAction`: 反思, 旨在通过使用当前记忆流中的对话信息, 让LLM对自己的profile进行自我更新
   * 参数为 `[{"num":num,"input":bool, "output": bool, "prompt": prompt}]`
+* `FinetuneAction`: 微调, 旨在通过对话形式对模型参数进行影响
+  * 参数为 `[{"agent_id":agent_id,"num":num}]`, 微调模型的参数在实验的配置文件中`agent_list/model_settings/config`修改
 <!-- * `RS`:写了一个简单的交互逻辑，主要用于演示如何调用相关变量 -->
 
 如果需要自定义action，可以继承`ActionBase`。同时对`src.model.register.ModelNameDict`通过`monkey patching`修改或直接`ModelNameDict['key']=CustomAction`
@@ -157,8 +159,7 @@ memory_item = {
 }
 ```
 
-实现了根据`id`，`interactant`
-和最近访问的查找方法。记忆保存在内存中，同时会以append的形式不断插入文件。可以调用`export_memory`覆盖导出。
+实现了根据`id`，`interactant`和最近访问的查找方法。记忆保存在内存中，同时会以append的形式不断插入文件。可以调用`export_memory`覆盖导出。
 
 
 ### Agent
@@ -181,10 +182,14 @@ class Agent:
 
 ## 备注
 
-1. 不一定所有方法和变量都测试到了，如果有bug可以随时联系。对于建议修改调整的部分，可以在文档中增加TODO。
+1. 对于使用模型为LLaMA且不涉及基于用户的协同过滤, 建议一个agent跑完再下一个, 这样可以减少模型load的时间
+
+2. 不一定所有方法和变量都测试到了，如果有bug可以随时联系。对于建议修改调整的部分，可以在文档中增加TODO。
 另外，chatgpt接口返回的`finish_reason`的情况有待进一步测试，目前没找到除了stop以外的例子。
 
-2. prompt需要精心设计, 语言模型会拒绝回答
+3. prompt需要精心设计, 语言模型会拒绝回答
+4. 本来的想法是reflect返回的结果直接存到profile, 但是现在LLM放回的结果不一定好, 就把这一句暂时抽了出来
+5. finetune操作最好在数据集两位数以上进行, 不然无法拆分出valsets
 
 
 

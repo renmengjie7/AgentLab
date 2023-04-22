@@ -81,3 +81,5 @@ class Memory:
         with open(self.memory_path, 'w') as f:
             for memory_item in self.memory_list:
                 f.write(json.dumps(memory_item) + "\n")
+                
+    

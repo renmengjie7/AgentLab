@@ -17,8 +17,9 @@ from src.utils.utils import generate_experiment_id, get_fromat_len
 
 
 class Experiment:
-    def __init__(self, id: str, agents: List[Agent], models: List[ApiBase], config: json):
+    def __init__(self, id: str, path: str, agents: List[Agent], models: List[ApiBase], config: json):
         self.id = id
+        self.path = path
         self.agents = agents
         self.models = models
         self.config = config
@@ -62,6 +63,7 @@ class Experiment:
                                      config=agent['model_settings']['config']))
         # 实例化experiment
         exp = Experiment(id=experiment_id,
+                         path=json_data["path"],
                          agents=agents_list, 
                          models=model_apis,
                          config=json_data)
@@ -86,6 +88,7 @@ class Experiment:
 
         agents_num, agent_model_dict, role_list, agent_list = Experiment.preprocess_agent(json_data=json_data, exp_path=exp_path)
 
+        json_data["path"] = exp_path
         json_data["agents_num"] = agents_num
         json_data["agent_model_dict"] = agent_model_dict
         json_data["role_list"] = role_list

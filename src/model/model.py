@@ -4,7 +4,7 @@ from typing import List
 from src.store.text.logger import Logger
 from src.utils.utils import get_file_stream
 import json
-
+import os
 
 # TODO 调整为model和toolkit继承不同的基类，但都继承自ApiBase
 class ApiBase:
@@ -144,6 +144,10 @@ class PrivateApiBase(ApiBase):
         """
         return list(self.urls.keys())[0]
 
+    @classmethod
+    def memory2finetunedata(cls, datas, *args, **kwargs):
+        raise NotImplementedError
+
 
 # TODO 实现ChatGlmAPI
 class ChatGLMAPI(PrivateApiBase):
@@ -176,6 +180,7 @@ class LLaMAAPI(PrivateApiBase):
         cls._instance.new_exp(exp=exp, agents=agents)
         return cls._instance
     
+    
     def new_exp(self, exp: str, agents: List[str])-> bool:
         """_summary_ 对接部署服务, 存储文件
 
@@ -195,7 +200,8 @@ class LLaMAAPI(PrivateApiBase):
             return False
         
 
-    def finetune(self, exp: str, agent: str, file: str) -> str:
+    def finetune(self, exp: str, agent: str, config: dict, 
+                 path: str, datas: List[dict]) -> bool:
         """
         LLaMA的数据格式是
         [{ "instruction": "Give three tips for staying healthy.",
@@ -203,15 +209,23 @@ class LLaMAAPI(PrivateApiBase):
         :param url:
         :param agent:
         :param exp:
-        :param file是文件路径
+        :param path 为agent的路径
+        :param datas 为记忆
         """
+        file_path = self.memory2finetunedata(datas=datas, path=path)
+        
         url = self.get_url(exp=exp, agent=agent)
-        files = {'file': get_file_stream(file=file)}
+        files = {'file': open(file_path, 'rb')}
         params = {"exp": exp, "agent": agent}
+        for key in config:
+            params[key] = config[key]
         response = requests.post(f'{url}/finetune', params=params, files=files)
         # TODO 测试一下返回值
-        self.logger.info(response)
-        return response
+        if json.loads(response.text)['code']=='success':
+            return True
+        else:
+            raise Exception(f'{self.get_backend()} failed to finetune exp_{exp} agent_{agent} in {url} server !')
+            return False
 
     def chat(self, 
              exp: str, agent: str, 
@@ -229,6 +243,30 @@ class LLaMAAPI(PrivateApiBase):
         # TODO 测试一下返回值
         return json.loads(response.text)['response']
 
+
     @classmethod
     def get_backend(cls):
         return "LLaMA"
+
+    @classmethod
+    def memory2finetunedata(cls, datas: List[dict], path: str, *args, **kwargs)->str:
+        """_summary_ 将memory格式的数据转成模型特定的处理
+
+        Args:
+            datas (_type_): _description_
+        """
+        results = []
+        for data in datas:
+            results.append({
+                "instruction": data['question'],
+                "input": "",
+                "output": data['answer']
+            })
+        path = f'{path}/finetune'
+        if not os.path.exists(path):
+            os.makedirs(path)
+        num = len(os.listdir(path))
+        file_path=f'{path}/{num}.jsonl'
+        with open(file=file_path, mode='w', encoding="utf-8") as f:
+            f.write(json.dumps(results, ensure_ascii=False))
+        return file_path

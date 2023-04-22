@@ -22,4 +22,5 @@ class Agent:
         self.profile = profile
         self.role = role
         self.config = config
+        self.path=agent_path
         self.memory = Memory(memory_path=os.path.join(agent_path, "memory.jsonl"))

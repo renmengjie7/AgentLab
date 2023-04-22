@@ -65,7 +65,12 @@
         "model_name": "LLaMA",
         "fine_tune": false,
         "config": {
-          "temperature": 0.7
+          "num_epochs": 3, 
+          "learning_rate": 3e-4,
+          "cutoff_len": 256,
+          "val_set_size": 2,
+          "batch_size": 128,
+          "micro_batch_size": 4
         }
       }
     }
