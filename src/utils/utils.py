@@ -5,6 +5,7 @@
 @time: 2023/4/17 0:06
 """
 from datetime import datetime
+import yaml
 
 
 def generate_experiment_id():
@@ -42,3 +43,17 @@ def get_file_stream(file: str):
     """
     with open(file, 'rb') as f:
         return f
+
+
+def parse_yaml_config(path: str)->dict:
+    """_summary_ 
+
+    Args:
+        path (str): _description_ 文件位置
+
+    Returns:
+        dict: _description_
+    """
+    with open(file=path, mode="r",encoding="utf-8") as f:
+        conf = yaml.load(f.read(), Loader=yaml.FullLoader)
+    return conf

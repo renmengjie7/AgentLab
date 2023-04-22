@@ -3,6 +3,7 @@ import requests
 from typing import List
 from src.store.text.logger import Logger
 from src.utils.utils import get_file_stream
+import json
 
 
 # TODO 调整为model和toolkit继承不同的基类，但都继承自ApiBase
@@ -26,8 +27,9 @@ class ApiBase:
             NotImplementedError: _description_
         """
         raise NotImplementedError
-
-    def get_backend(self):
+    
+    @classmethod
+    def get_backend(cls):
         raise NotImplementedError
 
 
@@ -43,12 +45,11 @@ class PublicApiBase(ApiBase):
 class GPT_35_API(PublicApiBase):
     
     def __new__(cls, 
-                config=None, 
-                url: str="http://8.219.106.213:5556/v1", 
+                urls: List[str], 
                 *args, **kwargs):
         if cls._instance is None:
             cls._instance = super().__new__(cls)
-            openai.api_base = url
+            openai.api_base = urls[0]
             openai.api_key = ""
         return cls._instance
 
@@ -121,8 +122,9 @@ class GPT_35_API(PublicApiBase):
                 break
         return answer
 
-    def get_backend(self):
-        return "gpt-3.5-turbo"
+    @classmethod
+    def get_backend(cls):
+        return "GPT-3.5-turbo"
 
 
 class PrivateApiBase(ApiBase):
@@ -135,11 +137,12 @@ class PrivateApiBase(ApiBase):
         return cls._instance
         
     # TODO 维护一个字典, 采用某种策略选择url去chat或finetune以使最少load, 高效运行
-    def get_url(self, exp: str, agent: str):
+    def get_url(self, exp: str, agent: str=None):
         """
         从urls中选择一个代价最小的
+        TODO agent=None表示这个实验还没创建...是否需要负载均衡地将每个实验放到不同的url上, 还是在每个url上复制一份
         """
-        return self.urls.keys[0]
+        return list(self.urls.keys())[0]
 
 
 # TODO 实现ChatGlmAPI
@@ -151,11 +154,46 @@ class ChatGLMAPI(PrivateApiBase):
     def finetune(self, *args, **kwargs):
         pass
 
-    def get_backend(self):
-        return "ChatGlm"
+    @classmethod
+    def get_backend(cls):
+        return "ChatGLM"
 
 
 class LLaMAAPI(PrivateApiBase):
+    
+    def __new__(cls, exp: str, agents: List[str], urls: List[str], *args, **kwargs):
+        """_summary_  
+
+        Args:
+            exp (str): _description_ 实验ID
+            agents (List[str]): _description_ agents的IDs
+
+        Returns:
+            _type_: _description_
+        """
+        if cls._instance is None:
+            cls._instance = super().__new__(cls, urls=urls)
+        cls._instance.new_exp(exp=exp, agents=agents)
+        return cls._instance
+    
+    def new_exp(self, exp: str, agents: List[str])-> bool:
+        """_summary_ 对接部署服务, 存储文件
+
+        Args:
+            exp (str): _description_
+            agents (List): _description_
+        """
+        url = self.get_url(exp=exp)
+        params = {"id": exp, "override": True}
+        response = requests.post(url=f'{url}/exp/new', params=params, 
+                                 json=[str(agent) for agent in agents])
+        if json.loads(response.text)['code']=='success':
+            self.logger.info(f"{self.get_backend()} created exp_{exp} in {url} server !")
+            return True
+        else:
+            raise Exception(f'{self.get_backend()} failed to create exp_{exp} in {url} server !')
+            return False
+        
 
     def finetune(self, exp: str, agent: str, file: str) -> str:
         """
@@ -170,25 +208,27 @@ class LLaMAAPI(PrivateApiBase):
         url = self.get_url(exp=exp, agent=agent)
         files = {'file': get_file_stream(file=file)}
         params = {"exp": exp, "agent": agent}
-        response = requests.post(url, params=params, files=files)
+        response = requests.post(f'{url}/finetune', params=params, files=files)
         # TODO 测试一下返回值
         self.logger.info(response)
         return response
 
     def chat(self, 
              exp: str, agent: str, 
-             query: str, instruction: str, 
-             history: list):
+             query: str, instruction: str=None, 
+             history: list=[],
+             *args, **kwargs):
+        # 在LLaMA中, instruction+query实际上对应其他模型的query
         # TODO 暂不支持history 还没使用
-        url = self.get_url()
+        url = self.get_url(exp=exp, agent=agent)
         params = {
-            "exp": exp, "agent": agent, 
-            "query": query, "instruction": instruction
+            "exp": exp, "agent": str(agent), 
+            "query": '', "instruction": query
         }
-        response = requests.post(url, params=params, data=history)
+        response = requests.post(f'{url}/chat', params=params, json=history)
         # TODO 测试一下返回值
-        print(response)
-        return response
+        return json.loads(response.text)['response']
 
-    def get_backend(self):
+    @classmethod
+    def get_backend(cls):
         return "LLaMA"

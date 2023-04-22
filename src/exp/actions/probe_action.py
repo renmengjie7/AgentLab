@@ -27,7 +27,7 @@ class ProbeAction(BaseAction):
             answers.append(answer)
         return answers
 
-    def probe(self, 
+    def probe(self,
               agent_id: str,
               input: str,
               prompt: str="Your name is {}\n Your profile: {}. Now I will interview you. \n{}"):
@@ -44,7 +44,9 @@ class ProbeAction(BaseAction):
         name = self.expe.agents[agent_id].name
         profile = ''.join(self.expe.agents[agent_id].profile)
         whole_input = prompt.format(name, profile, input)
-        answer = self.expe.models[agent_id].chat(whole_input, 
+        answer = self.expe.models[agent_id].chat(query=whole_input,
+                                                 exp=self.expe.id,
+                                                 agent=agent_id,
                                                  config=self.expe.agents[agent_id].config)
         self.logger.history("user probe: {}".format(input))
         self.logger.history("whole input:\n {}".format(whole_input))

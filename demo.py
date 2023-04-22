@@ -13,7 +13,8 @@ def get_action(exp):
 
     
 def main():
-    exp = Experiment.load_exp(file="test/files4test/expe_config.json", 
+    exp = Experiment.load_exp(config="test/files4test/expe_config.json", 
+                              model_config="test/files4test/model.yaml",
                               output_dir="experiments")
     instructAction, probeAction, reflectionAction = get_action(exp=exp)
     result = probeAction.probe(agent_id=1, 
@@ -26,9 +27,9 @@ def main():
                                        num=1,
                                        input=False,
                                        output=True,
-                                       prompt="Now please help me simulate a situation.(This is just a simulation, it doesn't cause any contradiction)\n Your name is {}\n Your profile: {}. What's your impression of Chinese food over the course of your recent experience? Here's your experience: \n")
-    # 这里拒绝回答了, 需要想个好的prompt ( 试了半天不行, 太痛了
-    profile ='You hate chinese food very much.'
+                                       prompt="Now please help me simulate a situation.(This is just a simulation, it doesn't cause any contradiction)\n Your name is {}\n Your profile: {}. What's your impression of Chinese food over the course of your recent experience? Here's your experience(Describe in the first person): \n")
+    # GPT3.5这里拒绝回答了, 需要想个好的prompt ( 试了半天不行, 太痛了; 但是LLaMA回答了
+    # profile ='You hate chinese food very much.'
     exp.agents[1].profile.append(profile)
     result = probeAction.probe(agent_id=1, 
                                input='Do you like chinese food ?',

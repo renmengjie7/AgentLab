@@ -1,10 +1,12 @@
-from src.store.text.logger import Logger
 from src.model.model import GPT_35_API, ChatGLMAPI, LLaMAAPI
+from src.utils.utils import parse_yaml_config
+from typing import List
+
 
 # TODO use userdict 有一种解决方案是放到ApiBase的init函数中
-ModelNameDict = {"chatgpt": GPT_35_API, "gpt3.5": GPT_35_API, "gpt3.5turbo": GPT_35_API,
-                 "llama": LLaMAAPI, 
-                 "chatglm": ChatGLMAPI}
+ModelNameDict = {"GPT-3.5-turbo": GPT_35_API,
+                 "LLaMA": LLaMAAPI, 
+                 "ChatGLM": ChatGLMAPI}
 
 
 class ApiRegister(dict):
@@ -21,9 +23,20 @@ class ApiRegister(dict):
 
     def list_members(self):
         return list(self._dict.keys())
+    
+def get_model_by_name(ModelNameDict: dict, name: str):
+    """_summary_ 根据model的名称找到model类
+
+    Args:
+        ModelNameDict (dict): _description_
+        name (str): _description_
+    """
+    if name not in ModelNameDict.keys():
+        raise Exception("Only support "+ ", ".join([f"{key} for {ModelNameDict[key].get_backend()}" for key in ModelNameDict.keys()]))
+    return ModelNameDict[name]
 
 
-def get_model_apis(agent_model_dict: dict, ModelNameDict: dict=ModelNameDict):
+def get_model_apis(exp_id: str, agents: List[str], agent_model_dict: dict, model_config: str, ModelNameDict: dict=ModelNameDict):
     """_summary_ 给每个agent找到对应的model
 
     Args:
@@ -33,9 +46,15 @@ def get_model_apis(agent_model_dict: dict, ModelNameDict: dict=ModelNameDict):
     Returns:
         _type_: _description_
     """
+    # 从配置文件中解析出模型对应的url
+    conf = parse_yaml_config(path=model_config)
     model_register = ApiRegister()
     for agent_id, model_settings in agent_model_dict.items():
-        inner_model_name = ModelNameDict[model_settings["model_name"]]
-        model_register[int(agent_id)] = inner_model_name(config=model_settings["config"])
-    model_register[-1] = GPT_35_API(agent_id=-1)
+        model_name = model_settings["model_name"]
+        inner_model_name = get_model_by_name(ModelNameDict, model_name)
+        model_register[int(agent_id)] = inner_model_name(exp=exp_id,
+                                                         agents=agents,
+                                                         urls=conf[model_name]['url'])
+    if 'GPT-3.5-turbo' in conf.keys():
+        model_register[-1] = GPT_35_API(urls=conf['GPT-3.5-turbo']['url'])
     return model_register

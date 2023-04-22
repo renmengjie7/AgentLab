@@ -185,3 +185,8 @@ class Agent:
 另外，chatgpt接口返回的`finish_reason`的情况有待进一步测试，目前没找到除了stop以外的例子。
 
 2. prompt需要精心设计, 语言模型会拒绝回答
+
+
+
+## TODO
+1. 不同语言模型的原子操作调用的接口不太一样

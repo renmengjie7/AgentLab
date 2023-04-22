@@ -32,5 +32,5 @@ class InstructAction(BaseAction):
                  agent_id: int, 
                  question: str, 
                  answer: str):
-        self.logger.info("written in agent_{}'s memory : question\n {}; answer\n {}".format(agent_id, question, answer))
+        self.logger.info("written in agent_{}'s memory : question\n {}; \nanswer\n {}".format(agent_id, question, answer))
         self.expe.agents[agent_id].memory.store(interactant=self.interactant, question=question, answer=answer)

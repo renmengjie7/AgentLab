@@ -47,7 +47,9 @@ class ReflectionAction(BaseAction):
         else:
             raise Exception()
         
-        answer = self.expe.models[agent_id].chat(content, 
+        answer = self.expe.models[agent_id].chat(query=content,
+                                                 exp=self.expe.id,
+                                                 agent=agent_id,
                                                  config=self.expe.agents[agent_id].config)
         self.logger.history("user: {}".format(content))
         self.logger.history("agent_{}: {}".format(agent_id, answer))

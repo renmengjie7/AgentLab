@@ -43,7 +43,7 @@
         "Alice is passionate about diversity and inclusion in the tech industry and is involved in various initiatives to promote it."
       ],
       "model_settings": {
-        "model_name": "chatgpt",
+        "model_name": "GPT-3.5-turbo",
         "fine_tune": false,
         "config": {
           "temperature": 0.7
@@ -62,10 +62,10 @@
         "When you're not cooking, You enjoys traveling to different parts of the world to explore different food cultures and gain inspiration for your dishes."
       ],
       "model_settings": {
-        "model_name": "chatgpt",
+        "model_name": "LLaMA",
         "fine_tune": false,
         "config": {
-          "temperature": 0.9
+          "temperature": 0.7
         }
       }
     }

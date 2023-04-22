@@ -17,7 +17,8 @@ from src.utils.utils import generate_experiment_id, get_fromat_len
 
 
 class Experiment:
-    def __init__(self, agents: List[Agent], models: List[ApiBase], config: json):
+    def __init__(self, id: str, agents: List[Agent], models: List[ApiBase], config: json):
+        self.id = id
         self.agents = agents
         self.models = models
         self.config = config
@@ -27,19 +28,28 @@ class Experiment:
     
     @classmethod
     def load_exp(cls, 
-                 file: str=="test/files4test/expe_config.json", 
+                 config: str, 
+                 model_config: str,
                  output_dir: str="experiments")-> Type["Experiment"]:
         """_summary_ 从json配置文件中加载并示例化一个experiment
+        
+        Args:
+            config (str): _description_  实验的配置文件 
+            model_config (str): _description_ 配置每个模型对应的url
+            output_dir (str): _description_  日志、历史等存储位置
 
         Returns:
             _type_: _description_
         """
         # 直接使用时间戳做实验ID, 应该不需要检查id是否重复
         experiment_id = generate_experiment_id()
-        json_data = Experiment.preprocess_config(file=file,
+        json_data = Experiment.preprocess_config(file=config,
                                                  exp_id=experiment_id,
                                                  output_dir=output_dir)
-        model_apis = get_model_apis(json_data["agent_model_dict"])
+        model_apis = get_model_apis(exp_id=experiment_id,
+                                    agents=[i for i in range(len(json_data['agent_list']))],
+                                    agent_model_dict=json_data["agent_model_dict"], 
+                                    model_config=model_config)
         
         # 实例化agents
         agents_list = []
@@ -51,7 +61,8 @@ class Experiment:
                                      agent_path=agent["agent_path"],
                                      config=agent['model_settings']['config']))
         # 实例化experiment
-        exp = Experiment(agents=agents_list, 
+        exp = Experiment(id=experiment_id,
+                         agents=agents_list, 
                          models=model_apis,
                          config=json_data)
         return exp
