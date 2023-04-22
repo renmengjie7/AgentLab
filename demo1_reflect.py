@@ -1,4 +1,8 @@
-from AISimuToolKit.exp.actions import InstructAction, ProbeAction, FinetuneAction, ReflectAction
+import AISimuToolKit.exp.actions
+from AISimuToolKit.exp.actions.finetune_action import FinetuneAction
+from AISimuToolKit.exp.actions.instruct_action import InstructAction
+from AISimuToolKit.exp.actions.probe_action import ProbeAction
+from AISimuToolKit.exp.actions.reflect_action import ReflectAction
 from AISimuToolKit.exp.experiment import Experiment
 
 

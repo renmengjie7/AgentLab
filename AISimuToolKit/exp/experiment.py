@@ -58,7 +58,7 @@ class Experiment:
             agents_list.append(Agent(agent_id=agent["agent_id"],
                                      name=agent['name'],
                                      role=agent["role"],
-                                     profile=agent["profile_list"],
+                                     profile=agent["profile"],
                                      agent_path=agent["agent_path"],
                                      config=agent['model_settings']['config']))
         # 实例化experiment
