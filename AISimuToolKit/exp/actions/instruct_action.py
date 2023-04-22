@@ -24,13 +24,14 @@ class InstructAction(BaseAction):
         :return:
         """
         for item in instructions:
-            self.instruct(agent_id=int(item["agent_id"]), 
+            self.instruct(agent_id=int(item["agent_id"]),
                           question=item["question"],
                           answer=item["answer"])
 
-    def instruct(self, 
-                 agent_id: int, 
-                 question: str, 
+    def instruct(self,
+                 agent_id: int,
+                 question: str,
                  answer: str):
-        self.logger.info("written in agent_{}'s memory : question\n {}; \nanswer\n {}".format(agent_id, question, answer))
+        self.logger.info(
+            "written in agent_{}'s memory : question\n {}; \nanswer\n {}".format(agent_id, question, answer))
         self.expe.agents[agent_id].memory.store(interactant=self.interactant, question=question, answer=answer)

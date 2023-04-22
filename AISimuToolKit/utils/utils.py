@@ -5,6 +5,7 @@
 @time: 2023/4/17 0:06
 """
 from datetime import datetime
+
 import yaml
 
 
@@ -32,7 +33,7 @@ def get_fromat_len(num: int):
     避免出现 agent_1、agent_2、agent_11
     而统一编码为 agent_01、agent_02、agent_11
     """
-    return max(2, num//10+1)
+    return max(2, num // 10 + 1)
 
 
 def get_file_stream(file: str):
@@ -45,7 +46,7 @@ def get_file_stream(file: str):
         return f
 
 
-def parse_yaml_config(path: str)->dict:
+def parse_yaml_config(path: str) -> dict:
     """_summary_ 
 
     Args:
@@ -54,6 +55,6 @@ def parse_yaml_config(path: str)->dict:
     Returns:
         dict: _description_
     """
-    with open(file=path, mode="r",encoding="utf-8") as f:
+    with open(file=path, mode="r", encoding="utf-8") as f:
         conf = yaml.load(f.read(), Loader=yaml.FullLoader)
     return conf

@@ -2,7 +2,7 @@
 # import os
 
 # import AISimuToolKit.utils.utils as utils
-# from scripts.experiment import start_experiment
+# from scripts_TODO.experiment import start_experiment
 # from AISimuToolKit.store.text.logger import Logger
 # from AISimuToolKit.model.register import get_model_apis
 

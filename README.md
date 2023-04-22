@@ -15,16 +15,17 @@ exp = Experiment.load_exp(file="test/files4test/expe_config.json",
 2. 实例化`actions`, 调用`get_action`
 ```python
 def get_action(exp):
-    instructAction = InstructAction(expe=exp)
-    probeAction = ProbeAction(expe=exp)
-    reflectionAction = ReflectionAction(expe=exp)
-    return instructAction, probeAction, reflectionAction
+  instruct_action = InstructAction(expe=exp)
+  probe_action = ProbeAction(expe=exp)
+  reflect_action = ReflectAction(expe=exp)
+  finetune_action = FinetuneAction(expe=exp)
+  return instruct_action, probe_action, reflect_action, finetune_action
 ```
 3. 自定义原子化操作顺序, 下面以probe为例说明使用
 ```python
-result = probeAction.probe(agent_id=1, 
-                           input='Do you like chinese food ?',
-                           prompt="Your name is {}\n Your profile: {}. Now I will interview you. \n{}")
+result = probe_action.probe(agent_id=1,
+                            input='Do you like chinese food ?',
+                            prompt="Your name is {}\n Your profile_list: {}. Now I will interview you. \n{}")
 ```
 
 
@@ -34,7 +35,7 @@ aisimulation/
 ├── demo.py             //使用示例
 ├── README.md
 ├── requirements.txt
-├── scripts             // 存放脚本的文件
+├── scripts_TODO             // 存放脚本的文件
 ├── src
 │   ├── exp
 │   │   ├── actions     // 定义原子操作
@@ -42,7 +43,7 @@ aisimulation/
 │   │   │   ├── __init__.py
 │   │   │   ├── instruct_action.py
 │   │   │   ├── probe_action.py
-│   │   │   ├── reflection_action.py
+│   │   │   ├── reflect_action.py
 │   │   │   ├── rs.py
 │   │   │   ├── setup.py
 │   │   │   └── think.py

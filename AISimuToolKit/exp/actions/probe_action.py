@@ -2,6 +2,7 @@ from typing import List
 
 from AISimuToolKit.exp.actions.base_action import BaseAction
 
+
 # TODO 探测的prompt应该需要实现可配置
 class ProbeAction(BaseAction):
     """
@@ -28,21 +29,18 @@ class ProbeAction(BaseAction):
         return answers
 
     def probe(self,
-              agent_id: str,
+              agent_id: int,
               input: str,
-              prompt: str="Your name is {}\n Your profile: {}. Now I will interview you. \n{}"):
-        """_summary_ 采访, 不会留下记忆
-
-        Args:
-            agent_id (str): _description_
-            input (str): _description_
-            prompt (_type_, optional): _description_. Defaults to "Your name is {}\n Your profile: {}. Now I will interview you. \n{}". 需要根据任务自己设计
-
-        Returns:
-            _type_: _description_ 
+              prompt: str = "Your name is {}\n Your profile_list: {}. Now I will interview you. \n{}"):
+        """
+        采访, 不会留下记忆
+        :param agent_id:
+        :param input:
+        :param prompt: 需要根据任务自己设计
+        :return:
         """
         name = self.expe.agents[agent_id].name
-        profile = ''.join(self.expe.agents[agent_id].profile)
+        profile = ''.join(self.expe.agents[agent_id].profile_list)
         whole_input = prompt.format(name, profile, input)
         answer = self.expe.models[agent_id].chat(query=whole_input,
                                                  exp=self.expe.id,

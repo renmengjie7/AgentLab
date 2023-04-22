@@ -1,31 +1,4 @@
-from AISimuToolKit.store.text.logger import Logger
-
-class ApiBase:
-    def __init__(self, *args, **kwargs):
-        self.target = None
-        self.logger = Logger()
-
-    def get(self, **kwargs):
-        raise NotImplementedError
-
-    def post(self, **kwargs):
-        raise NotImplementedError
-
-    def chat(self, **kwargs):
-        raise NotImplementedError
-
-    def finetune(self, **kwargs):
-        raise NotImplementedError
-
-    def get_backend(self):
-        raise NotImplementedError
-
-    def get_target(self):
-        return self.target
-
-
-
-class ExternalToolkitApi(ApiBase):
+class ExternalToolkit:
     def __init__(self, toolkit_config=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.target_id = None
@@ -48,8 +21,20 @@ class ExternalToolkitApi(ApiBase):
     def transfor_name2id(self, name2id):
         self.target_id = [name2id[item] for item in self.target_name]
 
+    def get(self, **kwargs):
+        raise NotImplementedError
 
-class RecommendSystemApi(ExternalToolkitApi):
+    def post(self, **kwargs):
+        raise NotImplementedError
+
+    def finetune(self, **kwargs):
+        raise NotImplementedError
+
+    def get_target(self):
+        return self.target_id
+
+
+class RecommendSystem(ExternalToolkit):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -63,4 +48,3 @@ class RecommendSystemApi(ExternalToolkitApi):
         :return:
         """
         pass
-

@@ -1,11 +1,11 @@
-from AISimuToolKit.model.model import GPT_35_API, ChatGLMAPI, LLaMAAPI
-from AISimuToolKit.utils.utils import parse_yaml_config
 from typing import List
 
+from AISimuToolKit.model.model import GPT_35_API, ChatGLMAPI, LLaMAAPI
+from AISimuToolKit.utils.utils import parse_yaml_config
 
 # TODO use userdict 有一种解决方案是放到ApiBase的init函数中
 ModelNameDict = {"GPT-3.5-turbo": GPT_35_API,
-                 "LLaMA": LLaMAAPI, 
+                 "LLaMA": LLaMAAPI,
                  "ChatGLM": ChatGLMAPI}
 
 
@@ -23,8 +23,8 @@ class ApiRegister(dict):
 
     def list_members(self):
         return list(self._dict.keys())
-    
-    
+
+
 def get_model_by_name(ModelNameDict: dict, name: str):
     """_summary_ 根据model的名称找到model类
 
@@ -33,19 +33,20 @@ def get_model_by_name(ModelNameDict: dict, name: str):
         name (str): _description_
     """
     if name not in ModelNameDict.keys():
-        raise Exception("Only support "+ ", ".join([f"{key} for {ModelNameDict[key].get_backend()}" for key in ModelNameDict.keys()]))
+        raise Exception("Only support " + ", ".join(
+            [f"{key} for {ModelNameDict[key].get_backend()}" for key in ModelNameDict.keys()]))
     return ModelNameDict[name]
 
 
-def get_model_apis(exp_id: str, agents: List[str], agent_model_dict: dict, model_config: str, ModelNameDict: dict=ModelNameDict):
-    """_summary_ 给每个agent找到对应的model
-
-    Args:
-        agent_model_dict (dict): _description_ agent的list
-        ModelNameDict (dict, optional): _description_. Defaults to ModelNameDict.
-                这里如何要自定义, 需要对ModelNameDict进行patch
-    Returns:
-        _type_: _description_
+# TODO ModelNameDict: 这里如何要自定义, 需要对ModelNameDict进行patch
+def get_model_apis(exp_id: str, agents: List[int], agent_model_dict: dict, model_config: str, ):
+    """
+    给每个agent找到对应的model
+    :param exp_id:
+    :param agents: agent的list
+    :param agent_model_dict:
+    :param model_config:
+    :return:
     """
     # 从配置文件中解析出模型对应的url
     conf = parse_yaml_config(path=model_config)
@@ -56,6 +57,4 @@ def get_model_apis(exp_id: str, agents: List[str], agent_model_dict: dict, model
         model_register[int(agent_id)] = inner_model_name(exp=exp_id,
                                                          agents=agents,
                                                          urls=conf[model_name]['url'])
-    if 'GPT-3.5-turbo' in conf.keys():
-        model_register[-1] = GPT_35_API(urls=conf['GPT-3.5-turbo']['url'])
     return model_register

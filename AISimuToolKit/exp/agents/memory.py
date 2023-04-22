@@ -30,9 +30,9 @@ class Memory:
         """
         current_time = time.time()
         memory_item = {
-            "id": self.memory_id, 
-            "interactant": interactant, 
-            "question": question, 
+            "id": self.memory_id,
+            "interactant": interactant,
+            "question": question,
             "answer": answer,
             "time": str(current_time)
         }
@@ -81,5 +81,3 @@ class Memory:
         with open(self.memory_path, 'w') as f:
             for memory_item in self.memory_list:
                 f.write(json.dumps(memory_item) + "\n")
-                
-    

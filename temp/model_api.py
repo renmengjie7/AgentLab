@@ -141,7 +141,6 @@ class GPT_35_API(ApiBase):
         """
         对某个实验下某个agent使用某个文件finetune
         """
-        pass
 
 
 # TODO 实现ChatGlmAPI

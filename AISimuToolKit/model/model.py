@@ -1,15 +1,17 @@
-import openai
-import requests
-from typing import List
-from AISimuToolKit.store.text.logger import Logger
-from AISimuToolKit.utils.utils import get_file_stream
 import json
 import os
+from typing import List
+
+import openai
+import requests
+
+from AISimuToolKit.store.text.logger import Logger
+
 
 # TODO 调整为model和toolkit继承不同的基类，但都继承自ApiBase
 class ApiBase:
     _instance = None  # 类变量用于存储单例实例
-    
+
     def __new__(cls, *args, **kwargs):
         if cls._instance is None:
             cls._instance = super().__new__(cls)
@@ -27,7 +29,7 @@ class ApiBase:
             NotImplementedError: _description_
         """
         raise NotImplementedError
-    
+
     @classmethod
     def get_backend(cls):
         raise NotImplementedError
@@ -35,17 +37,16 @@ class ApiBase:
 
 class PublicApiBase(ApiBase):
     """公开的, 只能chat"""
-    
+
     def finetune(self, *args, **kwargs):
         self.logger.warning("{} does not support finetune".format(self.get_backend()))
-    
 
 
 # @ModelApiRegister.register("chatgpt")
 class GPT_35_API(PublicApiBase):
-    
-    def __new__(cls, 
-                urls: List[str], 
+
+    def __new__(cls,
+                urls: List[str],
                 *args, **kwargs):
         if cls._instance is None:
             cls._instance = super().__new__(cls)
@@ -129,15 +130,15 @@ class GPT_35_API(PublicApiBase):
 
 class PrivateApiBase(ApiBase):
     """自己部署的, 可以finetune"""
-    
+
     def __new__(cls, urls: List[str], *args, **kwargs):
         if cls._instance is None:
             cls._instance = super().__new__(cls)
             cls.urls = {url: None for url in urls}
         return cls._instance
-        
+
     # TODO 维护一个字典, 采用某种策略选择url去chat或finetune以使最少load, 高效运行
-    def get_url(self, exp: str, agent: str=None):
+    def get_url(self, exp: str, agent: str = None):
         """
         从urls中选择一个代价最小的
         TODO agent=None表示这个实验还没创建...是否需要负载均衡地将每个实验放到不同的url上, 还是在每个url上复制一份
@@ -145,7 +146,7 @@ class PrivateApiBase(ApiBase):
         return list(self.urls.keys())[0]
 
     @classmethod
-    def memory2finetunedata(cls, datas, *args, **kwargs):
+    def memory2finetunedata(cls, datas: List[dict], *args, **kwargs):
         raise NotImplementedError
 
 
@@ -164,7 +165,7 @@ class ChatGLMAPI(PrivateApiBase):
 
 
 class LLaMAAPI(PrivateApiBase):
-    
+
     def __new__(cls, exp: str, agents: List[str], urls: List[str], *args, **kwargs):
         """_summary_  
 
@@ -179,9 +180,8 @@ class LLaMAAPI(PrivateApiBase):
             cls._instance = super().__new__(cls, urls=urls)
         cls._instance.new_exp(exp=exp, agents=agents)
         return cls._instance
-    
-    
-    def new_exp(self, exp: str, agents: List[str])-> bool:
+
+    def new_exp(self, exp: str, agents: List[str]) -> bool:
         """_summary_ 对接部署服务, 存储文件
 
         Args:
@@ -190,30 +190,28 @@ class LLaMAAPI(PrivateApiBase):
         """
         url = self.get_url(exp=exp)
         params = {"id": exp, "override": True}
-        response = requests.post(url=f'{url}/exp/new', params=params, 
+        response = requests.post(url=f'{url}/exp/new', params=params,
                                  json=[str(agent) for agent in agents])
-        if json.loads(response.text)['code']=='success':
+        if json.loads(response.text)['code'] == 'success':
             self.logger.info(f"{self.get_backend()} created exp_{exp} in {url} server !")
             return True
         else:
             raise Exception(f'{self.get_backend()} failed to create exp_{exp} in {url} server !')
-            return False
-        
 
-    def finetune(self, exp: str, agent: str, config: dict, 
+    def finetune(self, exp: str, agent: str, config: dict,
                  path: str, datas: List[dict]) -> bool:
         """
         LLaMA的数据格式是
         [{ "instruction": "Give three tips for staying healthy.",
-        "input": "", "output": "1. Eat a balanced }]
-        :param url:
+        "input": "", "output": "1. Eat a balanced "}]
+        :param config:
         :param agent:
         :param exp:
-        :param path 为agent的路径
-        :param datas 为记忆
+        :param path: 为agent的路径
+        :param datas: 为记忆
         """
         file_path = self.memory2finetunedata(datas=datas, path=path)
-        
+
         url = self.get_url(exp=exp, agent=agent)
         files = {'file': open(file_path, 'rb')}
         params = {"exp": exp, "agent": agent}
@@ -221,35 +219,33 @@ class LLaMAAPI(PrivateApiBase):
             params[key] = config[key]
         response = requests.post(f'{url}/finetune', params=params, files=files)
         # TODO 测试一下返回值
-        if json.loads(response.text)['code']=='success':
+        if json.loads(response.text)['code'] == 'success':
             return True
         else:
             raise Exception(f'{self.get_backend()} failed to finetune exp_{exp} agent_{agent} in {url} server !')
-            return False
 
-    def chat(self, 
-             exp: str, agent: str, 
-             query: str, instruction: str=None, 
-             history: list=[],
+    def chat(self,
+             exp: str, agent: str,
+             query: str, instruction: str = None,
+             history: list = [],
              *args, **kwargs):
         # 在LLaMA中, instruction+query实际上对应其他模型的query
         # TODO 暂不支持history 还没使用
         url = self.get_url(exp=exp, agent=agent)
         params = {
-            "exp": exp, "agent": str(agent), 
+            "exp": exp, "agent": str(agent),
             "query": '', "instruction": query
         }
         response = requests.post(f'{url}/chat', params=params, json=history)
         # TODO 测试一下返回值
         return json.loads(response.text)['response']
 
-
     @classmethod
     def get_backend(cls):
         return "LLaMA"
 
     @classmethod
-    def memory2finetunedata(cls, datas: List[dict], path: str, *args, **kwargs)->str:
+    def memory2finetunedata(cls, datas: List[dict], path: str, *args, **kwargs) -> str:
         """_summary_ 将memory格式的数据转成模型特定的处理
 
         Args:
@@ -266,7 +262,7 @@ class LLaMAAPI(PrivateApiBase):
         if not os.path.exists(path):
             os.makedirs(path)
         num = len(os.listdir(path))
-        file_path=f'{path}/{num}.jsonl'
+        file_path = f'{path}/{num}.jsonl'
         with open(file=file_path, mode='w', encoding="utf-8") as f:
             f.write(json.dumps(results, ensure_ascii=False))
         return file_path

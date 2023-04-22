@@ -56,15 +56,15 @@ def start_experiment(experiment_config, model_api, external_toolkit_api=None):
     # TODO 完善执行逻辑
     agents_list = []
     for agent in experiment_config["agent_list"]:
-        agents_list.append(Agent(agent_id=agent["agent_id"], 
+        agents_list.append(Agent(agent_id=agent["agent_id"],
                                  name=agent["name"],
-                                 role=agent["role"], 
-                                 profile=agent["profile"],
+                                 role=agent["role"],
+                                 profile=agent["profile_list"],
                                  agent_path=agent["agent_path"],
                                  config=agent['model_settings']['config']))
 
     exp_info = Experiment(agents=agents_list, models=model_api,
-                        config=experiment_config)
+                          config=experiment_config)
 
     actions = register_action(exp_info, 'src/exp/actions')
 
@@ -75,7 +75,7 @@ def start_experiment(experiment_config, model_api, external_toolkit_api=None):
 
     for expe_round in range(experiment_settings["round_nums"]):
         for step, para in zip(pipeline, paras):
-            actions[step].run(**para)
+            actions[step].run()
             logger.info("Action {} of Round {} finished".format(step, expe_round))
             while True:
                 user_input = input("press Enter to continue or check agents' status")

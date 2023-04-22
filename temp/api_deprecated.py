@@ -23,7 +23,8 @@ def read_root():
 
 @app.post("/experiment/create")
 async def upload_json(file: UploadFile = File(...)):
-    # 现在做测试可以：curl -X POST -F "file=@/home/guoshiguang2021/AISimulation/files4test/expe_config.json" http://127.0.0.1:8000/experiment/create
+    # 现在做测试可以：curl -X POST -F "file=@/home/guoshiguang2021/AISimulation/files4test/expe_config.json"
+    # http://127.0.0.1:8000/experiment/create
     content = await file.read()
     json_data = json.loads(content)
     # 应该不需要检查id是否重复
