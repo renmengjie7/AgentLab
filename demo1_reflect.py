@@ -1,9 +1,9 @@
-import AISimuToolKit.exp.actions
 from AISimuToolKit.exp.actions.finetune_action import FinetuneAction
 from AISimuToolKit.exp.actions.instruct_action import InstructAction
 from AISimuToolKit.exp.actions.probe_action import ProbeAction
 from AISimuToolKit.exp.actions.reflect_action import ReflectAction
 from AISimuToolKit.exp.experiment import Experiment
+from AISimuToolKit.exp.actions.register import register_action
 
 
 def get_action(exp):
@@ -18,6 +18,9 @@ def main():
     exp = Experiment.load_exp(config="test/files4test/expe_config.json",
                               model_config="test/files4test/model.yaml",
                               output_dir="experiments")
+    
+    register_action(expe=exp, default=True, action_path='../temp')
+    
     instruct_action, probe_action, reflection_action, finetune_action = get_action(exp=exp)
     result = probe_action.probe(agent_id=1,
                                 input='Do you like chinese food ?',

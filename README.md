@@ -36,7 +36,7 @@ aisimulation/
 ├── README.md
 ├── requirements.txt
 ├── scripts_TODO             // 存放脚本的文件
-├── src
+├── AISimuToolKit
 │   ├── exp
 │   │   ├── actions     // 定义原子操作
 │   │   │   ├── base_action.py
@@ -77,7 +77,7 @@ aisimulation/
 
 ### Model
 
-`src/utils/model_api.py`文件。支持为每个agent定义一个model，目前支持`gpt-3.5`的api交互（但返回部分结果待测试），LLaMa的finetune（这个也需要进一步测试）。如果需要额外自定义model，可以继承`ApiBase`
+`AISimuToolKit/utils/model_api.py`文件。支持为每个agent定义一个model，目前支持`gpt-3.5`的api交互（但返回部分结果待测试），LLaMa的finetune（这个也需要进一步测试）。如果需要额外自定义model，可以继承`ApiBase`
 之后，增加`ModelNameDict`字典。主要交互逻辑为：
 
 ```python
@@ -96,13 +96,13 @@ def chat(self, query: str, config: dict, *args, **kwargs):
 
 <!-- ### External_ToolKit
 
-`src/utils/model_api.py`
+`AISimuToolKit/utils/model_api.py`
 文件。设想中，所有与外部工具（如推荐系统的交互）都可以通过api来实现，这部分待补充。每个toolkit可以有针对的不同agent，具体为设置的json中包含一个`target`
 字段，这部分逻辑也待补充。 -->
 
 ### Actions
 
-`src/exp/actions`文件夹。任何agent的交互（无论是与model还是与外部工具）都可以通过action来实现，用户可以组合预先定义好的和自定义的action完成实验操作。每个原子操作都对应一个action, 同时提供`run`方法以用于对多个agent同时进行操作
+`AISimuToolKit/exp/actions`文件夹。任何agent的交互（无论是与model还是与外部工具）都可以通过action来实现，用户可以组合预先定义好的和自定义的action完成实验操作。每个原子操作都对应一个action, 同时提供`run`方法以用于对多个agent同时进行操作
 
 目前支持的原子action有：
 
@@ -124,7 +124,7 @@ def chat(self, query: str, config: dict, *args, **kwargs):
 
 ### Experiment
 
-`src/exp/experiment.py`文件。该部分主要用于储存实验相关变量。`BaseAction`中储存了`expe`，需要的话可以直接调用
+`AISimuToolKit/exp/experiment.py`文件。该部分主要用于储存实验相关变量。`BaseAction`中储存了`expe`，需要的话可以直接调用
 
 ```python
 class Experiment:
@@ -137,7 +137,7 @@ class Experiment:
 
 ### Logger
 
-`src/store/text/logger.py`文件
+`AISimuToolKit/store/text/logger.py`文件
 1. 实现了一个日志记录器
 2. 实现了单例模式（线程安全和进程安全）
 3. 日志包括debug、info、warning、error、critical五个级别,可以通过`log_console`和`log_file`参数控制是否将日志输出到控制台和文件。
@@ -147,7 +147,7 @@ class Experiment:
 
 ### Memory
 
-`src/exp/agents/memory.py`文件  
+`AISimuToolKit/exp/agents/memory.py`文件  
 每个agent都有一个memory，json格式存储记忆，字段包括自增id，交互对象，对话的两端，时间。memory的结构为：
 
 ```python

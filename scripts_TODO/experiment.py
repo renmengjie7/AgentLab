@@ -9,13 +9,13 @@ import inspect
 import os
 import traceback
 
-from AISimuToolKit.exp.actions import BaseAction
+from AISimuToolKit.exp.actions.base_action import BaseAction
 from AISimuToolKit.exp.agents.agent import Agent
 from AISimuToolKit.exp.experiment import Experiment
 from AISimuToolKit.store.text.logger import Logger
 
 
-def register_action(expe: Experiment, action_path='../src/exp/actions'):
+def register_action(expe: Experiment, action_path='../AISimuToolKit/exp/actions'):
     """
     遍历指定目录下所有文件，将所有action类注册到actions字典中
     :param expe:
@@ -66,7 +66,7 @@ def start_experiment(experiment_config, model_api, external_toolkit_api=None):
     exp_info = Experiment(agents=agents_list, models=model_api,
                           config=experiment_config)
 
-    actions = register_action(exp_info, 'src/exp/actions')
+    actions = register_action(exp_info, 'AISimuToolKit/exp/actions')
 
     # TODO 优化参数传递方式
     paras = [
