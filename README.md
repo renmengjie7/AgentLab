@@ -116,7 +116,7 @@ def chat(self, query: str, config: dict, *args, **kwargs):
   * 参数为 `[{"agent_id":agent_id,"num":num}]`, 微调模型的参数在实验的配置文件中`agent_list/model_settings/config`修改
 <!-- * `RS`:写了一个简单的交互逻辑，主要用于演示如何调用相关变量 -->
 
-如果需要自定义action，可以继承`ActionBase`。同时对`src.model.register.ModelNameDict`通过`monkey patching`修改或直接`ModelNameDict['key']=CustomAction`
+如果需要自定义action，可以继承`ActionBase`。同时对`AISimuToolKit.model.register.ModelNameDict`通过`monkey patching`修改或直接`ModelNameDict['key']=CustomAction`
 <!-- 实验初始化过程中，会遍历该目录下所有的文件，将所有继承`ActionBase`
 的类储存在`actions`
 字典中，key为类名，value为类的实例。实验过程中可以调用对应的`run`方法。 -->

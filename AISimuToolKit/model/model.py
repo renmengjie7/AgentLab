@@ -1,8 +1,8 @@
 import openai
 import requests
 from typing import List
-from src.store.text.logger import Logger
-from src.utils.utils import get_file_stream
+from AISimuToolKit.store.text.logger import Logger
+from AISimuToolKit.utils.utils import get_file_stream
 import json
 import os
 

@@ -1,6 +1,6 @@
 from typing import List
 
-from src.exp.actions.base_action import BaseAction
+from AISimuToolKit.exp.actions.base_action import BaseAction
 
 # TODO 探测的prompt应该需要实现可配置
 class ProbeAction(BaseAction):

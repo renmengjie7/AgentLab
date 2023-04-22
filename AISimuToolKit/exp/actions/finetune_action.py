@@ -1,5 +1,5 @@
-from src.exp.actions.base_action import BaseAction
-from src.exp.experiment import Experiment
+from AISimuToolKit.exp.actions.base_action import BaseAction
+from AISimuToolKit.exp.experiment import Experiment
 from typing import List
 
 

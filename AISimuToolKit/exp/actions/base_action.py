@@ -4,8 +4,8 @@
 @file: base_action.py
 @time: 2023/4/17 18:14
 """
-from src.exp.experiment import Experiment
-from src.store.text.logger import Logger
+from AISimuToolKit.exp.experiment import Experiment
+from AISimuToolKit.store.text.logger import Logger
 
 
 class BaseAction:

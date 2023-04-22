@@ -9,10 +9,10 @@ import inspect
 import os
 import traceback
 
-from src.exp.actions import BaseAction
-from src.exp.agents.agent import Agent
-from src.exp.experiment import Experiment
-from src.store.text.logger import Logger
+from AISimuToolKit.exp.actions import BaseAction
+from AISimuToolKit.exp.agents.agent import Agent
+from AISimuToolKit.exp.experiment import Experiment
+from AISimuToolKit.store.text.logger import Logger
 
 
 def register_action(expe: Experiment, action_path='../src/exp/actions'):

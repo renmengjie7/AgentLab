@@ -6,7 +6,7 @@
 """
 import os.path
 
-from src.exp.agents.memory import Memory
+from AISimuToolKit.exp.agents.memory import Memory
 
 
 class Agent:

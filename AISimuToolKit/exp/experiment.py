@@ -8,12 +8,12 @@ import json
 from typing import List
 import os
 import copy
-from src.exp.agents.agent import Agent
-from src.model.model import ApiBase
+from AISimuToolKit.exp.agents.agent import Agent
+from AISimuToolKit.model.model import ApiBase
 from typing import Type
-from src.store.text.logger import Logger
-from src.model.register import get_model_apis
-from src.utils.utils import generate_experiment_id, get_fromat_len
+from AISimuToolKit.store.text.logger import Logger
+from AISimuToolKit.model.register import get_model_apis
+from AISimuToolKit.utils.utils import generate_experiment_id, get_fromat_len
 
 
 class Experiment:

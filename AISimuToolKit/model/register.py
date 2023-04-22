@@ -1,5 +1,5 @@
-from src.model.model import GPT_35_API, ChatGLMAPI, LLaMAAPI
-from src.utils.utils import parse_yaml_config
+from AISimuToolKit.model.model import GPT_35_API, ChatGLMAPI, LLaMAAPI
+from AISimuToolKit.utils.utils import parse_yaml_config
 from typing import List
 
 

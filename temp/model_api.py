@@ -7,7 +7,7 @@
 import openai
 import requests
 
-from src.store.text.logger import Logger
+from AISimuToolKit.store.text.logger import Logger
 
 
 class ApiRegister(dict):

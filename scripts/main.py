@@ -1,10 +1,10 @@
 # import json
 # import os
 
-# import src.utils.utils as utils
+# import AISimuToolKit.utils.utils as utils
 # from scripts.experiment import start_experiment
-# from src.store.text.logger import Logger
-# from src.model.register import get_model_apis
+# from AISimuToolKit.store.text.logger import Logger
+# from AISimuToolKit.model.register import get_model_apis
 
 
 # def process_json(content: str):
