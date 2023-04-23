@@ -29,8 +29,6 @@ def register_dir(expe: Experiment,
                     actions[name] = obj(expe)
     return actions
 
-
-
 def register_action(expe: Experiment, 
                     default: bool=True,
                     action_path: str=None) -> dict:

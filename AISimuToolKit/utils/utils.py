@@ -5,7 +5,7 @@
 @time: 2023/4/17 0:06
 """
 from datetime import datetime
-
+import json
 import yaml
 
 
@@ -58,3 +58,9 @@ def parse_yaml_config(path: str) -> dict:
     with open(file=path, mode="r", encoding="utf-8") as f:
         conf = yaml.load(f.read(), Loader=yaml.FullLoader)
     return conf
+
+
+
+def save_config(config: dict, path: str):
+    with open(path, "w") as f:
+        json.dump(config, f)

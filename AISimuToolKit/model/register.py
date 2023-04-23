@@ -39,22 +39,21 @@ def get_model_by_name(ModelNameDict: dict, name: str):
 
 
 # TODO ModelNameDict: 这里如何要自定义, 需要对ModelNameDict进行patch
-def get_model_apis(exp_id: str, agents: List[int], agent_model_dict: dict, model_config: str, ):
+def get_model_apis(exp_id: str, agents: List[int], model_names: List[str], model_config: str, ):
     """
     给每个agent找到对应的model
     :param exp_id:
     :param agents: agent的list
-    :param agent_model_dict:
+    :param model_names:
     :param model_config:
     :return:
     """
     # 从配置文件中解析出模型对应的url
     conf = parse_yaml_config(path=model_config)
     model_register = ApiRegister()
-    for agent_id, model_settings in agent_model_dict.items():
-        model_name = model_settings["model_name"]
+    for idx, model_name in enumerate(model_names):
         inner_model_name = get_model_by_name(ModelNameDict, model_name)
-        model_register[int(agent_id)] = inner_model_name(exp=exp_id,
-                                                         agents=agents,
-                                                         urls=conf[model_name]['url'])
-    return model_register
+        model_register[idx] = inner_model_name(exp=exp_id,
+                                               agents=agents,
+                                               urls=conf[model_name]['url'])
+    return [model_register[key] for key in model_register.keys()]

@@ -18,9 +18,10 @@ class Memory:
         self.memory_list = []
         self.memory_path = memory_path
 
-    def store(self, interactant, question, answer, *args, **kwargs):
+    def store(self, experience: str, interactant: str='', *args, **kwargs):
         """
         json格式存储记忆，字段包括自增id，交互对象，对话的两端，时间
+        TODO 是否需要显示地给出交互对象, 感觉自然语言描述已经可以了, 现在暂时都设置为空
         :param interactant: 交互对象
         :param question:
         :param answer:
@@ -32,8 +33,9 @@ class Memory:
         memory_item = {
             "id": self.memory_id,
             "interactant": interactant,
-            "question": question,
-            "answer": answer,
+            "experience": experience,
+            # "question": question,
+            # "answer": answer,
             "time": str(current_time)
         }
         with open(self.memory_path, "a", encoding="utf-8") as f:
