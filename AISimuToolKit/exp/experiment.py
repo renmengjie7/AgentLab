@@ -7,7 +7,7 @@
 import copy
 import json
 import os
-from typing import List
+from typing import List, Dict
 
 from AISimuToolKit.exp.agents.agent import Agent
 from AISimuToolKit.model.model import ApiBase
@@ -17,7 +17,7 @@ from AISimuToolKit.utils.utils import generate_experiment_id, get_fromat_len
 
 
 class Experiment:
-    def __init__(self, id: str, path: str, agents: List[Agent], models: List[ApiBase], config: json):
+    def __init__(self, id: str, path: str, agents: List[Agent], models: Dict[str, ApiBase], config: dict):
         self.id = id
         self.path = path
         self.agents = agents
