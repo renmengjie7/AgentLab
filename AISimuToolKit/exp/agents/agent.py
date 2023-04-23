@@ -24,13 +24,13 @@ class Agent:
                  model: ApiBase,
                  exp_id: str,
                  agent_path: str,
-                 config: dict):
+                 model_config: dict):
         self.agent_id = agent_id
         self.name = name
         self.profile_list = profile
         self.role = role
         self.exp_id = exp_id
-        self.config = config
+        self.model_config = model_config
         self.model = model
         self.path = agent_path
         self.logger = Logger()
@@ -57,7 +57,7 @@ class Agent:
             model=model,
             exp_id=exp_id,
             agent_path=path,
-            config=config
+            model_config=config['model_settings']['config']
         )
         return agent
     
@@ -95,7 +95,7 @@ class Agent:
         answer = self.model.chat(query=whole_input,
                                  exp=self.exp_id,
                                  agent=self.agent_id,
-                                 config=self.config)
+                                 config=self.model_config)
         self.logger.history(f"user probe: {input}")
         self.logger.history(f"whole input:\n {whole_input}")
         self.logger.history(f"agent_{self.agent_id}: {answer}")
@@ -125,7 +125,7 @@ class Agent:
         self.model.finetune(exp=self.exp_id,
                             path=self.path,
                             agent=self.agent_id,
-                            config=self.config, datas=recent_memory)
+                            config=self.model_config, datas=recent_memory)
         self.logger.info(
             f"agent_{self.agent_id} successfully finetuned based on recent {num} memories")
         return True
@@ -149,7 +149,7 @@ class Agent:
         answer = self.model.chat(query=content,
                                  exp=self.exp_id,
                                  agent=self.agent_id,
-                                 config=self.config)
+                                 config=self.model_config)
         self.logger.history(f"agent_{self.agent_id} reflect: {answer}\nbased on memory{prompt}")
         return answer
 

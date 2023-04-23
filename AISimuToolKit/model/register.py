@@ -55,5 +55,6 @@ def get_model_apis(exp_id: str, agents: List[int], model_names: List[str], model
         inner_model_name = get_model_by_name(ModelNameDict, model_name)
         model_register[idx] = inner_model_name(exp=exp_id,
                                                agents=agents,
+                                               config=conf[model_name],
                                                urls=conf[model_name]['url'])
     return [model_register[key] for key in model_register.keys()]

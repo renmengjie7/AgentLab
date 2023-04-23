@@ -46,12 +46,12 @@ class PublicApiBase(ApiBase):
 class GPT_35_API(PublicApiBase):
 
     def __new__(cls,
-                urls: List[str],
+                config: dict,
                 *args, **kwargs):
         if cls._instance is None:
             cls._instance = super().__new__(cls)
-            openai.api_base = urls[0]
-            openai.api_key = ""
+            openai.api_base = config['url'][0]
+            openai.api_key = config['key'][0]
         return cls._instance
 
     # TODO 加入多轮对话
@@ -131,10 +131,10 @@ class GPT_35_API(PublicApiBase):
 class PrivateApiBase(ApiBase):
     """自己部署的, 可以finetune"""
 
-    def __new__(cls, urls: List[str], *args, **kwargs):
+    def __new__(cls, config: dict, *args, **kwargs):
         if cls._instance is None:
             cls._instance = super().__new__(cls)
-            cls.urls = {url: None for url in urls}
+            cls.urls = {url: None for url in config['url']}
         return cls._instance
 
     # TODO 维护一个字典, 采用某种策略选择url去chat或finetune以使最少load, 高效运行
@@ -166,7 +166,7 @@ class ChatGLMAPI(PrivateApiBase):
 
 class LLaMAAPI(PrivateApiBase):
 
-    def __new__(cls, exp: str, agents: List[str], urls: List[str], *args, **kwargs):
+    def __new__(cls, exp: str, agents: List[str], config: dict, *args, **kwargs):
         """_summary_  
 
         Args:
@@ -177,7 +177,7 @@ class LLaMAAPI(PrivateApiBase):
             _type_: _description_
         """
         if cls._instance is None:
-            cls._instance = super().__new__(cls, urls=urls)
+            cls._instance = super().__new__(cls, config=config)
         cls._instance.new_exp(exp=exp, agents=agents)
         return cls._instance
 
