@@ -15,14 +15,14 @@ class ReflectAction(BaseAction):
     def run(self,
             reflections: List[dict], *args, **kwargs):
         """
-        : param reflections [{"num":num,"input":bool, "output": bool, "prompt": prompt}]
+        : param reflections [{"num":num,"message":bool, "output": bool, "prompt": prompt}]
         对最近的多少条进行反思? 
         """
         # 一个简单的反思
         for item in reflections:
             self.reflect(agent_id=int(item["agent_id"]),
                          num=int(item["num"]),
-                         input=item["input"],
+                         input=item["message"],
                          output=item['output'],
                          prompt=item['prompt'])
 
@@ -34,7 +34,7 @@ class ReflectAction(BaseAction):
                 output: bool = True,
                 prompt: str = "Your name is {}\n Your profile_list: {}. How do you think your profile_list has "
                               "changed over the course of your recent experience? Here's your experience: \n"):
-        recent_memory = self.expe.agents[agent_id].memory.retrive_by_recentness(num)
+        recent_memory = self.expe.agents[agent_id].memory.retrieve_by_recentness(num)
 
         name = self.expe.agents[agent_id].name
         profile = ''.join(self.expe.agents[agent_id].profile_list)

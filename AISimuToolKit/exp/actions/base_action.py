@@ -5,7 +5,7 @@
 @time: 2023/4/17 18:14
 """
 from AISimuToolKit.exp.experiment import Experiment
-from AISimuToolKit.store.text.logger import Logger
+from AISimuToolKit.store.logger import Logger
 
 
 class BaseAction:

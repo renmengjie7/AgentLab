@@ -5,7 +5,7 @@ from typing import List
 import openai
 import requests
 
-from AISimuToolKit.store.text.logger import Logger
+from AISimuToolKit.store.logger import Logger
 
 
 # TODO 调整为model和toolkit继承不同的基类，但都继承自ApiBase
@@ -40,6 +40,7 @@ class PublicApiBase(ApiBase):
 
     def finetune(self, *args, **kwargs):
         self.logger.warning("{} does not support finetune".format(self.get_backend()))
+        raise NotImplementedError
 
 
 # @ModelApiRegister.register("chatgpt")
@@ -203,7 +204,7 @@ class LLaMAAPI(PrivateApiBase):
         """
         LLaMA的数据格式是
         [{ "instruction": "Give three tips for staying healthy.",
-        "input": "", "output": "1. Eat a balanced "}]
+        "message": "", "output": "1. Eat a balanced "}]
         :param config:
         :param agent:
         :param exp:
@@ -255,7 +256,7 @@ class LLaMAAPI(PrivateApiBase):
         for data in datas:
             results.append({
                 "instruction": data['question'],
-                "input": "",
+                "message": "",
                 "output": data['answer']
             })
         path = f'{path}/finetune'

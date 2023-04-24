@@ -7,7 +7,7 @@
 import openai
 import requests
 
-from AISimuToolKit.store.text.logger import Logger
+from AISimuToolKit.store.logger import Logger
 
 
 class ApiRegister(dict):
@@ -171,7 +171,7 @@ class LLaMAAPI(ApiBase):
         """
         LLaMA的数据格式是
         [{ "instruction": "Give three tips for staying healthy.",
-        "input": "", "output": "1. Eat a balanced }]
+        "message": "", "output": "1. Eat a balanced }]
         :param url:
         :param agent:
         :param exp:

@@ -12,7 +12,7 @@ import traceback
 from AISimuToolKit.exp.actions.base_action import BaseAction
 from AISimuToolKit.exp.agents.agent import Agent
 from AISimuToolKit.exp.experiment import Experiment
-from AISimuToolKit.store.text.logger import Logger
+from AISimuToolKit.store.logger import Logger
 
 
 def register_action(expe: Experiment, action_path='../AISimuToolKit/exp/actions'):
@@ -91,7 +91,7 @@ def start_experiment(experiment_config, model_api, external_toolkit_api=None):
                         actions["ProbeAction"].run([{"agent_id": agent_id, "message": probe_message, "save": True}])
                     except:
                         print(traceback.format_exc())
-                        logger.warning("Invalid input, usage: probe_save [agent_id] [message]")
+                        logger.warning("Invalid message, usage: probe_save [agent_id] [message]")
                 elif user_input.strip().startswith("probe"):
                     # TODO check if  agent_id is valid
                     try:
@@ -103,7 +103,7 @@ def start_experiment(experiment_config, model_api, external_toolkit_api=None):
                         actions["ProbeAction"].run([{"agent_id": agent_id, "message": probe_message, "save": False}])
                     except:
                         print(traceback.format_exc())
-                        logger.warning("Invalid input, usage: probe [agent_id] [message]")
+                        logger.warning("Invalid message, usage: probe [agent_id] [message]")
                 elif user_input.strip().startswith("instruct"):
                     try:
                         agent_id = int(user_input.strip().split()[1])
@@ -114,6 +114,6 @@ def start_experiment(experiment_config, model_api, external_toolkit_api=None):
                         actions["InstructAction"].run([{"agent_id": agent_id, "message": instruct_message}])
                     except:
                         print(traceback.format_exc())
-                        logger.warning("Invalid input, usage: instruct [agent_id] [message]")
+                        logger.warning("Invalid message, usage: instruct [agent_id] [message]")
                 else:
-                    logger.warning("Invalid input")
+                    logger.warning("Invalid message")

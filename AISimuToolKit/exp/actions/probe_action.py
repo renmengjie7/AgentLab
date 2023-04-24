@@ -15,7 +15,7 @@ class ProbeAction(BaseAction):
     def run(self, probes: List[dict], *args, **kwargs):
         """
         为多个agent下达指令
-        :param probes:[{"agent_id":agent_id,"input":input, "prompt": prompt}]
+        :param probes:[{"agent_id":agent_id,"message":message, "prompt": prompt}]
         :param args:
         :param kwargs:
         :return:
@@ -23,7 +23,7 @@ class ProbeAction(BaseAction):
         answers = []
         for item in probes:
             agent_id = int(item["agent_id"])
-            input = item["input"]
+            input = item["message"]
             answer = self.probe(agent_id=agent_id, input=input, prompt=item["prompt"])
             answers.append(answer)
         return answers
@@ -47,6 +47,6 @@ class ProbeAction(BaseAction):
                                                  agent=agent_id,
                                                  config=self.expe.agents[agent_id].config)
         self.logger.history("user probe: {}".format(input))
-        self.logger.history("whole input:\n {}".format(whole_input))
+        self.logger.history("whole message:\n {}".format(whole_input))
         self.logger.history("agent_{}: {}".format(agent_id, answer))
         return answer

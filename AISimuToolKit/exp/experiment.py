@@ -7,12 +7,11 @@
 import copy
 import json
 import os
-from typing import List, Dict
+from typing import List
 
 from AISimuToolKit.exp.agents.agent import Agent
-from AISimuToolKit.model.model import ApiBase
 from AISimuToolKit.model.register import get_model_apis
-from AISimuToolKit.store.text.logger import Logger
+from AISimuToolKit.store.logger import Logger
 from AISimuToolKit.utils.utils import generate_experiment_id, get_fromat_len, parse_yaml_config, save_config
 
 
