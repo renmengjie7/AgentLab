@@ -38,8 +38,8 @@ class Agent:
         self.logger = Logger()
         self.memory = Memory(memory_path=os.path.join(agent_path, "memory.jsonl"))
 
-        for item in self.profile_list:
-            self._save(experience=item, source="init")
+        # for item in self.profile_list:
+        #     self._save(experience=item, source="init")
 
     @classmethod
     def load(cls,
@@ -89,7 +89,7 @@ class Agent:
     # 有点太死了，应该是可以自定义的
     def _probe(self,
                message: str,
-               prompt: str = "Your name is {}\n Your profile is: {}. Now I will interview you. \n{}") -> str:
+               prompt: str = "In the following conversation,please act as {} : {}. Now I will interview you. \n{}") -> str:
         """
         采访(量表), 不会留下记忆
         :param message:
@@ -100,7 +100,7 @@ class Agent:
         whole_input = prompt.format(self.name, profile, message)
         answer = self._chat(whole_input)
         self.logger.history(f"user probe: {message}")
-        self.logger.history(f"whole input:\n {whole_input}")
+        self.logger.history(f"whole message:\n {whole_input}")
         self.logger.history(f"agent_{self.agent_id}: {answer}")
         return answer
 
@@ -112,10 +112,10 @@ class Agent:
         self.logger.info(
             f"agent_{self.agent_id} wrote in memory: {experience} because of {source}")
 
-        importance = self._chat(
-            "On the scale of 1 to 10, where 1 is purely mundane (e.g., brushing teeth, making bed) and 10 is "
-            "extremely poignant (e.g., a break up,college acceptance), rate the likely poignancy of the following "
-            "piece of memory. \nMemory: {} \n Rating: <fill in>".format(experience))
+        # importance = self._chat(
+        #     "On the scale of 1 to 10, where 1 is purely mundane (e.g., brushing teeth, making bed) and 10 is "
+        #     "extremely poignant (e.g., a break up,college acceptance), rate the likely poignancy of the following "
+        #     "piece of memory. \nMemory: {} \n Rating: <fill in>".format(experience))
 
         # example format: 10
         # (you just need to give me a number and no more else)
@@ -208,7 +208,7 @@ class Agent:
 
     def decide(self,
                question: str = None, answers: List[str] = None,
-               input: str = None,
+               message: str = None,
                prompt: str = "Your name is {}\n Your profile is: {}. Now I will interview you. \n{}",
                save: bool = True):
         """_summary_ 模拟人类决策
@@ -216,15 +216,15 @@ class Agent:
         Args:
             question (str): _description_ 面临的问题
             answers (List[str]): _description_ 选项
-            input (str, optional): _description_. Defaults to None. 如果提供了input则直接使用该字符串进行询问; 否则会使用question和input进行对默认prompt进行填充
+            message (str, optional): _description_. Defaults to None. 如果提供了input则直接使用该字符串进行询问; 否则会使用question和input进行对默认prompt进行填充
             save (bool, optional): _description_. Defaults to True. 
             TODO 决策是否需要加入memory? 实际生活中肯定是加入了记忆, 但是这部分信息在read的时候也会加入, 可能会带来冗余与噪声
         """
-        if input is None:
-            input = question + '\n'.join([answer for answer in answers])
-        answer = self._probe(message=input, prompt=prompt)
+        if message is None:
+            message = question + '\n'.join([answer for answer in answers])
+        answer = self._probe(message=message, prompt=prompt)
         if save:
-            self._save(experience=f'{input}. choosed {answer}', source="decide")
+            self._save(experience=f'{message}. choosed {answer}', source="decide")
         return answer
 
     def read(self, text: str, prompt: str = 'You read a news {}'):
@@ -254,4 +254,7 @@ class Agent:
             agent (Agent): _description_
             context (str): _description_
         """
+        pass
+
+    def _generate_natural_prompt(self, raw_prompt: str) -> str:
         pass
