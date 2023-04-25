@@ -37,6 +37,7 @@ class Agent:
         self.path = agent_path
         self.logger = Logger()
         self.memory = Memory(memory_path=os.path.join(agent_path, "memory.jsonl"))
+        self.summary_list = profile
 
         # for item in self.profile_list:
         #     self._save(experience=item, source="init")
@@ -44,7 +45,7 @@ class Agent:
     @classmethod
     def load(cls,
              format_num_len: int,
-             config: str,
+             config: dict,
              model: ApiBase,
              exp_id: str,
              exp_path) -> "Agent":
@@ -66,7 +67,7 @@ class Agent:
         return agent
 
     @staticmethod
-    def save_agent_config(agent_id: str, config: dict,
+    def save_agent_config(agent_id: int, config: dict,
                           exp_path: str, format_num_len: int):
         """_summary_ 保存智能体配置文件
 
@@ -179,9 +180,48 @@ class Agent:
                 self._save(experience=insight, source="reflect")
 
     def summary(self) -> None:
-        pass
+        """
+        生成agent的总结，用于替代profile
+        :return:
+        """
+        self.logger.history(f"agent_{self.agent_id} begin his/her summary")
+        weighted_memory = self.memory.weighted_retrieve(
+            weights={"recentness": 0.5, "importance": 0.8, "similarity": 0.8}, num=100,
+            query="{}’s core characteristics.".format(self.name))
+
+        prompt = "How would one describe {}’s core characteristics given the following statements?\n".format(self.name)
+        prompt += "\n".join([item["experience"] for item in weighted_memory])
+        self.summary_list = self._chat(prompt).split("\n")
+
+        weighted_memory = self.memory.weighted_retrieve(
+            weights={"recentness": 0.5, "importance": 0.8, "similarity": 0.8}, num=100,
+            query="{}’s current daily occupation.".format(self.name))
+
+        prompt = "What is {}’s current daily occupation given the following statements?\n".format(self.name)
+        prompt += "\n".join([item["experience"] for item in weighted_memory])
+        self.summary_list.extend(self._chat(prompt).split("\n"))
+
+        weighted_memory = self.memory.weighted_retrieve(
+            weights={"recentness": 0.5, "importance": 0.8, "similarity": 0.8}, num=100,
+            query="{}'s feeling about his recent progress in life".format(self.name))
+
+        prompt = "What is {}’s feeling about his recent progress in life given the following statements?\n".format(
+            self.name)
+        prompt += "\n".join([item["experience"] for item in weighted_memory])
+        self.summary_list.extend(self._chat(prompt).split("\n"))
+
+        prompt = "Summarize the statement below:\n"
+        prompt += "\n".join(self.summary_list)
+        self.summary_list = self._chat(prompt).split("\n")
+
+        self.logger.info("agent_{} summary: {}".format(self.agent_id, ".".join(self.summary_list)))
 
     def _chat(self, formatted_prompt: str) -> str:
+        """
+        wrapper for model.chat()
+        :param formatted_prompt:
+        :return:
+        """
         return self.model.chat(query=formatted_prompt,
                                exp=self.exp_id,
                                agent=self.agent_id,
