@@ -2,8 +2,10 @@ import json
 from typing import List
 
 import pandas as pd
+from sklearn.metrics import pairwise_distances
 
 from AISimuToolKit.exp.toolkit.TimeStep import TimeStep
+from AISimuToolKit.model.embedding import BertSentenceEmbedding
 from AISimuToolKit.model.model import PublicApiBase
 from AISimuToolKit.store.logger import Logger
 
@@ -23,7 +25,7 @@ class Memory:
         """
         self.logger = Logger()
         default_cols = ["interactant", "experience", "timestep", "question", "answer", "source", "importance",
-                        "recentness", "score"]
+                        "similarity", "embedding", "recentness", "score"]
         if extra_columns is not None:
             if set(extra_columns) & set(default_cols):
                 self.logger.warning("The following column names are already included in the default list and will be "
@@ -32,6 +34,7 @@ class Memory:
             default_cols = list(set(default_cols))
         self.memory_df = pd.DataFrame(columns=default_cols)
         self.memory_path = memory_path
+        self.bert = BertSentenceEmbedding()
         self.auto_rewrite = auto_rewrite
 
         # TODO 用timestep替换他
@@ -101,6 +104,7 @@ class Memory:
                 "The experience, question and answer cannot be None at the same time.Nothing will be stored.")
             return
 
+        embed_sentence = experience if experience is not None else question + answer
         # timestep = self.curr_id
         memory_item = {
             "interactant": interactant,
@@ -110,6 +114,7 @@ class Memory:
             "source": source,
             "timestep": timestep,
             "importance": importance,
+            "embedding": self.bert.encode(embed_sentence),
             "id": self.curr_id
         }
 
@@ -123,12 +128,12 @@ class Memory:
         self.memory_df = pd.concat([self.memory_df, memory_df], ignore_index=True)
         self.memory_df["recentness"] = pow(0.99, self.curr_id - self.memory_df["id"])
         self.curr_id += 1
-        # with open(self.memory_path, "a", encoding="utf-8") as f:
-        #     last_row = self.memory_df.tail(1)
-        #     json_object = last_row.to_json(orient='records')
-        #     f.write(json_object[1:-1] + "\n")
+        with open(self.memory_path, "a", encoding="utf-8") as f:
+            last_row = self.memory_df.drop(["similarity", "embedding", "recentness", "score"], axis=1)
+            json_object = last_row.to_json(orient='records')
+            f.write(json_object[1:-1] + "\n")
 
-        self.export_memory()
+        # self.export_memory()
 
     def retrieve_by_interactant(self, interactant: str) -> list[dict]:
         """
@@ -164,11 +169,13 @@ class Memory:
         将记忆导出到文件中
         :return:
         """
+
+        df = self.memory_df.drop(["similarity", "embedding", "recentness", "score"], axis=1)
         with open(self.memory_path, 'w') as f:
-            for line in self.memory_df.to_dict(orient='records'):
+            for line in df.to_dict(orient='records'):
                 f.write(json.dumps(line, ensure_ascii=False) + "\n")
 
-    def weighted_retrieve(self, weights, num) -> list[dict]:
+    def weighted_retrieve(self, weights, num, *args, **kwargs) -> list[dict]:
         """
         根据权重检索
         :param weights:
@@ -183,6 +190,11 @@ class Memory:
                     score += row[col] * weights.get(col, 0)
             return score
 
+        if "similarity" in weights.keys():
+            query_embedding = self.bert.encode(kwargs["query"])
+            cos_sim = 1 - pairwise_distances(query_embedding.reshape(1, -1), self.memory_df["embedding"].tolist(),
+                                             metric="cosine")
+            self.memory_df["similarity"] = cos_sim.reshape(-1)
         self.memory_df['score'] = self.memory_df.apply(compute_score, axis=1)
 
         num = len(self.memory_df) if num == -1 else num
@@ -190,7 +202,4 @@ class Memory:
 
     # TODO 一个公共的，用于改写对话/检索相关人员/。。。
     def get_model(self) -> PublicApiBase:
-        pass
-
-    def get_similarity(self, question, high_level_questions_prompt) -> float:
         pass

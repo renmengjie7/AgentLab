@@ -144,41 +144,42 @@ class Agent:
         return True
 
     def reflect_from_memory(self) -> None:
-        '''
+        """
         从记忆中反思，然后生成新的记忆
         :return:
-        '''
+        """
         # TODO In our implementation, we use the language model to generate an embedding vector of the text
         #  description of each memory. Then, we calculate relevance as the cosine similarity between the memory’s
         #  embedding vector and the query memory’s embedding vector
         self.logger.history(f"agent_{self.agent_id} reflected from memory")
         weighted_memory = self.memory.weighted_retrieve(weights={"recentness": 0.5, "importance": 0.8}, num=100)
 
-        # high_level_questions_prompt = "\n".join([item["experience"] for item in weighted_memory])
-        #
-        # high_level_questions_prompt += "Given only the information above, what are 3 most salient high-level " \
-        #                                "questions we can answer about the subjects in the statements?"
-        #
-        # high_level_questions = self.model.chat(query=high_level_questions_prompt,
-        #                                        exp=self.exp_id,
-        #                                        agent=self.agent_id,
-        #                                        config=self.model_config)
-        #
-        # for question in high_level_questions:
-        #     weighted_memory_to_reflect = self.memory.weighted_retrieve(
-        #         weights={"recentness": 0.5, "importance": 0.8, "similarity": 0.8}, num=100)
+        high_level_questions_prompt = "\n".join([item["experience"] for item in weighted_memory])
 
-        formatted_prompt = f"Statements about {self.name}\n"
-        for idx, item in enumerate(weighted_memory):
-            formatted_prompt += f"{idx + 1}. {item['experience']}\n"
-        formatted_prompt += "What 5 high-level insights can you infer from the above statements?\n(example format: " \
-                            "insight 1 \n insight 2 \n insight 3 \n insight 4 \n insight 5)"
+        high_level_questions_prompt += "Given only the information above, what are 3 most salient high-level " \
+                                       "questions we can answer about the subjects in the statements?"
 
-        insights = self._chat(formatted_prompt)
+        high_level_questions = self._chat(high_level_questions_prompt)
 
-        for insight in insights.split("\n"):
-            insight = insight.strip()
-            self._save(experience=insight, source="reflect")
+        for question in high_level_questions.split("\n"):
+            self.logger.info(f"agent_{self.agent_id} reflected from question: {question}")
+            weighted_memory_to_reflect = self.memory.weighted_retrieve(
+                weights={"recentness": 0.5, "importance": 0.8, "similarity": 0.8}, num=100, query=question)
+
+            formatted_prompt = f"Statements about {self.name}\n"
+            for idx, item in enumerate(weighted_memory_to_reflect):
+                formatted_prompt += f"{idx + 1}. {item['experience']}\n"
+            formatted_prompt += "What 5 high-level insights can you infer from the above statements?\n(example format: " \
+                                "insight 1 \n insight 2 \n insight 3 \n insight 4 \n insight 5)"
+
+            insights = self._chat(formatted_prompt)
+
+            for insight in insights.split("\n"):
+                insight = insight.strip()
+                self._save(experience=insight, source="reflect")
+
+    def summary(self) -> None:
+        pass
 
     def _chat(self, formatted_prompt: str) -> str:
         return self.model.chat(query=formatted_prompt,

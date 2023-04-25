@@ -21,39 +21,42 @@ def main():
     exp = Experiment.load(config="test/files4test/expe_config.json",
                           model_config="test/files4test/model.yaml",
                           output_dir="experiments")
-    answer = exp.agents[0].decide(message='Will you be interested in the news below?\n'
-                                          'The news title: %s\n'
-                                          'The news content: %s\n'
-                                          'The answer should start with "Yes" or "No" '
-                                          'and then state the reason for the action.' % (
-                                              news['title'], news['content']),
-                                  prompt="Your name is {}.\nYour profile: {}.\nNow I will interview you.\n{}",
-                                  save=False)
-    exp.agents[0].read(text=f"Title: {news['title']}; Content: {news['content']}",
-                       prompt='You read a news——{}')
-    #
-    # exp.agents[0]._save(
-    #     "Alice is a brilliant engineer at Google, with a knack for problem-solving and a passion for innovation.")
-    # exp.agents[0]._save(
-    #     "As a Google engineer, Alice is known for his exceptional coding skills and his ability to tackle complex challenges with ease.")
-    # exp.agents[0]._save(
-    #     "Alice is a key player on the Google engineering team, leveraging his extensive knowledge of software development to drive success.")
-    # exp.agents[0]._save(
-    #     "With years of experience under his belt, Alice has become one of the most respected engineers at Google, admired for his technical prowess and creative thinking.")
-    # exp.agents[0]._save(
-    #     "Alice's expertise in cutting-edge technologies has made him an invaluable member of the Google engineering team, driving innovation and growth.")
-    # exp.agents[0]._save(
-    #     "As a Google engineer, Alice is constantly pushing the boundaries of what's possible, using his skills to develop groundbreaking solutions to complex problems.")
-    # exp.agents[0]._save(
-    #     "Alice's passion for engineering is palpable, and his commitment to excellence has made him a standout member of the Google team.")
-    # exp.agents[0]._save(
-    #     "With a keen eye for detail and a deep understanding of engineering principles, Alice is a driving force behind Google's success.")
-    # exp.agents[0]._save(
-    #     "Alice's contributions to Google's engineering efforts have been instrumental in shaping the future of the company and the industry as a whole.")
-    # exp.agents[0]._save(
-    #     "As one of Google's top engineers, Alice is a respected leader in his field, admired for his technical expertise and strategic vision.")
-    #
-    # exp.agents[0].reflect_from_memory()
+    # answer = exp.agents[0].decide(message='Will you be interested in the news below?\n'
+    #                                       'The news title: %s\n'
+    #                                       'The news content: %s\n'
+    #                                       'The answer should start with "Yes" or "No" '
+    #                                       'and then state the reason for the action.' % (
+    #                                           news['title'], news['content']),
+    #                               prompt="Your name is {}.\nYour profile: {}.\nNow I will interview you.\n{}",
+    #                               save=False)
+    # exp.agents[0].read(text=f"Title: {news['title']}; Content: {news['content']}",
+    #                    prompt='You read a news——{}')
+
+    exp.agents[0]._save(
+        "Alice is a brilliant engineer at Google, with a knack for problem-solving and a passion for innovation.")
+    exp.agents[0]._save(
+        "As a Google engineer, Alice is known for his exceptional coding skills and his ability to tackle complex challenges with ease.")
+    exp.agents[0]._save(
+        "Alice is a key player on the Google engineering team, leveraging his extensive knowledge of software development to drive success.")
+    exp.agents[0]._save(
+        "With years of experience under his belt, Alice has become one of the most respected engineers at Google, admired for his technical prowess and creative thinking.")
+    exp.agents[0]._save(
+        "Alice's expertise in cutting-edge technologies has made him an invaluable member of the Google engineering team, driving innovation and growth.")
+    exp.agents[0]._save(
+        "As a Google engineer, Alice is constantly pushing the boundaries of what's possible, using his skills to develop groundbreaking solutions to complex problems.")
+    exp.agents[0]._save(
+        "Alice's passion for engineering is palpable, and his commitment to excellence has made him a standout member of the Google team.")
+    exp.agents[0]._save(
+        "With a keen eye for detail and a deep understanding of engineering principles, Alice is a driving force behind Google's success.")
+    exp.agents[0]._save(
+        "Alice's contributions to Google's engineering efforts have been instrumental in shaping the future of the company and the industry as a whole.")
+    exp.agents[0]._save(
+        "As one of Google's top engineers, Alice is a respected leader in his field, admired for his technical expertise and strategic vision.")
+    exp.agents[0]._save("Alice is very hungry now, she really wants to eat a McDonald's double-decker Big Mac")
+    exp.agents[0]._save("In addition, she also wants to go to the cinema to watch the latest movie in the evening")
+    exp.agents[0]._save("Since there is no seasoning at home, she still needs to buy some soy sauce before going home")
+
+    exp.agents[0].reflect_from_memory()
 
 
 if __name__ == '__main__':
