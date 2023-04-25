@@ -31,7 +31,8 @@ class Experiment:
     def load(cls,
              config: str,
              model_config: str,
-             output_dir: str = "experiments") -> "Experiment":
+             output_dir: str = "experiments",
+             custom_class: dict = None) -> "Experiment":
         """_summary_ 从json配置文件中加载并示例化一个experiment
 
         Args:
@@ -46,14 +47,15 @@ class Experiment:
         exp_id = generate_experiment_id()
         exp_path = Experiment.mk_exp_dir(output_dir, exp_id)
         with open(config, 'r') as file:
-            json_data = json.load(file)
-        agents = Experiment.load_agents(
-            agent_list=json_data['agent_list'], exp_id=exp_id, exp_path=exp_path, model_config=model_config)
+            expe_config = json.load(file)
+        agents = Experiment.load_agents(agent_list=expe_config['agent_list'], exp_id=exp_id, exp_path=exp_path,
+                                        model_config=model_config, expe_settings=expe_config["experiment_settings"],
+                                        custom_class=custom_class)
         exp = Experiment(id=exp_id,
                          path=exp_path,
                          agents=agents,
-                         config=json_data)
-        save_config(config=json_data, path=f'{exp.path}/init_config.json')
+                         config=expe_config)
+        save_config(config=expe_config, path=f'{exp.path}/init_config.json')
         return exp
 
     @staticmethod
@@ -91,19 +93,26 @@ class Experiment:
     @staticmethod
     def load_agents(agent_list: List[dict],
                     exp_path: str, exp_id: str,
-                    model_config: str):
+                    model_config: str, expe_settings: dict, custom_class: dict = None) -> List[Agent]:
         configs = copy.deepcopy(agent_list)
         agents_num = len(configs)
         format_num_len = get_fromat_len(num=agents_num)
         models = get_model_apis(exp_id=exp_id,
-                                agents=[i+1 for i in range(agents_num)],
+                                agents=[i + 1 for i in range(agents_num)],
                                 model_names=[config['model_settings']['model_name']
-                                            for config in configs],
+                                             for config in configs],
                                 model_config=model_config)
         agents = []
         model_config = parse_yaml_config(model_config)
+
+        Agent_class = Agent
+        if custom_class is not None:
+            Agent_class = custom_class.get("agent", Agent)
+
         for idx, config in enumerate(configs):
-            agents.append(Agent.load(
+            if "extra_columns" not in config["misc"]:
+                config["misc"]["extra_columns"] = expe_settings.get("extermal_memory_cols", [])
+            agents.append(Agent_class.load(
                 format_num_len=format_num_len,
                 config=config,
                 model=models[idx],
@@ -125,4 +134,3 @@ class Experiment:
         logger = Logger(log_file=os.path.join(exp_path, "log.txt"),
                         history_file=os.path.join(exp_path, "history.txt"))
         return exp_path
-

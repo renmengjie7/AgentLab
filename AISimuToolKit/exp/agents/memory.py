@@ -26,7 +26,7 @@ class Memory:
         self.logger = Logger()
         default_cols = ["interactant", "experience", "timestep", "question", "answer", "source", "importance",
                         "similarity", "embedding", "recentness", "score"]
-        if extra_columns is not None:
+        if extra_columns is not None and len(extra_columns) > 0:
             if set(extra_columns) & set(default_cols):
                 self.logger.warning("The following column names are already included in the default list and will be "
                                     "ignored:{}".format(set(extra_columns) & set(default_cols)))
@@ -81,9 +81,10 @@ class Memory:
     # TODO 是否需要显示地给出交互对象, 感觉自然语言描述已经可以了, 现在暂时都设置为空
     # TODO 需要更完善的逻辑判断,加入自动改写（或者移到做finetune前）
     def store(self, timestep: TimeStep = None, experience: str = None, question: str = None, answer: str = None,
-              interactant: str = '', source: str = None, importance: int = 5, *args, **kwargs):
+              interactant: str = '', source: str = None, importance: float = 5, *args, **kwargs) -> object:
         """
         储存记忆，其中experience, [question, answer]中的任意一对都可以为空，但是不能同时为空,q和a必须同时提供
+        :param importance:
         :param timestep:
         :param experience:
         :param question:
@@ -175,9 +176,10 @@ class Memory:
             for line in df.to_dict(orient='records'):
                 f.write(json.dumps(line, ensure_ascii=False) + "\n")
 
-    def weighted_retrieve(self, weights, num, *args, **kwargs) -> list[dict]:
+    def retrieve_by_query(self, weights: dict, num: int = 10, query: str = None) -> list[dict]:
         """
         根据权重检索
+        :param query:
         :param weights:
         :param num:
         :return:
@@ -186,15 +188,18 @@ class Memory:
         def compute_score(row):
             score = 0
             for col in row.index:
-                if col in weights.keys() and isinstance(row[col], (int, float)):
-                    score += row[col] * weights.get(col, 0)
+                if col in droped_weights.keys() and isinstance(row[col], (int, float)):
+                    score += row[col] * droped_weights.get(col, 0)
             return score
 
-        if "similarity" in weights.keys():
-            query_embedding = self.bert.encode(kwargs["query"])
+        droped_weights = weights.copy()
+        droped_weights.pop("similarity", None)
+        if "similarity" in weights.keys() and query is not None and query != "":
+            query_embedding = self.bert.encode(query)
             cos_sim = 1 - pairwise_distances(query_embedding.reshape(1, -1), self.memory_df["embedding"].tolist(),
                                              metric="cosine")
             self.memory_df["similarity"] = cos_sim.reshape(-1)
+            droped_weights = weights
         self.memory_df['score'] = self.memory_df.apply(compute_score, axis=1)
 
         num = len(self.memory_df) if num == -1 else num
