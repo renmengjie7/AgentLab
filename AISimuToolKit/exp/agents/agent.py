@@ -139,10 +139,10 @@ class Agent:
 
     def get_importance(self, experience: str) -> float:
         importance = self._chat(self.importance_prompt.format(experience))
-        self.logger.info(f"store into memory,and automatically get its importance: {importance}")
+        self.logger.debug(f"store into memory,and automatically get its importance: {importance}")
         try:
             importance = float(importance)
-            self.logger.info(f"convert importance to float: {importance}")
+            self.logger.debug(f"convert importance to float: {importance}")
         except Exception:
             try:
                 num_list = re.findall(self.get_num_pattern, importance)
@@ -152,9 +152,9 @@ class Agent:
                     num_list = re.findall(self.get_num_pattern, importance)
                 importance = num_list[0]
                 importance = float(importance)
-                self.logger.info(f"convert importance to float: {importance}")
+                self.logger.debug(f"convert importance to float: {importance}")
             except Exception:
-                self.logger.error("cannot convert importance to float,set to 5.0 by default")
+                self.logger.warning("cannot convert importance to float,set to 5.0 by default")
                 importance = 5.0
         return importance
 
