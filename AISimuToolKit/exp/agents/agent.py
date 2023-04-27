@@ -6,6 +6,7 @@
 """
 import json
 import os.path
+import re
 from typing import List
 
 from AISimuToolKit.exp.agents.memory import Memory
@@ -50,6 +51,7 @@ class Agent:
                                           "extremely poignant (e.g., a break up,college acceptance), rate the likely poignancy of the following "
                                           "piece of memory. \nMemory: {} \n Rating: <fill in>")
         self.summary = " ".join(profile)
+        self.get_num_pattern = r"\d+\.?\d*|\.\d+"
 
         for item in self.profile_list:
             self._save(experience=item, source="init")
@@ -130,16 +132,31 @@ class Agent:
         self.logger.history(
             f"agent_{self.agent_id} wrote in memory: {experience} because of {source}")
 
-        importance = self._chat(self.importance_prompt.format(experience))
-
-        try:
-            importance = float(importance)
-        except ValueError:
-            self.logger.error("cannot convert importance to float,set to 5 by default")
-            importance = 5.0
+        importance = self.get_importance(experience)
 
         self.memory.store(interactant='', experience=experience, source=source, importance=importance)
         return True
+
+    def get_importance(self, experience: str) -> float:
+        importance = self._chat(self.importance_prompt.format(experience))
+        self.logger.info(f"store into memory,and automatically get its importance: {importance}")
+        try:
+            importance = float(importance)
+            self.logger.info(f"convert importance to float: {importance}")
+        except Exception:
+            try:
+                num_list = re.findall(self.get_num_pattern, importance)
+                if len(num_list) > 1:
+                    importance = self._chat("find the most important number in the following sentences,it might be an "
+                                            "average number:\n" + importance)
+                    num_list = re.findall(self.get_num_pattern, importance)
+                importance = num_list[0]
+                importance = float(importance)
+                self.logger.info(f"convert importance to float: {importance}")
+            except Exception:
+                self.logger.error("cannot convert importance to float,set to 5.0 by default")
+                importance = 5.0
+        return importance
 
     def _finetune(self, num: int) -> bool:
         """_summary_ 让Agent在给定的语料上微调, 这里的语料是memory中的question和answer

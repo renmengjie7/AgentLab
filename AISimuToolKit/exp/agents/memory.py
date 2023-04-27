@@ -188,18 +188,18 @@ class Memory:
         def compute_score(row):
             score = 0
             for col in row.index:
-                if col in droped_weights.keys() and isinstance(row[col], (int, float)):
-                    score += row[col] * droped_weights.get(col, 0)
+                if col in dropped_weights.keys() and isinstance(row[col], (int, float)):
+                    score += row[col] * dropped_weights.get(col, 0)
             return score
 
-        droped_weights = weights.copy()
-        droped_weights.pop("similarity", None)
+        dropped_weights = weights.copy()
+        dropped_weights.pop("similarity", None)
         if "similarity" in weights.keys() and query is not None and query != "":
             query_embedding = self.bert.encode(query)
             cos_sim = 1 - pairwise_distances(query_embedding.reshape(1, -1), self.memory_df["embedding"].tolist(),
                                              metric="cosine")
             self.memory_df["similarity"] = cos_sim.reshape(-1)
-            droped_weights = weights
+            dropped_weights = weights
         self.memory_df['score'] = self.memory_df.apply(compute_score, axis=1)
 
         num = len(self.memory_df) if num == -1 else num

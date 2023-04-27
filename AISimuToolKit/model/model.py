@@ -84,7 +84,7 @@ class GPT_35_API(PublicApiBase):
             ]
         }
         """
-        self.logger.info("GPT-3.5-turbo: chat start")
+        self.logger.debug("GPT-3.5-turbo: chat start")
         agent_id = kwargs.get("agent_id", "")
         message = [
             {"role": "user", "content": query}
@@ -106,7 +106,7 @@ class GPT_35_API(PublicApiBase):
                 self.logger.warning("GPT-3.5-turbo: message triggers the problem is '{}'".format(query))
                 break
             elif completion["choices"][0]["finish_reason"] == "length":
-                self.logger.info(
+                self.logger.debug(
                     "GPT-3.5-turbo: chat stop abnormally due to length limit,sending continue automatically")
                 message.append({"role": "assistant", "content": answer})
                 message.append({"role": "user", "content": "continue"})
@@ -116,7 +116,7 @@ class GPT_35_API(PublicApiBase):
                 )
                 answer = answer + " " + completion["choices"][0]["message"]["content"]
             elif completion["choices"][0]["finish_reason"] == "stop":
-                self.logger.info("GPT-3.5-turbo: chat stop normally")
+                self.logger.debug("GPT-3.5-turbo: chat stop normally")
                 break
             else:
                 self.logger.error("GPT-3.5-turbo: chat stop abnormally")
