@@ -130,7 +130,7 @@ class Memory:
         self.memory_df["recentness"] = pow(0.99, self.curr_id - self.memory_df["id"])
         self.curr_id += 1
         with open(self.memory_path, "a", encoding="utf-8") as f:
-            last_row = self.memory_df.drop(["similarity", "embedding", "recentness", "score"], axis=1)
+            last_row = self.memory_df.drop(["similarity", "embedding", "recentness", "score"], axis=1).tail(1)
             json_object = last_row.to_json(orient='records')
             f.write(json_object[1:-1] + "\n")
 

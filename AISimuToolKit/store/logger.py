@@ -2,6 +2,7 @@ import logging
 import multiprocessing
 import os
 import threading
+from typing import Union
 
 
 # TODO 加入memory的功能
@@ -156,3 +157,11 @@ class Logger:
         self.logger.removeHandler(self.history_handler)
         self.logger.addHandler(self.log_handler)
         self.logger.addHandler(self.console_handler)
+
+    def set_level(self, level: Union[int, str]):
+        """
+        设置日志记录器的日志级别
+        :param level:
+        :return:
+        """
+        self.logger.setLevel(level)
