@@ -20,7 +20,6 @@ class Experiment:
         self.id = id
         self.path = path
         self.agents = agents
-        # self.models = models
         # 用户传入的config
         self.config = config
 

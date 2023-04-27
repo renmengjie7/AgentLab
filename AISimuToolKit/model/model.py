@@ -1,11 +1,27 @@
 import json
 import os
 from typing import List
-
+import copy
 import openai
 import requests
 
 from AISimuToolKit.store.logger import Logger
+
+
+def rawtext2dialog(text: str):
+    """_summary_ 纯文本转成对话形式
+
+    Args:
+        text (str): _description_
+    """
+    model = GPT_35_API()
+    answer = model.chat(query='Please convert the following text to a single round and save as much information as possible in the format {"query": "", "answer": ""} Please note the single round, only a single json will do'+text)
+    diaglogue = json.loads(answer)
+    if 'query' in diaglogue and 'answer' in diaglogue:
+        pass
+    else:
+        raise Exception('convert raw text to diaglogue failed')
+    return diaglogue
 
 
 # TODO 调整为model和toolkit继承不同的基类，但都继承自ApiBase
@@ -47,8 +63,9 @@ class PublicApiBase(ApiBase):
 class GPT_35_API(PublicApiBase):
 
     def __new__(cls,
-                config: dict,
+                config: dict=None,
                 *args, **kwargs):
+        """config为None只有在已经实例化后才能正常init时"""
         if cls._instance is None:
             cls._instance = super().__new__(cls)
             openai.api_base = config['url'][0]
@@ -58,7 +75,7 @@ class GPT_35_API(PublicApiBase):
     # TODO 加入多轮对话
     # TODO 设置system
     # TODO 测试长对话，目前没有找到返回为length的例子
-    def chat(self, query: str, config: dict, *args, **kwargs):
+    def chat(self, query: str, config: dict=None, *args, **kwargs):
         """
                 https://learn.microsoft.com/zh-cn/azure/cognitive-services/openai/how-to/chatgpt?pivots=programming-language-chat-completions
         返回结果为
@@ -92,7 +109,7 @@ class GPT_35_API(PublicApiBase):
         completion = openai.ChatCompletion.create(
             model="gpt-3.5-turbo",
             messages=message,
-            temperature=config['temperature']
+            temperature=0.7 if config is None else config['temperature']
         )
         # TODO 处理choices大于一的情况
 
@@ -211,7 +228,7 @@ class LLaMAAPI(PrivateApiBase):
         :param path: 为agent的路径
         :param datas: 为记忆
         """
-        file_path = self.memory2finetunedata(datas=datas, path=path)
+        file_path = self.memory2finetunedata(_datas=datas, path=path)
 
         url = self.get_url(exp=exp, agent=agent)
         files = {'file': open(file_path, 'rb')}
@@ -246,14 +263,22 @@ class LLaMAAPI(PrivateApiBase):
         return "LLaMA"
 
     @classmethod
-    def memory2finetunedata(cls, datas: List[dict], path: str, *args, **kwargs) -> str:
+    def memory2finetunedata(cls, _datas: List[dict], path: str, *args, **kwargs) -> str:
         """_summary_ 将memory格式的数据转成模型特定的处理
 
         Args:
             datas (_type_): _description_
         """
+        datas = copy.deepcopy(_datas)
         results = []
         for data in datas:
+            if data['source'] == 'experience':
+                try:
+                    dialogue = rawtext2dialog(data['experience'])
+                    data['question'] = dialogue['query']
+                    data['answer'] = dialogue['answer']
+                except:
+                    continue
             results.append({
                 "instruction": data['question'],
                 "message": "",
