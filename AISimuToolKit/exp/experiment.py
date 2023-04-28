@@ -9,6 +9,7 @@ import json
 import os
 from typing import List
 
+from AISimuToolKit.exp.agents.Courier import Courier
 from AISimuToolKit.exp.agents.agent import Agent
 from AISimuToolKit.model.register import get_model_apis
 from AISimuToolKit.store.logger import Logger
@@ -50,6 +51,7 @@ class Experiment:
         agents = Experiment.load_agents(agent_list=expe_config['agent_list'], exp_id=exp_id, exp_path=exp_path,
                                         model_config=model_config, expe_settings=expe_config["experiment_settings"],
                                         custom_class=custom_class)
+        Courier(agents=agents)
         exp = Experiment(id=exp_id,
                          path=exp_path,
                          agents=agents,
@@ -138,3 +140,7 @@ class Experiment:
         """采访某个agent xxx"""
         return agent.probed(content=content, prompt=prompt)
     
+    # def choose_next_one(self, prompt: str = "Choose one agent to continue: ") -> Agent:
+    #     for agent in self.agents:
+    #         agent.desire("How strong is your desire to speak? 1 means you don’t want to speak, 10 means you want to "
+    #                      "speak very much, give a number from 1-10", prompt=prompt)
