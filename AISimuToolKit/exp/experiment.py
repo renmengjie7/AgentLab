@@ -23,6 +23,7 @@ class Experiment:
         self.agents = agents
         # 用户传入的config
         self.config = config
+        self.logger = Logger()
 
     def get_agent_ids(self):
         return [agent.agent_id for agent in self.agents]
@@ -152,8 +153,9 @@ class Experiment:
             answer = self.probe(agent=agent, content=message, prompt=prompt)
             try:
                 answer = int(answer)
+                self.logger.info(f"agent_{idx+1} score is {answer}")
             except ValueError as e:
-                print(f"Failed to convert '{answer}' to an integer: {e}")
+                self.logger.error(f"Failed to convert '{answer}' to an integer: {e}")
                 continue
             if max_score <= answer:
                 max_idx = idx
