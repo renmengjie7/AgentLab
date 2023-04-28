@@ -1,7 +1,7 @@
 """
 @author: Guo Shiguang
 @software: PyCharm
-@file: framework.py
+@file: detective.py
 @time: 2023/4/27 21:57
 """
 
@@ -19,13 +19,18 @@ def main():
     # agent_list.misc.retrieve_weight: 检索权重
     # agent_list.misc.reflect_nums: 反思阶段，用于反思的加权排序后记忆的个数
     # agent_list.misc.summary_nums：总结阶段，用于总结的加权排序后记忆的个数
-    exp = Experiment.load(config="test/files4test/expe_config.json",
+    exp = Experiment.load(config="test/files4test/detective_config.json",
                           model_config="test/files4test/model.yaml",
                           output_dir="experiments", custom_class=custom_class)
 
     for timestep in range(10):
         # next_agent = exp.choose_next_one("prompt")
         # next_agent.debate()
+        exp.agents[0].receive("You encountered a sudden kidnapping case. The informant claimed that the kidnapper had "
+                              "kidnapped his daughter Gu Jingzi, demanded 300 million yen in ransom, and had to shut "
+                              "down the company for one month. Please find clues step by step to complete the "
+                              "reasoning: the people involved include the kidnapped Akiko, and the housekeeper Aso "
+                              "who allegedly witnessed the kidnapper's home.")
         for agent in exp.agents:
             agent.react()
 
