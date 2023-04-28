@@ -5,9 +5,10 @@
 @time: 2023/4/25 10:35
 """
 
+from threading import Lock
+
 import torch
 from transformers import BertTokenizer, BertModel
-from threading import Lock
 
 
 class BertSentenceEmbedding:
@@ -28,7 +29,8 @@ class BertSentenceEmbedding:
         return BertSentenceEmbedding.__instance
 
     def encode(self, sentence):
-        input_ids = torch.tensor(self.tokenizer.encode(sentence, add_special_tokens=True)).unsqueeze(0).to(self.device)
+        input_ids = torch.tensor(self.tokenizer.encode(sentence, add_special_tokens=True, truncation=True)).unsqueeze(
+            0).to(self.device)
         with torch.no_grad():
             outputs = self.model(input_ids)
             embeddings = outputs[2][-1][0]
