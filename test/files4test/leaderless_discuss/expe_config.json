@@ -1,6 +1,9 @@
 {
     "experiment_name": "leaderless discussion",
     "description": "Just an example of serial emulation",
+    "experiment_settings": {
+       
+    },
     "agent_list": [
         {
             "name": "Alice",

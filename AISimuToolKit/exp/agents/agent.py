@@ -130,7 +130,7 @@ class Agent:
 
     def probed(self, content: str, prompt: str = "{}'s profile is: {}.\n{}"):
         """prompt留出三个空, 分别是name、personality、content"""
-        return self._probe(content=content, prompt=prompt)
+        return self._probe(message=content, prompt=prompt)
 
     def _save(self, experience: str, source: str = "experience", interactant: str = None) -> None:
         """_summary_ 保存到记忆
@@ -227,6 +227,15 @@ class Agent:
         生成agent的总结，用于替代profile
         :return:
         """
+        memory = self.memory.retrieve_by_recentness(num=self.summary_nums)
+        memory.reverse()
+        concatenated_memory = "\n".join([item["experience"] for item in memory])
+        # TODO won't summarize until reach the length limit
+        # TODO need config for different model limit
+        if len(concatenated_memory.split(' ')) < 2000:
+            self.summary = concatenated_memory
+            return concatenated_memory
+        
         self.logger.history(f"agent_{self.agent_id} begin his/her summarize")
         weighted_memory = self.memory.retrieve_by_query(
             weights=self.retrieve_weight, num=self.summary_nums,
@@ -325,7 +334,7 @@ class Agent:
         """
         experience = f"{self.name} saied to {','.join([agent.name for agent in agents])} that {content}"
         self._save(experience=experience)
-        for agent in enumerate(agents):
+        for idx, agent in enumerate(agents):
             agent.recieve_info(content=experience)
 
     def check_mailbox(self):
