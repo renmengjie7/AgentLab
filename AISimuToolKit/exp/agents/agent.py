@@ -9,7 +9,6 @@ import os.path
 import re
 from typing import List
 
-from AISimuToolKit.exp.agents.Courier import Courier
 from AISimuToolKit.exp.agents.memory import Memory
 from AISimuToolKit.model.model import ApiBase
 from AISimuToolKit.store.logger import Logger
@@ -52,6 +51,8 @@ class Agent:
                                           "extremely poignant (e.g., a break up,college acceptance), rate the likely poignancy of the following "
                                           "piece of memory. \nMemory: {} \n Rating: <fill in>")
         self.summary = " ".join(profile)
+        self.importance_sum = 0
+        self.reflect_threshold = 100
 
         self.mailbox = []
         self.get_num_pattern = r"\d+\.?\d*|\.\d+"
@@ -136,6 +137,11 @@ class Agent:
             f"agent_{self.agent_id} wrote in memory: {experience} because of {source}")
 
         importance = self.get_importance(experience)
+
+        self.importance_sum += importance
+        if self.importance_sum >= self.reflect_threshold:
+            self.importance_sum = 0
+            self.reflect_from_memory()
 
         if interactant is None:
             interactant = self.name
@@ -348,18 +354,34 @@ class Agent:
         return messages
 
     def react(self):
+        from AISimuToolKit.exp.agents.Courier import Courier
         messages = self.check_mailbox()
+        if len(messages) == 0:
+            return
         self.summarize()
         for message in messages:
             if not message["replyable"]:
                 continue
-            check_if_reply_prompt = "Act as you are {}:{}.Based on the information below, would you like reply to {}\n".format(
-                self.name, self.summary, message["from"])
-            check_if_reply_prompt += '\n'.join(messages)
-            check_if_reply_prompt += "Start your answer with 'Yes' or 'No',then your reply if you want to reply"
-            reply = self._chat(check_if_reply_prompt)
-            if "Yes" in reply.split("\n")[0]:
-                Courier.send(message["from"], reply.replace(reply.split("\n")[0], "").strip(), replyable=True)
+            memory_about_message = self.memory.retrieve_by_query(weights=self.retrieve_weight, query=message["content"])
+            memory_about_message = "\n".join(
+                [str(idx) + ":" + item["experience"] for idx, item in enumerate(memory_about_message)])
+            background_prompt = "Act as you are {}:{}.\n{}\nBased on the information below, who would you like to talk to\n".format(
+                self.name, memory_about_message, self.summary)
+            background_prompt += '\n'.join(messages)
+            select_prompt = background_prompt + "Select one or more people you want to talk to from the given " \
+                                                "list:\n{}\n, or output 'NO' if you decide not to talk to.".format(
+                Courier.all_receivers_name())
+            talk_to = self._chat(select_prompt)
+            if "NO" in talk_to:
+                continue
+            talk_to = self._chat(
+                "Format the person wish to chat with in the following sentences as:\nPerson 1\nPerson 2\nPerson 3")
+            talk_to = talk_to.split("\n")
+            for person in talk_to:
+                if person in Courier.all_receivers_name():
+                    sentence = self._chat(
+                        background_prompt + "\n" + "You are talking to {} ,what you want to say is:".format(person))
+                    Courier.send(msg=sentence, sender=self.name, receiver=message["from"], replyable=True)
 
     def receive(self, msg, sender, replyable=True):
         self.mailbox.append({"from": sender, "content": msg, "replyable": replyable})
