@@ -63,7 +63,7 @@
                 "When you're not cooking, You enjoys traveling to different parts of the world to explore different food cultures and gain inspiration for your dishes."
             ],
             "model_settings": {
-                "model_name": "LLaMA",
+                "model_name": "GPT-3.5-turbo",
                 "fine_tune": false,
                 "config": {
                     "num_epochs": 3,

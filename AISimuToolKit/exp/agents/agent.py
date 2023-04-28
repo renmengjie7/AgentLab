@@ -123,6 +123,10 @@ class Agent:
         self.logger.history(f"whole message:\n {whole_input}")
         self.logger.history(f"agent_{self.agent_id}: {answer}")
         return answer
+    
+    def probed(self, content: str, prompt: str="{}'s profile is: {}.\n{}"):
+        """prompt留出三个空, 分别是name、personality、content"""
+        return self._probe(content=content, prompt=prompt)
 
     def _save(self, experience: str, source: str = "experience") -> bool:
         """_summary_ 保存到记忆
@@ -256,26 +260,6 @@ class Agent:
                                agent=self.agent_id,
                                config=self.model_config)
 
-    # def _reflect(self,
-    #              num: int,
-    #              prompt: str = "Your name is {}\n Your profile_list: {}. How do you think your profile_list has "
-    #                            "changed over the course of your recent experience? Here's your experience: \n"):
-    #     """
-    #     改变profile的反思
-    #     :param num:
-    #     :param prompt:
-    #     :return:
-    #     """
-    #     recent_memory = self.memory.retrieve_by_recentness(num)
-    #     profile = ''.join(self.profile_list)
-    #     prompt = prompt.format(self.name, profile)
-    #     # 拼接memory
-    #     content = prompt + "\n".join(item['experience']
-    #                                  for item in recent_memory)
-    #     answer = self._chat(content)
-    #     self.logger.history(f"agent_{self.agent_id} reflect: {answer}\nbased on memory{prompt}")
-    #     return answer
-
     def decide(self,
                question: str = None, answers: List[str] = None,
                message: str = None,
@@ -305,7 +289,7 @@ class Agent:
             text (str): _description_
             prompt (str, optional): _description_. Defaults to 'You read'.
         """
-        self._save(experience=prompt.format(text), source="read")
+        self.recieve(content=f"{self.name} read {text}")
 
     def eat(self, food: List[str], time: str = '', prompt: str = 'You ate {} {}'):
         """_summary_ 模拟人类吃东西
@@ -329,3 +313,14 @@ class Agent:
 
     def _generate_natural_prompt(self, raw_prompt: str) -> str:
         pass
+
+    def recieve(self, content):
+        """接受到了某种信息"""
+        self._save(experience=content)
+
+    def talk2(self, content, agents: List['Agent']):
+        """对一群agents说xx"""
+        experience = f"{self.name} saied to {','.join([agent.name for agent in agents])} that {content}"
+        self._save(experience=experience)
+        for agent in enumerate(agents):
+            agent.recieve(content=experience)

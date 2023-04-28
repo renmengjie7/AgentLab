@@ -133,3 +133,8 @@ class Experiment:
         logger = Logger(log_file=os.path.join(exp_path, "log.txt"),
                         history_file=os.path.join(exp_path, "history.txt"))
         return exp_path
+
+    def probe(self, agent: Agent, content: str, prompt: str="{}'s profile is: {}.\n{}"):
+        """采访某个agent xxx"""
+        return agent.probed(content=content, prompt=prompt)
+    
