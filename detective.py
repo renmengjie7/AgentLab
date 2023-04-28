@@ -30,7 +30,7 @@ def main():
                               "kidnapped his daughter Gu Jingzi, demanded 300 million yen in ransom, and had to shut "
                               "down the company for one month. Please find clues step by step to complete the "
                               "reasoning: the people involved include the kidnapped Akiko, and the housekeeper Aso "
-                              "who allegedly witnessed the kidnapper's home.")
+                              "who allegedly witnessed the kidnapper's home.", sender="police")
         for agent in exp.agents:
             agent.react()
 

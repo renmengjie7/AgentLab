@@ -127,8 +127,8 @@ class Agent:
         self.logger.history(f"whole message:\n {whole_input}")
         self.logger.history(f"agent_{self.agent_id}: {answer}")
         return answer
-    
-    def probed(self, content: str, prompt: str="{}'s profile is: {}.\n{}"):
+
+    def probed(self, content: str, prompt: str = "{}'s profile is: {}.\n{}"):
         """prompt留出三个空, 分别是name、personality、content"""
         return self._probe(content=content, prompt=prompt)
 
@@ -310,7 +310,7 @@ class Agent:
             prompt (str, optional): _description_. Defaults to 'You ate {} {}'.
         """
         self._save(experience=prompt.format(','.join(food), time), source="eat")
-        
+
     def _generate_natural_prompt(self, raw_prompt: str) -> str:
         pass
 
@@ -327,7 +327,7 @@ class Agent:
         self._save(experience=experience)
         for agent in enumerate(agents):
             agent.recieve_info(content=experience)
-            
+
     def check_mailbox(self):
         """
         mailbox中的信息会被读取并存入memory,mailbox会被清空,mailbox的格式是[{"from":agent_id,"content":content,"replyable":True}]
@@ -355,21 +355,21 @@ class Agent:
                 [str(idx) + ":" + item["experience"] for idx, item in enumerate(memory_about_message)])
             background_prompt = "Act as you are {}:{}.\n{}\nBased on the information below, who would you like to talk to\n".format(
                 self.name, memory_about_message, self.summary)
-            background_prompt += '\n'.join(messages)
-            select_prompt = background_prompt + "Select one or more people you want to talk to from the given " \
+            background_prompt += '\n'.join([message["content"] for message in messages])
+            select_prompt = background_prompt + "\nSelect one or more people you want to talk to from the given " \
                                                 "list:\n{}\n, or output 'NO' if you decide not to talk to.".format(
-                Courier.all_receivers_name())
+                list(set(Courier.all_receivers_name()) - {self.name}))
             talk_to = self._chat(select_prompt)
             if "NO" in talk_to:
                 continue
             talk_to = self._chat(
-                "Format the person wish to chat with in the following sentences as:\nPerson 1\nPerson 2\nPerson 3")
-            talk_to = talk_to.split("\n")
+                "Extract the person who 'I' wants to communicate with in the following sentence,\noutput example: name1;name2\ndo nothing else.\n" + talk_to)
+            talk_to = talk_to.split(";")
             for person in talk_to:
                 if person in Courier.all_receivers_name():
                     sentence = self._chat(
                         background_prompt + "\n" + "You are talking to {} ,what you want to say is:".format(person))
-                    Courier.send(msg=sentence, sender=self.name, receiver=message["from"], replyable=True)
+                    Courier.send(msg=sentence, sender=self.name, receiver=person, replyable=True)
 
     def receive(self, msg, sender, replyable=True):
         self.mailbox.append({"from": sender, "content": msg, "replyable": replyable})

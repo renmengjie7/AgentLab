@@ -38,9 +38,9 @@ class Courier:
             sender = Courier._instance.id2name[sender]
         if isinstance(receiver, str):
             receiver = Courier._instance.name2id[receiver]
-            receiver = Courier._instance.agents[receiver]
+            receiver = Courier._instance.agents[receiver - 1]
         elif isinstance(receiver, int):
-            receiver = Courier._instance.agents[receiver]
+            receiver = Courier._instance.agents[receiver - 1]
         receiver.receive(msg=msg, sender=sender, replyable=replyable)
 
     @staticmethod
