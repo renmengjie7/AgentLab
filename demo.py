@@ -28,8 +28,8 @@ def main():
     # agent_list.misc.retrieve_weight: 检索权重
     # agent_list.misc.reflect_nums: 反思阶段，用于反思的加权排序后记忆的个数
     # agent_list.misc.summary_nums：总结阶段，用于总结的加权排序后记忆的个数
-    exp = Experiment.load(config="test/files4test/expe_config.json",
-                          model_config="test/files4test/model.yaml",
+    exp = Experiment.load(config="test/files4test/demo/expe_config.json",
+                          model_config="test/files4test/demo/model.yaml",
                           output_dir="experiments", custom_class=custom_class)
 
     # 新加字段decide_by，分为summary和profile
