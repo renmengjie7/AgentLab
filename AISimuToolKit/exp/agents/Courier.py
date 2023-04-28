@@ -6,7 +6,7 @@
 """
 
 import threading
-from typing import List
+from typing import List, Union
 
 from AISimuToolKit.exp.agents.agent import Agent
 
@@ -18,6 +18,7 @@ class Courier:
     def __init__(self, agents: List[Agent]):
         self.agents = agents
         self.id2name = {agent.agent_id: agent.name for agent in agents}
+        self.name2id = {agent.name: agent.agent_id for agent in agents}
 
     def __new__(cls, agents: List[Agent]):
         if not cls._instance:
@@ -28,7 +29,20 @@ class Courier:
         return cls._instance
 
     @staticmethod
-    def send(msg: str, sender: Agent, receiver: Agent, replyable: bool = True):
+    def send(msg: str, sender: Union[Agent, str, int], receiver: Union[Agent, str, int], replyable: bool = True):
         if Courier._instance is None:
             raise Exception("Courier has not been initialized yet.")
+        if isinstance(sender, Agent):
+            sender = sender.name
+        elif isinstance(sender, int):
+            sender = Courier._instance.id2name[sender]
+        if isinstance(receiver, str):
+            receiver = Courier._instance.name2id[receiver]
+            receiver = Courier._instance.agents[receiver]
+        elif isinstance(receiver, int):
+            receiver = Courier._instance.agents[receiver]
         receiver.receive(msg=msg, sender=sender, replyable=replyable)
+
+    @staticmethod
+    def all_receivers_name():
+        return [agent.name for agent in Courier._instance.agents]
