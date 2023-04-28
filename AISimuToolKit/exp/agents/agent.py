@@ -337,22 +337,24 @@ class Agent:
         for idx, agent in enumerate(agents):
             agent.recieve_info(content=experience)
 
-    def check_mailbox(self):
+    def check_mailbox(self, timestep: int):
         """
-        mailbox中的信息会被读取并存入memory,mailbox会被清空,mailbox的格式是[{"from":agent_id,"content":content,"replyable":True}]
+        mailbox中的信息会被读取并存入memory,mailbox会被清空,mailbox的格式是[{"from":agent_id,"content":content,"replyable":True,"timestep:0}]
         :return:
         """
-        messages = self.mailbox
-        self.mailbox = []
+        messages = []
+        while self.mailbox and self.mailbox[0]["timestep"] <= timestep:
+            messages.append(self.mailbox.pop(0))
+
         for message in messages:
             interactant = message["from"]
             content = message["content"]
             self._save(experience=content, source="mailbox", interactant=interactant)
         return messages
 
-    def react(self):
+    def react(self, timestep: int):
         from AISimuToolKit.exp.agents.Courier import Courier
-        messages = self.check_mailbox()
+        messages = self.check_mailbox(timestep)
         if len(messages) == 0:
             return
         self.summarize()
@@ -361,24 +363,28 @@ class Agent:
                 continue
             memory_about_message = self.memory.retrieve_by_query(weights=self.retrieve_weight, query=message["content"])
             memory_about_message = "\n".join(
-                [str(idx) + ":" + item["experience"] for idx, item in enumerate(memory_about_message)])
-            background_prompt = "Act as you are {}:{}.\n{}\nBased on the information below, who would you like to talk to\n".format(
-                self.name, memory_about_message, self.summary)
-            background_prompt += '\n'.join([message["content"] for message in messages])
-            select_prompt = background_prompt + "\nSelect one or more people you want to talk to from the given " \
-                                                "list:\n{}\n, or output 'NO' if you decide not to talk to.".format(
+                [str(idx + 1) + ":" + item["experience"] for idx, item in enumerate(memory_about_message)])
+            background_prompt = "Act as you are {}:{}.\nHere are some experience might be useful:\n{}\nThe following is send from {}, please read about it and decide who would you like to talk to\n".format(
+                self.name, self.summary, memory_about_message, message["from"])
+            background_prompt += "\n{}\n".format(message["content"])
+            select_prompt = background_prompt + "\nSelect one or more or none of the people you want to talk to from the given list:\n{}\n.".format(
                 list(set(Courier.all_receivers_name()) - {self.name}))
             talk_to = self._chat(select_prompt)
-            if "NO" in talk_to:
-                continue
             talk_to = self._chat(
                 "Extract the person who 'I' wants to communicate with in the following sentence,\noutput example: name1;name2\ndo nothing else.\n" + talk_to)
             talk_to = talk_to.split(";")
+            self.logger.history("agent_{} talk to {}".format(self.agent_id, "&".join(talk_to)))
             for person in talk_to:
-                if person in Courier.all_receivers_name():
-                    sentence = self._chat(
-                        background_prompt + "\n" + "You are talking to {} ,what you want to say is:".format(person))
-                    Courier.send(msg=sentence, sender=self.name, receiver=person, replyable=True)
+                for name in Courier.all_receivers_name():
+                    if name in person:
+                        sentence = self._chat(
+                            background_prompt + "\n" + "You are talking to {} ,what you want to say is:".format(person))
+                        sentence = self._chat(
+                            "Narrate the following conversation in the same tone that 'I' would speak to 'you'\n{}".format(
+                                sentence))
+                        self.logger.history("agent_{} talk to {} that {}".format(self.agent_id, person, sentence))
+                        Courier.send(msg=sentence, sender=self.name, receiver=name, replyable=True,
+                                     timestep=timestep + 1)
 
-    def receive(self, msg, sender, replyable=True):
-        self.mailbox.append({"from": sender, "content": msg, "replyable": replyable})
+    def receive(self, msg: str, sender: str, timestep: int, replyable: bool = True, ) -> None:
+        self.mailbox.append({"from": sender, "content": msg, "replyable": replyable, "timestep": timestep})
