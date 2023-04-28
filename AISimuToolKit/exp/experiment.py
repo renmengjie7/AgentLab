@@ -159,3 +159,13 @@ class Experiment:
                 max_idx = idx
                 max_score = answer
         return max_idx
+
+    def inject_background(self, message: str, prompt: str="{} {}"):
+        """_summary_ 注入背景信息
+
+        Args:
+            message (str): _description_
+            prompt (str, optional): _description_. Defaults to "{} {}". 第一空是name, 第二个是message
+        """
+        for agent in self.agents:
+            agent.recieve_info(prompt.format(agent.name, message))
