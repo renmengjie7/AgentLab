@@ -1,5 +1,10 @@
-# AISimuToolKit: use LLM to 
+# AISimuToolKit: Use language models to simulate experiments
 
+<p align="center">
+    <a href="https://pypi.org/project/AISimuToolKit/">
+        <img alt="PyPI" src="https://img.shields.io/pypi/v/AISimuToolKit?color=gree">
+    </a>
+</p>
 
 ## Installation
 
