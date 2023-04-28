@@ -286,7 +286,7 @@ class Agent:
             self._save(experience=f'{message}. choosed {answer}', source="decide")
         return answer
 
-    def read(self, text: str, prompt: str = 'You read a news {}'):
+    def read(self, text: str):
         """_summary_ 模拟人类阅读功能
 
         Args:

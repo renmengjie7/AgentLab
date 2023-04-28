@@ -140,8 +140,22 @@ class Experiment:
         """采访某个agent xxx"""
         return agent.probed(content=content, prompt=prompt)
     
-    def choose_next_one(self, prompt: str = "Choose one agent to continue: ") -> Agent:
-        """串行场景, 只能选出一个来做出某种action"""
-        for agent in self.agents:
-            agent.desire("How strong is your desire to speak? 1 means you don’t want to speak, 10 means you want to "
-                         "speak very much, give a number from 1-10", prompt=prompt)
+    def choose_next_one(self, message=str, 
+                        prompt: str = "{}'s profile is: {}.\n{}") -> Agent:
+        """
+        TODO 直接cue一个人则这个人的score会更高
+        串行场景, 只能选出一个来做出某种action
+        """
+        max_score = 0
+        max_idx = 0
+        for idx, agent in enumerate(self.agents):
+            answer = self.probe(agent=agent, content=message, prompt=prompt)
+            try:
+                answer = int(answer)
+            except ValueError as e:
+                print(f"Failed to convert '{answer}' to an integer: {e}")
+                continue
+            if max_score <= answer:
+                max_idx = idx
+                max_score = answer
+        return max_idx
