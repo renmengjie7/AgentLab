@@ -33,7 +33,7 @@ def main():
                           output_dir="experiments", custom_class=custom_class)
 
     # 新加字段decide_by，分为summary和profile
-    answer = exp.agents[1].decide(message='Will you be interested in the news below?\n'
+    answer = exp.agents[0].decide(message='Will you be interested in the news below?\n'
                                           'The news title: %s\n'
                                           'The news content: %s\n'
                                           'The answer should start with "Yes" or "No" '
@@ -41,15 +41,13 @@ def main():
                                               news['title'], news['content']),
                                   prompt="Your name is {}.\nYour profile: {}.\nNow I will interview you.\n{}",
                                   save=False, decide_by="profile")
-    exp.agents[1].read(text=f"Title: {news['title']}; Content: {news['content']}",
+    exp.agents[0].read(text=f"Title: {news['title']}; Content: {news['content']}",
                        prompt='You read a news——{}')
     
     # 调用私有方法用于调试
-    exp.agents[1]._save("Alice is very hungry now, she really wants to eat a McDonald's double-decker Big Mac")
-    exp.agents[1]._save("In addition, she also wants to go to the cinema to watch the latest movie in the evening")
-    exp.agents[1]._save("Since there is no seasoning at home, she still needs to buy some soy sauce before going home")
-    
-    exp.agents[1]._finetune(2)
+    exp.agents[0]._save("Alice is very hungry now, she really wants to eat a McDonald's double-decker Big Mac")
+    exp.agents[0]._save("In addition, she also wants to go to the cinema to watch the latest movie in the evening")
+    exp.agents[0]._save("Since there is no seasoning at home, she still needs to buy some soy sauce before going home")
 
     # 参考原始论文实现的反思，目前由于记忆较少，可能生成重复的反思，可以通过自定义类的方式修改
     exp.agents[0].reflect_from_memory()

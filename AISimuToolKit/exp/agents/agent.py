@@ -108,7 +108,7 @@ class Agent:
     # 需要更广泛的自定义
     def _probe(self,
                message: str, decide_by: str = "summary",
-               prompt: str = "Your name is {}\n Your profile is: {}. Now I will interview you. \n{}") -> str:
+               prompt: str = "{}'s profile is: {}.\n{}") -> str:
         """
         采访(量表), 不会留下记忆
         :param message:
@@ -127,6 +127,10 @@ class Agent:
         self.logger.history(f"whole message:\n {whole_input}")
         self.logger.history(f"agent_{self.agent_id}: {answer}")
         return answer
+    
+    def probed(self, content: str, prompt: str="{}'s profile is: {}.\n{}"):
+        """prompt留出三个空, 分别是name、personality、content"""
+        return self._probe(content=content, prompt=prompt)
 
     def _save(self, experience: str, source: str = "experience", interactant: str = None) -> None:
         """_summary_ 保存到记忆
@@ -266,30 +270,10 @@ class Agent:
                                agent=self.agent_id,
                                config=self.model_config)
 
-    # def _reflect(self,
-    #              num: int,
-    #              prompt: str = "Your name is {}\n Your profile_list: {}. How do you think your profile_list has "
-    #                            "changed over the course of your recent experience? Here's your experience: \n"):
-    #     """
-    #     改变profile的反思
-    #     :param num:
-    #     :param prompt:
-    #     :return:
-    #     """
-    #     recent_memory = self.memory.retrieve_by_recentness(num)
-    #     profile = ''.join(self.profile_list)
-    #     prompt = prompt.format(self.name, profile)
-    #     # 拼接memory
-    #     content = prompt + "\n".join(item['experience']
-    #                                  for item in recent_memory)
-    #     answer = self._chat(content)
-    #     self.logger.history(f"agent_{self.agent_id} reflect: {answer}\nbased on memory{prompt}")
-    #     return answer
-
     def decide(self,
                question: str = None, answers: List[str] = None,
                message: str = None,
-               prompt: str = "Your name is {}\n Your profile is: {}. Now I will interview you. \n{}",
+               prompt: str = "{}'s profile is: {}.\n{}",
                save: bool = True, decide_by: str = "summarize"):
         """_summary_ 模拟人类决策
         decide=_probe+_save (if need)
@@ -308,14 +292,14 @@ class Agent:
             self._save(experience=f'{message}. choosed {answer}', source="decide")
         return answer
 
-    def read(self, text: str, prompt: str = 'You read a news {}'):
+    def read(self, text: str):
         """_summary_ 模拟人类阅读功能
 
         Args:
             text (str): _description_
             prompt (str, optional): _description_. Defaults to 'You read'.
         """
-        self._save(experience=prompt.format(text), source="read")
+        self.recieve(content=f"{self.name} read {text}")
 
     def eat(self, food: List[str], time: str = '', prompt: str = 'You ate {} {}'):
         """_summary_ 模拟人类吃东西
@@ -326,20 +310,24 @@ class Agent:
             prompt (str, optional): _description_. Defaults to 'You ate {} {}'.
         """
         self._save(experience=prompt.format(','.join(food), time), source="eat")
-
-    def talk(self, agent: 'Agent', context: str):
-        """_summary_ 
-        TODO 如果涉及交谈感觉就需要保留交流的上下文了
-        TODO 还要区分主动被动? 存入记忆, 一句话占一条?
-        Args:
-            agent (Agent): _description_
-            context (str): _description_
-        """
-        pass
-
+        
     def _generate_natural_prompt(self, raw_prompt: str) -> str:
         pass
 
+    def recieve_info(self, content):
+        """接受到了某种信息"""
+        self._save(experience=content)
+
+    def talk2(self, content, agents: List['Agent']):
+        """
+        TODO 如果涉及交谈感觉就需要保留交流的上下文了
+        对一群agents说xx"
+        """
+        experience = f"{self.name} saied to {','.join([agent.name for agent in agents])} that {content}"
+        self._save(experience=experience)
+        for agent in enumerate(agents):
+            agent.recieve_info(content=experience)
+            
     def check_mailbox(self):
         """
         mailbox中的信息会被读取并存入memory,mailbox会被清空,mailbox的格式是[{"from":agent_id,"content":content,"replyable":True}]
