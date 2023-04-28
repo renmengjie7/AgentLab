@@ -9,6 +9,7 @@ import os.path
 import re
 from typing import List
 
+from AISimuToolKit.exp.agents.Courier import Courier
 from AISimuToolKit.exp.agents.memory import Memory
 from AISimuToolKit.model.model import ApiBase
 from AISimuToolKit.store.logger import Logger
@@ -51,6 +52,8 @@ class Agent:
                                           "extremely poignant (e.g., a break up,college acceptance), rate the likely poignancy of the following "
                                           "piece of memory. \nMemory: {} \n Rating: <fill in>")
         self.summary = " ".join(profile)
+
+        self.mailbox = []
         self.get_num_pattern = r"\d+\.?\d*|\.\d+"
 
         for item in self.profile_list:
@@ -124,7 +127,7 @@ class Agent:
         self.logger.history(f"agent_{self.agent_id}: {answer}")
         return answer
 
-    def _save(self, experience: str, source: str = "experience") -> bool:
+    def _save(self, experience: str, source: str = "experience", interactant: str = None) -> None:
         """_summary_ 保存到记忆
         Args:
             experience (str): _description_ 经历
@@ -134,8 +137,9 @@ class Agent:
 
         importance = self.get_importance(experience)
 
-        self.memory.store(interactant='', experience=experience, source=source, importance=importance)
-        return True
+        if interactant is None:
+            interactant = self.name
+        self.memory.store(interactant=interactant, experience=experience, source=source, importance=importance)
 
     def get_importance(self, experience: str) -> float:
         importance = self._chat(self.importance_prompt.format(experience))
@@ -329,3 +333,33 @@ class Agent:
 
     def _generate_natural_prompt(self, raw_prompt: str) -> str:
         pass
+
+    def check_mailbox(self):
+        """
+        mailbox中的信息会被读取并存入memory,mailbox会被清空,mailbox的格式是[{"from":agent_id,"content":content,"replyable":True}]
+        :return:
+        """
+        messages = self.mailbox
+        self.mailbox = []
+        for message in messages:
+            interactant = message["from"]
+            content = message["content"]
+            self._save(experience=content, source="mailbox", interactant=interactant)
+        return messages
+
+    def react(self):
+        messages = self.check_mailbox()
+        self.summarize()
+        for message in messages:
+            if not message["replyable"]:
+                continue
+            check_if_reply_prompt = "Act as you are {}:{}.Based on the information below, would you like reply to {}\n".format(
+                self.name, self.summary, message["from"])
+            check_if_reply_prompt += '\n'.join(messages)
+            check_if_reply_prompt += "Start your answer with 'Yes' or 'No',then your reply if you want to reply"
+            reply = self._chat(check_if_reply_prompt)
+            if "Yes" in reply.split("\n")[0]:
+                Courier.send(message["from"], reply.replace(reply.split("\n")[0], "").strip(), replyable=True)
+
+    def receive(self, msg, sender, replyable=True):
+        self.mailbox.append({"from": sender, "content": msg, "replyable": replyable})
