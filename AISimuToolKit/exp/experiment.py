@@ -140,7 +140,8 @@ class Experiment:
         """采访某个agent xxx"""
         return agent.probed(content=content, prompt=prompt)
     
-    # def choose_next_one(self, prompt: str = "Choose one agent to continue: ") -> Agent:
-    #     for agent in self.agents:
-    #         agent.desire("How strong is your desire to speak? 1 means you don’t want to speak, 10 means you want to "
-    #                      "speak very much, give a number from 1-10", prompt=prompt)
+    def choose_next_one(self, prompt: str = "Choose one agent to continue: ") -> Agent:
+        """串行场景, 只能选出一个来做出某种action"""
+        for agent in self.agents:
+            agent.desire("How strong is your desire to speak? 1 means you don’t want to speak, 10 means you want to "
+                         "speak very much, give a number from 1-10", prompt=prompt)

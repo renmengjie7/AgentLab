@@ -107,7 +107,7 @@ class Agent:
     # 需要更广泛的自定义
     def _probe(self,
                message: str, decide_by: str = "summary",
-               prompt: str = "Your name is {}\n Your profile is: {}. Now I will interview you. \n{}") -> str:
+               prompt: str = "{}'s profile is: {}.\n{}") -> str:
         """
         采访(量表), 不会留下记忆
         :param message:
@@ -267,7 +267,7 @@ class Agent:
     def decide(self,
                question: str = None, answers: List[str] = None,
                message: str = None,
-               prompt: str = "Your name is {}\n Your profile is: {}. Now I will interview you. \n{}",
+               prompt: str = "{}'s profile is: {}.\n{}",
                save: bool = True, decide_by: str = "summarize"):
         """_summary_ 模拟人类决策
         decide=_probe+_save (if need)
@@ -304,17 +304,7 @@ class Agent:
             prompt (str, optional): _description_. Defaults to 'You ate {} {}'.
         """
         self._save(experience=prompt.format(','.join(food), time), source="eat")
-
-    def talk(self, agent: 'Agent', context: str):
-        """_summary_ 
-        TODO 如果涉及交谈感觉就需要保留交流的上下文了
-        TODO 还要区分主动被动? 存入记忆, 一句话占一条?
-        Args:
-            agent (Agent): _description_
-            context (str): _description_
-        """
-        pass
-
+        
     def _generate_natural_prompt(self, raw_prompt: str) -> str:
         pass
 
@@ -323,7 +313,10 @@ class Agent:
         self._save(experience=content)
 
     def talk2(self, content, agents: List['Agent']):
-        """对一群agents说xx"""
+        """
+        TODO 如果涉及交谈感觉就需要保留交流的上下文了
+        对一群agents说xx"
+        """
         experience = f"{self.name} saied to {','.join([agent.name for agent in agents])} that {content}"
         self._save(experience=experience)
         for agent in enumerate(agents):
