@@ -69,7 +69,9 @@ class GPT_35_API(PublicApiBase):
     def __new__(cls,
                 config: dict = None,
                 *args, **kwargs):
-        """config为None只有在已经实例化后才能正常init时"""
+        """config为None只有在已经实例化后才能正常init时
+        if config is None, init is normal only when it has been instantiated
+        """
         if config is None and cls._instance is None:
             raise Exception('config is None, please init first')
         if cls._instance is None:
@@ -138,10 +140,12 @@ class PrivateApiBase(ApiBase):
         return cls._instance
 
     # TODO 维护一个字典, 采用某种策略选择url去chat或finetune以使最少load, 高效运行
+    # Maintain a dictionary and use a strategy for choosing urls to chat or finetune to run with minimal load and efficiency
     def get_url(self, exp: str, agent: str = None):
         """
         Choose the one with the least cost from urls
         TODO agent=None表示这个实验还没创建...是否需要负载均衡地将每个实验放到不同的url上, 还是在每个url上复制一份
+        means that the experiment has not been created... Whether you need to load balance each experiment to a different url or make a copy on each url
         """
         return list(self.urls.keys())[0]
 
@@ -205,8 +209,8 @@ class LLaMAAPI(PrivateApiBase):
         :param config:
         :param agent:
         :param exp:
-        :param path: 为agent的路径
-        :param datas: 为记忆
+        :param path: agent path
+        :param datas: memory
         """
         file_path = self.memory2finetunedata(_datas=datas, path=path)
 
@@ -216,7 +220,6 @@ class LLaMAAPI(PrivateApiBase):
         for key in config:
             params[key] = config[key]
         response = requests.post(f'{url}/finetune', params=params, files=files)
-        # TODO 测试一下返回值
         if json.loads(response.text)['code'] == 'success':
             return True
         else:
@@ -227,15 +230,14 @@ class LLaMAAPI(PrivateApiBase):
              query: str, instruction: str = None,
              history: list = [],
              *args, **kwargs):
-        # 在LLaMA中, instruction+query实际上对应其他模型的query
-        # TODO 暂不支持history 还没使用
+        # In LLaMA, instruction+query actually corresponds to query for other models
+        # TODO history is not supported yet
         url = self.get_url(exp=exp, agent=agent)
         params = {
             "exp": exp, "agent": str(agent),
             "query": '', "instruction": query
         }
         response = requests.post(f'{url}/chat', params=params, json=history)
-        # TODO 测试一下返回值
         return json.loads(response.text)['response']
 
     @classmethod
@@ -244,7 +246,7 @@ class LLaMAAPI(PrivateApiBase):
 
     @classmethod
     def memory2finetunedata(cls, _datas: List[dict], path: str, *args, **kwargs) -> str:
-        """_summary_ 将memory格式的数据转成模型特定的处理
+        """_summary_ convert memory into model-specific finetune data
 
         Args:
             datas (_type_): _description_
