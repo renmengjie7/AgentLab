@@ -6,7 +6,7 @@ init()
 
 
 def main():
-    exp = Experiment.load(config="test/files4test/leaderless_discuss/expe_config.json",
+    exp = Experiment.load(config="test/files4test/leaderless_discuss/exp_leaderless_discuss.json",
                           model_config="test/files4test/leaderless_discuss/model.yaml",
                           output_dir="experiments")
     exp.inject_background(

@@ -9,8 +9,8 @@ from AISimuToolKit.exp.experiment import Experiment
 
 
 def main():
-    exp = Experiment.load(config="test/files4test/parallel/demo_parallel.json",
-                          model_config="test/files4test/parallel/model.yaml",
+    exp = Experiment.load(config="test/files4test/meeting/exp_meeting.json",
+                          model_config="test/files4test/meeting/model.yaml",
                           output_dir="experiments")
 
     exp.agents[0].receive(
