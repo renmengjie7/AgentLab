@@ -178,7 +178,3 @@ class Memory:
 
         num = len(self.memory_df) if num == -1 else num
         return self.memory_df.sort_values(by="score", ascending=False).head(num).to_dict(orient="records")
-
-    # TODO public, one for rewriting conversations/retrieving related people /...
-    def get_model(self) -> PublicApiBase:
-        pass
