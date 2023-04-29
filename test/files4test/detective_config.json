@@ -2,8 +2,8 @@
     "experiment_name": "detective",
     "description": "Company President's Daughter Kidnapping Case",
     "experiment_settings": {
-        "round_nums": 10,
-        "extra_columns": []
+        "extra_columns": [],
+        "attenuation_coe": 0.7
     },
     "external_toolkit": {
         "enable_external_toolkit": false,
