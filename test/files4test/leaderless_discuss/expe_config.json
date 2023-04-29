@@ -2,7 +2,6 @@
     "experiment_name": "leaderless discussion",
     "description": "Just an example of serial emulation",
     "experiment_settings": {
-       
     },
     "agent_list": [
         {
@@ -61,7 +60,8 @@
             "role": "team 2",
             "profile": [
                 "Jerre is a senior student majoring in Electronic Information.",
-                "Besides being a diligent student, Jerre is also a national level 2 table tennis athlete, which reflects his passion and talent for sports. ","Although Jerre has an average English proficiency, his communication and expression skills are commendable."
+                "Besides being a diligent student, Jerre is also a national level 2 table tennis athlete, which reflects his passion and talent for sports. ",
+                "Although Jerre has an average English proficiency, his communication and expression skills are commendable."
             ],
             "model_settings": {
                 "model_name": "GPT-3.5-turbo",

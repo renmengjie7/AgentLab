@@ -47,7 +47,7 @@ class Logger:
 
                         # 创建控制台处理器，将日志打印到控制台
                         cls._instance.console_handler = logging.StreamHandler()
-                        cls._instance.console_handler.setLevel(logging.ERROR)
+                        cls._instance.console_handler.setLevel(logging.INFO)
 
                         # 创建格式器，设置日志格式
                         formatter_history = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
