@@ -21,6 +21,7 @@ python demo_detective.py
 
 ## 🥸 Functions
 1. Use LLM to simulate agents with different profiles
+
 2. Serial and parallel experiment
 3. Memory compression => summary, reflection and finetune
 4. A kit for simulation experiments
@@ -45,6 +46,9 @@ python demo_detective.py
 
 
 ## 👋 Contributing 
+Thank you for your attention and support to this project. If you find a problem or have suggestions for improvement, please feel free to create an Issue in this warehouse, we will deal with it in time.
+
+If you are interested in contributing to the project, feel free to Fork this repository and submit your code. We welcome all contributors !
 
 ## 🙇 References & Thanks
 1. LOGO from https://clipdrop.co/stable-diffusion
