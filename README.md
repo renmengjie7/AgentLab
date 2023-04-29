@@ -16,7 +16,7 @@
 conda create -n AISimu python==3.10
 pip install AISimuToolKit
 python demo_leaderless_discuss.py
-python demo_detective.py
+python demo_meeting.py
 ```
 
 ## 🥸 Functions
@@ -53,7 +53,7 @@ python demo_detective.py
 </div>
 
 
-2. **Parallel example** [demo_detective.py](demo_detective.py)  
+2. **Parallel example** [demo_meeting.py](demo_meeting.py)  
 **<u>Background</u>**  
 **<u>Result</u>**
 
