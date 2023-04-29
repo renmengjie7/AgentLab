@@ -13,7 +13,7 @@
 ## Installation
 
 ``` shell
-conda create -n AISImu python==3.10
+conda create -n AISimu python==3.10
 pip install AISimuToolKit
 ```
 
@@ -22,7 +22,7 @@ pip install AISimuToolKit
 
 ## Demo
 1. **Serial example**    [demo_leaderless_discuss.py](demo_leaderless_discuss.py)  
-**<u>Background</u>** Four people, Alice, Sophia, Jerre and Benjamin with different profiles are interviewing to be volunteers for the Olympics. This is a leaderless panel. The topic of discussion was "Minority language volunteers take half an hour to get to the site. As the only volunteer on site, now how will you inform foreigners of minority language that they must wear masks before entering the site"
+**<u>Background</u>** Four people, Alice, Sophia, Jerre and Benjamin with different profiles are interviewing to be volunteers for the Olympics. This is a leaderless panel. The topic of discussion was "Minority language volunteers take half an hour to get to the site. As the only volunteer on site, now how will you inform foreigners of minority language that they must wear masks before entering the site"  
 **<u>Result</u>**  
 <div align="center">
     <img src="images/demo_leaderless_discussion_1.jpg" height=400 alt=""/>
@@ -33,7 +33,7 @@ pip install AISimuToolKit
 
 
 2. **Parallel example** [demo_detective.py](demo_detective.py)
-**<u>Background</u>**
+**<u>Background</u>**  
 **<u>Result</u>**
 
 
