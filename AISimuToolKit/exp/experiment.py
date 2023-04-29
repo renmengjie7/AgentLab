@@ -17,7 +17,7 @@ from AISimuToolKit.utils.utils import generate_experiment_id, get_fromat_len, pa
 
 
 class Experiment:
-    def __init__(self, id: str, path: str, agents: List[Agent], config: dict, attenuation_coe: float=0.7):
+    def __init__(self, id: str, path: str, agents: List[Agent], config: dict, attenuation_coe: float = 0.7):
         self.id = id
         self.path = path
         self.agents = agents
@@ -25,8 +25,8 @@ class Experiment:
         self.config = config
         self.logger = Logger()
         # continuous speak needs a attenuation coefficient
-        self.attenuation_coe=0.7
-        self.continuous_count = {i:0 for i in range(0,len(agents))}
+        self.attenuation_coe = 0.7
+        self.continuous_count = {i: 0 for i in range(0, len(agents))}
 
     def get_agent_ids(self):
         return [agent.agent_id for agent in self.agents]
@@ -60,7 +60,7 @@ class Experiment:
         exp = Experiment(id=exp_id,
                          path=exp_path,
                          agents=agents,
-                         attenuation_coe=expe_config["experiment_settings"]['attenuation_coe'],
+                         attenuation_coe=expe_config["experiment_settings"].get("attenuation_coe", 0.7),
                          config=expe_config)
         save_config(config=expe_config, path=f'{exp.path}/init_config.json')
         return exp
@@ -120,9 +120,9 @@ class Experiment:
         """probe an agent"""
         return agent.probed(content=content, prompt=prompt)
 
-    def choose_next_one(self, 
+    def choose_next_one(self,
                         message=str,
-                        agents_idx: List[int]=None,
+                        agents_idx: List[int] = None,
                         prompt: str = "{}'s profile is: {}.\n{}") -> int:
         """
         TODO cue a person directly and that person's score will be higher
@@ -137,7 +137,7 @@ class Experiment:
             try:
                 answer = int(answer)
                 self.logger.info(f"agent_{idx + 1} score is {answer}")
-                answer *= (self.attenuation_coe**self.continuous_count[idx])
+                answer *= (self.attenuation_coe ** self.continuous_count[idx])
                 self.logger.info(f"agent_{idx + 1} score is {answer} after attenuation")
             except ValueError as e:
                 self.logger.error(f"Failed to convert '{answer}' to an integer: {e}")
@@ -146,7 +146,7 @@ class Experiment:
                 max_idx = idx
                 max_score = answer
         for i in agents_idx:
-            if i==max_idx:
+            if i == max_idx:
                 self.continuous_count[i] += 1
             else:
                 self.continuous_count[i] = 0

@@ -367,24 +367,26 @@ class Agent:
             background_prompt = "Act as you are {}:{}.\nHere are some experience might be useful:\n{}\nThe following is send from {}, please read about it and decide who would you like to talk to\n".format(
                 self.name, self.summary, memory_about_message, message["from"])
             background_prompt += "\n{}\n".format(message["content"])
-            select_prompt = background_prompt + "\nSelect one or more or none of the people you want to talk to from the given list:\n{}\n.".format(
+            select_prompt = background_prompt + "\nSelect one or more or none of the people you want to communicate with next from the given list\n{}\n".format(
                 list(set(Courier.all_receivers_name()) - {self.name}))
-            talk_to = self._chat(select_prompt)
-            talk_to = self._chat(
-                "Extract the person who 'I' wants to communicate with in the following sentence,\noutput example: name1;name2\ndo nothing else.\n" + talk_to)
-            talk_to = talk_to.split(";")
-            self.logger.history("agent_{} talk to {}".format(self.agent_id, "&".join(talk_to)))
-            for person in talk_to:
-                for name in Courier.all_receivers_name():
-                    if name in person:
-                        sentence = self._chat(
-                            background_prompt + "\n" + "You are talking to {} ,what you want to say is:".format(person))
-                        sentence = self._chat(
-                            "Narrate the following conversation in the same tone that 'I' would speak to 'you'\n{}".format(
-                                sentence))
-                        self.logger.history("agent_{} talk to {} that {}".format(self.agent_id, person, sentence))
-                        Courier.send(msg=sentence, sender=self.name, receiver=name, replyable=True,
-                                     timestep=timestep + 1)
+
+            for name in list(set(Courier.all_receivers_name()) - {self.name}):
+                check_if_talk = self._chat(background_prompt + "\n" + "Do you want to talk to {}".format(name))
+                self.logger.info(
+                    "agent_{} is deciding whether to talk to {}...{}".format(self.agent_id, name, check_if_talk))
+                check_if_talk = self._chat(
+                    "Check if 'I' want to communicate with {} in the following sentence,\noutput example: yes/no\ndo nothing else.\n".format(
+                        name) + check_if_talk)
+                self.logger.info("agent_{} is formatting output {}".format(self.agent_id, check_if_talk))
+                if "yes" in check_if_talk.lower():
+                    sentence = self._chat(
+                        background_prompt + "\n" + "You are talking to {} ,what you want to say is:".format(name))
+                    sentence = self._chat(
+                        "Narrate the following conversation in the same tone that 'I' would speak to 'you'\n{}".format(
+                            sentence))
+                    self.logger.history("agent_{} talk to {} that {}".format(self.agent_id, name, sentence))
+                    Courier.send(msg=sentence, sender=self.name, receiver=name, replyable=True,
+                                 timestep=timestep + 1)
 
     def receive(self, msg: str, sender: str, timestep: int, replyable: bool = True, ) -> None:
         self.mailbox.append({"from": sender, "content": msg, "replyable": replyable, "timestep": timestep})
