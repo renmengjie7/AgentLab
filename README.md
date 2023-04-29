@@ -10,7 +10,7 @@
     </a>
 </p>
 
-## 🥷🏼 Quick Install
+## 🔨 Quick Install
 
 ``` shell
 conda create -n AISimu python==3.10
@@ -58,7 +58,7 @@ python demo_detective.py
 **<u>Result</u>**
 
 
-## TODO list
+## 📝 TODO list
 - Add environment
     - Social 
     - Physical
