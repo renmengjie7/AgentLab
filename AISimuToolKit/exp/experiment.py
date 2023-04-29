@@ -21,7 +21,7 @@ class Experiment:
         self.id = id
         self.path = path
         self.agents = agents
-        # 用户传入的config
+        # config passed in by the user
         self.config = config
         self.logger = Logger()
 
@@ -34,17 +34,18 @@ class Experiment:
              model_config: str,
              output_dir: str = "experiments",
              custom_class: dict = None) -> "Experiment":
-        """_summary_ 从json配置文件中加载并示例化一个experiment
+        """_summary_ Load and instantiate an experiment from a json configuration file
 
         Args:
-            config (str): _description_  实验的配置文件 
-            model_config (str): _description_ 配置每个模型对应的url
-            output_dir (str): _description_  日志、历史等存储位置
+            config (str): _description_  The configuration file for the experiment
+            model_config (str): _description_ Configure the url for each model
+            output_dir (str): _description_  Storage location for logs and history
 
         Returns:
             _type_: _description_
         """
-        # 直接使用时间戳做实验ID, 应该不需要检查id是否重复
+        # Use the timestamp directly as the experiment ID 
+        # no need to checking if the id is duplicate
         exp_id = generate_experiment_id()
         exp_path = Experiment.mk_exp_dir(output_dir, exp_id)
         with open(config, 'r') as file:
@@ -60,34 +61,8 @@ class Experiment:
         save_config(config=expe_config, path=f'{exp.path}/init_config.json')
         return exp
 
-    @staticmethod
-    def preprocess_agent(json_data: dict, exp_path: str):
-        """_summary_ 对智能体的处理、目录、配置文件的创建
-
-        Args:
-            json_data (dict): _description_ 待处理的json
-            exp_path (str): _description_ 实验根目录
-
-        Returns:
-            _type_: _description_
-        """
-        agent_list = copy.deepcopy(json_data["agent_list"])
-        agents_num = len(agent_list)
-        format_num_len = get_fromat_len(num=agents_num)
-
-        agent_model_dict = dict()
-        role_list = set()  # TODO 团队...
-        for idx, agent in enumerate(agent_list):
-            agent["agent_id"] = idx
-            agent["agent_path"] = Experiment.save_agent_config(agent=agent,
-                                                               exp_path=exp_path,
-                                                               format_num_len=format_num_len)
-            agent_model_dict[idx] = agent["model_settings"]
-            role_list.add(agent["role"])
-        return agents_num, agent_model_dict, list(role_list), agent_list
-
     def get_role_list(self):
-        role_list = set()  # TODO 团队...
+        role_list = set()  # TODO team...
         for agent in self.agents:
             role_list.add(agent.role)
         return list(role_list)
@@ -126,26 +101,26 @@ class Experiment:
     @staticmethod
     def mk_exp_dir(output_dir: str, exp_id: str) -> str:
         """"
-        实验相关的目录创建
-        :return 实验根目录
+        Experiment related directory creation
+        :return exp root dir 
         """
         exp_path = os.path.join(output_dir, exp_id)
         os.makedirs(exp_path, exist_ok=True)
 
-        # 实例化一个logger，控制文件位置
+        # Instantiate a logger to control file location
         logger = Logger(log_file=os.path.join(exp_path, "log.txt"),
                         history_file=os.path.join(exp_path, "history.txt"))
         return exp_path
 
     def probe(self, agent: Agent, content: str, prompt: str="{}'s profile is: {}.\n{}"):
-        """采访某个agent xxx"""
+        """probe an agent"""
         return agent.probed(content=content, prompt=prompt)
     
     def choose_next_one(self, message=str, 
                         prompt: str = "{}'s profile is: {}.\n{}") -> Agent:
         """
-        TODO 直接cue一个人则这个人的score会更高
-        串行场景, 只能选出一个来做出某种action
+        TODO cue a person directly and that person's score will be higher
+        In a list of scenarios, only one can be selected to take some action
         """
         max_score = 0
         max_idx = 0
@@ -163,11 +138,11 @@ class Experiment:
         return max_idx
 
     def inject_background(self, message: str, prompt: str="{} {}"):
-        """_summary_ 注入背景信息
+        """_summary_ 
 
         Args:
             message (str): _description_
-            prompt (str, optional): _description_. Defaults to "{} {}". 第一空是name, 第二个是message
+            prompt (str, optional): _description_. Defaults to "{} {}". first is name, second is message
         """
         for agent in self.agents:
             agent.recieve_info(prompt.format(agent.name, message))
