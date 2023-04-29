@@ -25,10 +25,10 @@ pip install AISimuToolKit
 **<u>Background</u>** Four people, Alice, Sophia, Jerre and Benjamin with different profiles are interviewing to be volunteers for the Olympics. This is a leaderless panel. The topic of discussion was "Minority language volunteers take half an hour to get to the site. As the only volunteer on site, now how will you inform foreigners of minority language that they must wear masks before entering the site"
 **<u>Result</u>**  
 <div align="center">
-    <img src="images/demo_leaderless_discussion_1.jpeg" height=400 alt=""/>
+    <img src="images/demo_leaderless_discussion_1.jpg" height=400 alt=""/>
 </div>
 <div align="center">
-    <img src="images/demo_leaderless_discussion_2.jpeg" height=300 alt=""/>
+    <img src="images/demo_leaderless_discussion_2.jpg" height=300 alt=""/>
 </div>
 
 
