@@ -12,14 +12,15 @@ from AISimuToolKit.store.logger import Logger
 
 class Memory:
     """
-    文本形式储存记忆,记忆储存在变量中，同时会以append的形式储存到对应的agent文件夹下，在调用export_memory的时候，将记忆导出到文件中
-    记忆以对话的形式存储
+    Memory is stored as text, stored in variables, stored in the corresponding agent folder as append, and exported to a file when export_memory is called
+    Memories are stored as experience
     """
 
-    # TODO interactant似乎是一个不常用/不正确的词，可以考虑换一个
+    # TODO interactant seems to be an uncommon/incorrect word. Consider replacing it
     def __init__(self, memory_path: str, extra_columns: List[str] = None, auto_rewrite: bool = True):
         """
-        记忆储存、检索、导出模块，可以通过extra_columns参数添加额外的列
+        The memory store, retrieve, and export modules
+        can add additional columns with the extra_columns argument
         :param memory_path:
         :param extra_columns:
         """
@@ -37,7 +38,7 @@ class Memory:
         self.bert = BertSentenceEmbedding()
         self.auto_rewrite = auto_rewrite
 
-        # TODO 用timestep替换他
+        # TODO Replace it with timestep
         self.curr_id = 0
 
         if self.auto_rewrite:
@@ -53,37 +54,12 @@ class Memory:
             self.memory_df.drop(column_name, axis=1, inplace=True)
             self.logger.info("Remove column {} from memory".format(column_name))
 
-    # def store(self, experience: str, interactant: str = '', *args, **kwargs):
-    #     """
-    #     json格式存储记忆，字段包括自增id，交互对象，对话的两端，时间
-    #     TODO 是否需要显示地给出交互对象, 感觉自然语言描述已经可以了, 现在暂时都设置为空
-    #     :param interactant: 交互对象
-    #     :param question:
-    #     :param answer:
-    #     :param args:
-    #     :param kwargs:
-    #     :return:
-    #     """
-    #     current_time = time.time()
-    #     memory_item = {
-    #         "id": self.memory_id,
-    #         "interactant": interactant,
-    #         "experience": experience,
-    #         # "question": question,
-    #         # "answer": answer,
-    #         "time": str(current_time)
-    #     }
-    #     with open(self.memory_path, "a", encoding="utf-8") as f:
-    #         f.write(json.dumps(memory_item, ensure_ascii=False) + "\n")
-    #     self.memory_list.append(memory_item)
-    #     self.memory_id += 1
-
-    # TODO 是否需要显示地给出交互对象, 感觉自然语言描述已经可以了, 现在暂时都设置为空
-    # TODO 需要更完善的逻辑判断,加入自动改写（或者移到做finetune前）
+    # TODO Whether need to display the interaction object, the natural language description seems to be OK, for now all set to blank
     def store(self, timestep: TimeStep = None, experience: str = None, question: str = None, answer: str = None,
               interactant: str = '', source: str = None, importance: float = 5, *args, **kwargs) -> object:
         """
-        储存记忆，其中experience, [question, answer]中的任意一对都可以为空，但是不能同时为空,q和a必须同时提供
+        Store memory, where either pair of experience, [question, answer] can be empty, but not both. 
+        q and a must be supplied simultaneously
         :param importance:
         :param timestep:
         :param experience:
@@ -138,27 +114,26 @@ class Memory:
 
     def retrieve_by_interactant(self, interactant: str) -> list[dict]:
         """
-        根据交互对象检索记忆
+        Retrieve memories based on interactive objects
         :param interactant:
         :return:
         """
         return self.memory_df[self.memory_df["interactant"] == interactant].to_dict(orient="records")
 
-    # TODO 根据timestep检索和返回
     def retrieve_by_recentness(self, num=1) -> list[dict]:
         """
-        根据id检索和返回
+        Retrieve and return based on recent
         :param num:
         :return:
         """
         return self.memory_df.sort_values(by="id", ascending=False).head(num).to_dict(orient="records")
 
-    # TODO format步骤需要处理int和string的问题
+    # TODO The format step needs to deal with int and string issues
     def custom_retrieve(self, condition: dict, num=-1) -> list[dict]:
         """
-        自定义检索条件
+        Customize search criteria
         :param condition:
-        :param num:-1表示返回所有
+        :param num: -1 means return all
         :return:
         """
         num = len(self.memory_df) if num == -1 else num
@@ -167,7 +142,7 @@ class Memory:
 
     def export_memory(self):
         """
-        将记忆导出到文件中
+        Export memories to a file
         :return:
         """
 
@@ -178,13 +153,12 @@ class Memory:
 
     def retrieve_by_query(self, weights: dict, num: int = 10, query: str = None) -> list[dict]:
         """
-        根据权重检索
+        Search by weight
         :param query:
         :param weights:
         :param num:
         :return:
         """
-
         def compute_score(row):
             score = 0
             for col in row.index:
@@ -205,6 +179,6 @@ class Memory:
         num = len(self.memory_df) if num == -1 else num
         return self.memory_df.sort_values(by="score", ascending=False).head(num).to_dict(orient="records")
 
-    # TODO 一个公共的，用于改写对话/检索相关人员/。。。
+    # TODO public, one for rewriting conversations/retrieving related people /...
     def get_model(self) -> PublicApiBase:
         pass

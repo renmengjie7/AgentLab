@@ -16,7 +16,7 @@ from AISimuToolKit.store.logger import Logger
 
 class Agent:
     """
-    储存agent的信息   
+    Stores information about the agent
     """
     idx = 0
 
@@ -82,13 +82,12 @@ class Agent:
             model_config=config['model_settings']['config'],
             misc=config['misc']
         )
-
         return agent
 
     @staticmethod
     def save_agent_config(agent_id: int, config: dict,
                           exp_path: str, format_num_len: int):
-        """_summary_ 保存智能体配置文件
+        """_summary_ Save the agent configuration file
 
         Args:
             agent (dict): _description_ 
@@ -105,14 +104,14 @@ class Agent:
             json.dump(config, f)
         return agent_path
 
-    # 需要更广泛的自定义
+    # More extensive customization is required
     def _probe(self,
                message: str, decide_by: str = "summary",
                prompt: str = "{}'s profile is: {}.\n{}") -> str:
         """
-        采访(量表), 不会留下记忆
+        The interview (scale), does not leave a memory
         :param message:
-        :param prompt: 需要根据任务自己设计
+        :param prompt: need to design your own according to the task
         :return:
         """
         if decide_by == "summary":
@@ -129,13 +128,13 @@ class Agent:
         return answer
 
     def probed(self, content: str, prompt: str = "{}'s profile is: {}.\n{}"):
-        """prompt留出三个空, 分别是name、personality、content"""
+        """leave three blanks: name, personality and experience, content"""
         return self._probe(message=content, prompt=prompt)
 
     def _save(self, experience: str, source: str = "experience", interactant: str = None) -> None:
-        """_summary_ 保存到记忆
+        """_summary_ Save to memory
         Args:
-            experience (str): _description_ 经历
+            experience (str): _description_ 
         """
         self.logger.history(
             f"agent_{self.agent_id} wrote in memory: {experience} because of {source}")
@@ -173,15 +172,14 @@ class Agent:
         return importance
 
     def _finetune(self, num: int) -> bool:
-        """_summary_ 让Agent在给定的语料上微调, 这里的语料是memory中的question和answer
-        TODO 加个将经历转换成对话
+        """_summary_ Ask the Agent to fine-tune on the given corpus, which in this case is the experience in memory (turn an experience into a conversation)
         Args:
-            num (_type_): _description_ 采用的memory数量
+            num (_type_): _description_ The amount of memory used
         """
         recent_memory = self.memory.retrieve_by_recentness(num)
         self.logger.info(
             f"agent_{self.agent_id} starts finetuning based on recent {num} memories")
-        # 需要把finetune所使用的memory存储起来, 以便后续查看
+        # The memory used by finetune needs to be stored for later review
         self.model.finetune(exp=self.exp_id,
                             path=self.path,
                             agent=self.agent_id,
@@ -192,7 +190,7 @@ class Agent:
 
     def reflect_from_memory(self) -> None:
         """
-        从记忆中反思，然后生成新的记忆
+        Reflect on memories and create new memories
         :return:
         """
         self.logger.history(f"agent_{self.agent_id} reflected from memory")
@@ -224,7 +222,7 @@ class Agent:
 
     def summarize(self) -> None:
         """
-        生成agent的总结，用于替代profile
+        Generate a summary of the agent to replace the profile
         :return:
         """
         memory = self.memory.retrieve_by_recentness(num=self.summary_nums)
@@ -284,14 +282,14 @@ class Agent:
                message: str = None,
                prompt: str = "{}'s profile is: {}.\n{}",
                save: bool = True, decide_by: str = "summarize"):
-        """_summary_ 模拟人类决策
+        """_summary_ Simulate human decision making
         decide=_probe+_save (if need)
         Args:
-            question (str): _description_ 面临的问题
-            answers (List[str]): _description_ 选项
-            message (str, optional): _description_. Defaults to None. 如果提供了input则直接使用该字符串进行询问; 否则会使用question和input进行对默认prompt进行填充
+            question (str): _description_ 
+            answers (List[str]): _description_ options
+            message (str, optional): _description_. Defaults to None. If input is provided, it is queried directly using the string; Otherwise the default prompt is populated with question and input
             save (bool, optional): _description_. Defaults to True. 
-            TODO 决策是否需要加入memory? 实际生活中肯定是加入了记忆, 但是这部分信息在read的时候也会加入, 可能会带来冗余与噪声
+            TODO Does the decision need to be added to memory? Memory is definitely added in real life, but this part of information will also be added in the next step, which may bring redundancy and noise
             :param decide_by:
         """
         if message is None:
@@ -302,7 +300,7 @@ class Agent:
         return answer
 
     def read(self, text: str):
-        """_summary_ 模拟人类阅读功能
+        """_summary_ Simulate human reading
 
         Args:
             text (str): _description_
@@ -311,11 +309,11 @@ class Agent:
         self.recieve(content=f"{self.name} read {text}")
 
     def eat(self, food: List[str], time: str = '', prompt: str = 'You ate {} {}'):
-        """_summary_ 模拟人类吃东西
+        """_summary_ Simulate human eating
 
         Args:
-            text (List[str]): _description_ 食物列表
-            time (str, optional): _description_. Defaults to ''. 时间, 可以不给
+            text (List[str]): _description_ food list
+            time (str, optional): _description_. Defaults to ''. 
             prompt (str, optional): _description_. Defaults to 'You ate {} {}'.
         """
         self._save(experience=prompt.format(','.join(food), time), source="eat")
@@ -324,13 +322,12 @@ class Agent:
         pass
 
     def recieve_info(self, content):
-        """接受到了某种信息"""
+        """Received some kind of message"""
         self._save(experience=content)
 
     def talk2(self, content, agents: List['Agent']):
         """
-        TODO 如果涉及交谈感觉就需要保留交流的上下文了
-        对一群agents说xx"
+        TODO If conversation is involved, the context of the communication needs to be preserved
         """
         experience = f"{self.name} saied to {','.join([agent.name for agent in agents])} that {content}"
         self._save(experience=experience)
@@ -339,7 +336,7 @@ class Agent:
 
     def check_mailbox(self):
         """
-        mailbox中的信息会被读取并存入memory,mailbox会被清空,mailbox的格式是[{"from":agent_id,"content":content,"replyable":True}]
+        The information in mailbox is read and stored in memory,mailbox is emptied, and mailbox is in the format [{"from":agent_id,"content":content,"replyable":True}]
         :return:
         """
         messages = self.mailbox
