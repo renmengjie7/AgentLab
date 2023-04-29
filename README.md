@@ -1,3 +1,7 @@
+<div align="center">
+    <img src="images/logo_stable-diffusion-xl.jpg" height=400 alt=""/>
+</div>
+
 # AISimuToolKit: Use language models to simulate experiments
 
 <p align="center">
@@ -202,3 +206,8 @@ class Agent:
 
 ## TODO
 1. 不同语言模型的原子操作调用的接口不太一样
+
+
+## References & Thanks
+1. LOGO from https://clipdrop.co/stable-diffusion
+2. Reflect from https://arxiv.org/abs/2304.03442
