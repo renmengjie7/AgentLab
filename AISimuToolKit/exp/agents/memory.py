@@ -2,11 +2,10 @@ import json
 from typing import List
 
 import pandas as pd
+from AISimuToolKit.exp.toolkit.TimeStep import TimeStep
 from sklearn.metrics import pairwise_distances
 
-from AISimuToolKit.exp.toolkit.TimeStep import TimeStep
 from AISimuToolKit.model.embedding import BertSentenceEmbedding
-from AISimuToolKit.model.model import PublicApiBase
 from AISimuToolKit.store.logger import Logger
 
 
@@ -17,7 +16,7 @@ class Memory:
     """
 
     # TODO interactant seems to be an uncommon/incorrect word. Consider replacing it
-    def __init__(self, memory_path: str, extra_columns: List[str] = None, auto_rewrite: bool = True):
+    def __init__(self, memory_path: str, extra_columns: List[str] = None):
         """
         The memory store, retrieve, and export modules
         can add additional columns with the extra_columns argument
@@ -36,13 +35,9 @@ class Memory:
         self.memory_df = pd.DataFrame(columns=default_cols)
         self.memory_path = memory_path
         self.bert = BertSentenceEmbedding()
-        self.auto_rewrite = auto_rewrite
 
         # TODO Replace it with timestep
         self.curr_id = 0
-
-        if self.auto_rewrite:
-            self.model = self.get_model()
 
     def add_column(self, column_name: str) -> None:
         if column_name not in self.memory_df.columns:
@@ -159,6 +154,7 @@ class Memory:
         :param num:
         :return:
         """
+
         def compute_score(row):
             score = 0
             for col in row.index:
