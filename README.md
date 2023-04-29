@@ -1,7 +1,3 @@
-<div align="center">
-    <img src="./images/logo_stable-diffusion-xl.jpg" height=400 alt="logo"/>
-</div>
-
 # 🥳 AISimuToolKit: Use language models to simulate experiments
 
 <p align="center">
@@ -9,6 +5,10 @@
         <img alt="PyPI" src="https://img.shields.io/pypi/v/AISimuToolKit?color=gree">
     </a>
 </p>
+
+<div align="center">
+    <img src="./images/logo_stable-diffusion-xl.jpg" height=400 alt="logo"/>
+</div>
 
 ## 🔨 Quick Install
 
@@ -32,7 +32,7 @@ python demo_detective.py
         cd src/deploy/
         python deploy.py
         ```
-2. Serial and parallel experiment, see demo
+2. Serial and parallel experiment, see [demo](#section-demo)
 3. Memory compression => summary, reflect and finetune
     - **<u>summary</u>**
     - **<u>reflect</u>** 
@@ -41,7 +41,7 @@ python demo_detective.py
 4. A kit for simulation experiments
 
 
-## 👀 Demo
+## 👀 Demo {#section-demo}
 1. **Serial example**    [demo_leaderless_discuss.py](demo_leaderless_discuss.py)  
 **<u>Background</u>** Four people, Alice, Sophia, Jerre and Benjamin with different profiles are interviewing to be volunteers for the Olympics. This is a leaderless panel. The topic of discussion was "Minority language volunteers take half an hour to get to the site. As the only volunteer on site, now how will you inform foreigners of minority language that they must wear masks before entering the site"  
 **<u>Result</u>**
@@ -77,3 +77,4 @@ If you are interested in contributing to the project, feel free to Fork this rep
 2. Reflect https://arxiv.org/abs/2304.03442
 3. LLaMA-7B https://github.com/facebookresearch/llama
 4. alpaca-lora https://github.com/tloen/alpaca-lora
+
