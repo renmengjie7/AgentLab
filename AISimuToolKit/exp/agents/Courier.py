@@ -29,7 +29,8 @@ class Courier:
         return cls._instance
 
     @staticmethod
-    def send(msg: str, sender: Union[Agent, str, int], receiver: Union[Agent, str, int], replyable: bool = True):
+    def send(msg: str, sender: Union[Agent, str, int], receiver: Union[Agent, str, int], timestep: int,
+             replyable: bool = True, ):
         if Courier._instance is None:
             raise Exception("Courier has not been initialized yet.")
         if isinstance(sender, Agent):
@@ -41,7 +42,7 @@ class Courier:
             receiver = Courier._instance.agents[receiver - 1]
         elif isinstance(receiver, int):
             receiver = Courier._instance.agents[receiver - 1]
-        receiver.receive(msg=msg, sender=sender, replyable=replyable)
+        receiver.receive(msg=msg, sender=sender, replyable=replyable, timestep=timestep)
 
     @staticmethod
     def all_receivers_name():

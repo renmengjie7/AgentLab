@@ -23,16 +23,16 @@ def main():
                           model_config="test/files4test/model.yaml",
                           output_dir="experiments", custom_class=custom_class)
 
+    exp.agents[0].receive("You encountered a sudden kidnapping case. The informant claimed that the kidnapper had "
+                          "kidnapped his daughter Akiko, demanded 300 million yen in ransom, and had to shut "
+                          "down the company for one month. Please find clues step by step to complete the "
+                          "reasoning: the people involved include the kidnapped Akiko, and the housekeeper Aso "
+                          "who allegedly witnessed the kidnapper's home.", sender="police", timestep=0)
     for timestep in range(10):
         # next_agent = exp.choose_next_one("prompt")
         # next_agent.debate()
-        exp.agents[0].receive("You encountered a sudden kidnapping case. The informant claimed that the kidnapper had "
-                              "kidnapped his daughter Gu Jingzi, demanded 300 million yen in ransom, and had to shut "
-                              "down the company for one month. Please find clues step by step to complete the "
-                              "reasoning: the people involved include the kidnapped Akiko, and the housekeeper Aso "
-                              "who allegedly witnessed the kidnapper's home.", sender="police")
         for agent in exp.agents:
-            agent.react()
+            agent.react(timestep=timestep)
 
 
 if __name__ == '__main__':
