@@ -28,37 +28,32 @@ def set_seed(seed):
 
 def get_fromat_len(num: int):
     """
-    :param num 表示agent的个数 
-    对agent ID(文件夹)的命名规范=>使用相同长度的进行编码
-    避免出现 agent_1、agent_2、agent_11
-    而统一编码为 agent_01、agent_02、agent_11
+    Naming specification for agent ID (folder) =>
+    code with the same length to avoid agent_1, agent_2, agent_11 and uniformly code as agent_01, agent_02, agent_11
+    :param num
     """
     return max(2, num // 10 + 1)
 
 
 def get_file_stream(file: str):
-    """_summary_ 得到文件流, 用于传输给finetune
-
-    Args:
-        file (str): _description_
+    """
+    return file stream for finetune
+    :param file:
+    :return:
     """
     with open(file, 'rb') as f:
         return f
 
 
 def parse_yaml_config(path: str) -> dict:
-    """_summary_ 
-
-    Args:
-        path (str): _description_ 文件位置
-
-    Returns:
-        dict: _description_
+    """
+    parse yaml config file
+    :param path:
+    :return:
     """
     with open(file=path, mode="r", encoding="utf-8") as f:
         conf = yaml.load(f.read(), Loader=yaml.FullLoader)
     return conf
-
 
 
 def save_config(config: dict, path: str):

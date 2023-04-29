@@ -1,7 +1,8 @@
+import copy
 import json
 import os
 from typing import List
-import copy
+
 import openai
 import requests
 
@@ -9,13 +10,14 @@ from AISimuToolKit.store.logger import Logger
 
 
 def rawtext2dialog(text: str):
-    """_summary_ 纯文本转成对话形式
-
-    Args:
-        text (str): _description_
+    """
+    Plain text to conversational form
+    :param text:
+    :return:
     """
     model = GPT_35_API()
-    answer = model.chat(query='Please convert the following text to a single round and save as much information as possible in the format {"query": "", "answer": ""} Please note the single round, only a single json will do'+text)
+    answer = model.chat(
+        query='Please convert the following text to a single round and save as much information as possible in the format {"query": "", "answer": ""} Please note the single round, only a single json will do' + text)
     diaglogue = json.loads(answer)
     if 'query' in diaglogue and 'answer' in diaglogue:
         pass
@@ -24,9 +26,8 @@ def rawtext2dialog(text: str):
     return diaglogue
 
 
-# TODO 调整为model和toolkit继承不同的基类，但都继承自ApiBase
 class ApiBase:
-    _instance = None  # 类变量用于存储单例实例
+    _instance = None
 
     def __new__(cls, *args, **kwargs):
         if cls._instance is None:
@@ -39,10 +40,11 @@ class ApiBase:
         raise NotImplementedError
 
     def finetune(self, *args, **kwargs):
-        """_summary_ 对某个实验下某个agent使用某个文件finetune
-        
-        Raises:
-            NotImplementedError: _description_
+        """
+        Use a specific file under a specific experiment to finetune for an agent
+        :param args:
+        :param kwargs:
+        :return:
         """
         raise NotImplementedError
 
@@ -52,7 +54,9 @@ class ApiBase:
 
 
 class PublicApiBase(ApiBase):
-    """公开的, 只能chat"""
+    """
+    public model such as chatgpt,which means you can't finetune it
+    """
 
     def finetune(self, *args, **kwargs):
         self.logger.warning("{} does not support finetune".format(self.get_backend()))
@@ -63,43 +67,20 @@ class PublicApiBase(ApiBase):
 class GPT_35_API(PublicApiBase):
 
     def __new__(cls,
-                config: dict=None,
+                config: dict = None,
                 *args, **kwargs):
         """config为None只有在已经实例化后才能正常init时"""
+        if config is None and cls._instance is None:
+            raise Exception('config is None, please init first')
         if cls._instance is None:
             cls._instance = super().__new__(cls)
             openai.api_base = config['url'][0]
             openai.api_key = config['key'][0]
         return cls._instance
 
-    # TODO 加入多轮对话
-    # TODO 设置system
-    # TODO 测试长对话，目前没有找到返回为length的例子
-    def chat(self, query: str, config: dict=None, *args, **kwargs):
+    def chat(self, query: str, config: dict = None, *args, **kwargs):
         """
-                https://learn.microsoft.com/zh-cn/azure/cognitive-services/openai/how-to/chatgpt?pivots=programming-language-chat-completions
-        返回结果为
-        {
-            "id": "chatcmpl-76DCzykJS606GA3ZmbELzI5SOelwJ",
-            "object": "chat.completion",
-            "created": 1681715097,
-            "model": "gpt-3.5-turbo-0301",
-            "usage": {
-                "prompt_tokens": 10,
-                "completion_tokens": 9,
-                "total_tokens": 19
-            },
-            "choices": [
-                {
-                    "message": {
-                        "role": "assistant",
-                        "content": "Hello! How may I assist you today?"
-                    },
-                    "finish_reason": "stop",
-                    "index": 0
-                }
-            ]
-        }
+        https://learn.microsoft.com/zh-cn/azure/cognitive-services/openai/how-to/chatgpt?pivots=programming-language-chat-completions
         """
         self.logger.debug("GPT-3.5-turbo: chat start")
         agent_id = kwargs.get("agent_id", "")
@@ -111,7 +92,6 @@ class GPT_35_API(PublicApiBase):
             messages=message,
             temperature=0.7 if config is None else config['temperature']
         )
-        # TODO 处理choices大于一的情况
 
         answer = completion["choices"][0]["message"]["content"]
 
@@ -147,7 +127,9 @@ class GPT_35_API(PublicApiBase):
 
 
 class PrivateApiBase(ApiBase):
-    """自己部署的, 可以finetune"""
+    """
+    private model such as chatglm,which means you can finetune it
+    """
 
     def __new__(cls, config: dict, *args, **kwargs):
         if cls._instance is None:
@@ -158,13 +140,13 @@ class PrivateApiBase(ApiBase):
     # TODO 维护一个字典, 采用某种策略选择url去chat或finetune以使最少load, 高效运行
     def get_url(self, exp: str, agent: str = None):
         """
-        从urls中选择一个代价最小的
+        Choose the one with the least cost from urls
         TODO agent=None表示这个实验还没创建...是否需要负载均衡地将每个实验放到不同的url上, 还是在每个url上复制一份
         """
         return list(self.urls.keys())[0]
 
     @classmethod
-    def memory2finetunedata(cls, datas: List[dict], *args, **kwargs):
+    def memory2finetunedata(cls, _datas: List[dict], path: str, *args, **kwargs):
         raise NotImplementedError
 
 
@@ -185,14 +167,12 @@ class ChatGLMAPI(PrivateApiBase):
 class LLaMAAPI(PrivateApiBase):
 
     def __new__(cls, exp: str, agents: List[str], config: dict, *args, **kwargs):
-        """_summary_  
-
-        Args:
-            exp (str): _description_ 实验ID
-            agents (List[str]): _description_ agents的IDs
-
-        Returns:
-            _type_: _description_
+        """
+        :param exp:
+        :param agents:
+        :param config:
+        :param args:
+        :param kwargs:
         """
         if cls._instance is None:
             cls._instance = super().__new__(cls, config=config)
@@ -200,12 +180,13 @@ class LLaMAAPI(PrivateApiBase):
         return cls._instance
 
     def new_exp(self, exp: str, agents: List[str]) -> bool:
-        """_summary_ 对接部署服务, 存储文件
-
-        Args:
-            exp (str): _description_
-            agents (List): _description_
         """
+        Create experiments in the llama runtime environment
+        :param exp:
+        :param agents:
+        :return:
+        """
+
         url = self.get_url(exp=exp)
         params = {"id": exp, "override": True}
         response = requests.post(url=f'{url}/exp/new', params=params,
@@ -219,7 +200,6 @@ class LLaMAAPI(PrivateApiBase):
     def finetune(self, exp: str, agent: str, config: dict,
                  path: str, datas: List[dict]) -> bool:
         """
-        LLaMA的数据格式是
         [{ "instruction": "Give three tips for staying healthy.",
         "message": "", "output": "1. Eat a balanced "}]
         :param config:
