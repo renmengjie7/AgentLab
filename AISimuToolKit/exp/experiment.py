@@ -112,12 +112,12 @@ class Experiment:
                         history_file=os.path.join(exp_path, "history.txt"))
         return exp_path
 
-    def probe(self, agent: Agent, content: str, prompt: str="{}'s profile is: {}.\n{}"):
+    def probe(self, agent: Agent, content: str, prompt: str = "{}'s profile is: {}.\n{}"):
         """probe an agent"""
         return agent.probed(content=content, prompt=prompt)
-    
-    def choose_next_one(self, message=str, 
-                        prompt: str = "{}'s profile is: {}.\n{}") -> Agent:
+
+    def choose_next_one(self, message=str,
+                        prompt: str = "{}'s profile is: {}.\n{}") -> int:
         """
         TODO cue a person directly and that person's score will be higher
         In a list of scenarios, only one can be selected to take some action
@@ -128,7 +128,7 @@ class Experiment:
             answer = self.probe(agent=agent, content=message, prompt=prompt)
             try:
                 answer = int(answer)
-                self.logger.info(f"agent_{idx+1} score is {answer}")
+                self.logger.info(f"agent_{idx + 1} score is {answer}")
             except ValueError as e:
                 self.logger.error(f"Failed to convert '{answer}' to an integer: {e}")
                 continue
@@ -137,7 +137,7 @@ class Experiment:
                 max_score = answer
         return max_idx
 
-    def inject_background(self, message: str, prompt: str="{} {}"):
+    def inject_background(self, message: str, prompt: str = "{} {}"):
         """_summary_ 
 
         Args:

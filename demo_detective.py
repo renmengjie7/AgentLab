@@ -1,7 +1,7 @@
 """
 @author: Guo Shiguang
 @software: PyCharm
-@file: detective.py
+@file: demo_detective.py
 @time: 2023/4/27 21:57
 """
 
@@ -28,7 +28,7 @@ def main():
                           "down the company for one month. Please find clues step by step to complete the "
                           "reasoning: the people involved include the kidnapped Akiko, and the housekeeper Aso "
                           "who allegedly witnessed the kidnapper's home.", sender="police", timestep=0)
-    for timestep in range(10):
+    for timestep in range(50):
         # next_agent = exp.choose_next_one("prompt")
         # next_agent.debate()
         for agent in exp.agents:

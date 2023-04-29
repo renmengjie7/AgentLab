@@ -131,7 +131,8 @@ class Agent:
         """leave three blanks: name, personality and experience, content"""
         return self._probe(message=content, prompt=prompt)
 
-    def _save(self, experience: str, source: str = "experience", interactant: str = None) -> None:
+    def _save(self, experience: str, source: str = "experience", interactant: str = None,
+              accu_importance: bool = True) -> None:
         """_summary_ Save to memory
         Args:
             experience (str): _description_ 
@@ -141,7 +142,8 @@ class Agent:
 
         importance = self.get_importance(experience)
 
-        self.importance_sum += importance
+        if accu_importance:
+            self.importance_sum += importance
         if self.importance_sum >= self.reflect_threshold:
             self.importance_sum = 0
             self.reflect_from_memory()
@@ -218,7 +220,7 @@ class Agent:
 
             for insight in insights.split("\n"):
                 insight = insight.strip()
-                self._save(experience=insight, source="reflect")
+                self._save(experience=insight, source="reflect", accu_importance=False)
 
     def summarize(self) -> None:
         """
@@ -233,7 +235,7 @@ class Agent:
         if len(concatenated_memory.split(' ')) < 2000:
             self.summary = concatenated_memory
             return concatenated_memory
-        
+
         self.logger.history(f"agent_{self.agent_id} begin his/her summarize")
         weighted_memory = self.memory.retrieve_by_query(
             weights=self.retrieve_weight, num=self.summary_nums,
