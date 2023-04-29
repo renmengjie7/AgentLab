@@ -26,11 +26,11 @@ class ApiRegister(dict):
 
 
 def get_model_by_name(ModelNameDict: dict, name: str):
-    """_summary_ 根据model的名称找到model类
-
-    Args:
-        ModelNameDict (dict): _description_
-        name (str): _description_
+    """
+    get model by name
+    :param ModelNameDict:
+    :param name:
+    :return:
     """
     if name not in ModelNameDict.keys():
         raise Exception("Only support " + ", ".join(
@@ -39,11 +39,11 @@ def get_model_by_name(ModelNameDict: dict, name: str):
 
 
 # TODO ModelNameDict: 这里如何要自定义, 需要对ModelNameDict进行patch
-def get_model_apis(exp_id: str, agents: List[int], model_names: List[str], model_config: str, ):
+def get_model_apis(exp_id: str, agents: List[int], model_names: List[str], model_config: str):
     """
-    给每个agent找到对应的model
+    get model apis for each agent
     :param exp_id:
-    :param agents: agent的list
+    :param agents:
     :param model_names:
     :param model_config:
     :return:

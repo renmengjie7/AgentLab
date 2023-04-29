@@ -8,20 +8,16 @@ from typing import Union
 # TODO 加入memory的功能
 class Logger:
     """
-    日志记录器，实现了单例模式（线程安全和进程安全）
-    日志包括debug、info、warning、error、critical五个级别,
-    可以通过log_console和log_file参数控制是否将日志输出到控制台和文件
-    额外实现了一个log方法，等价于warning
+    The logger implements the singleton mode (thread safety and process safety).
+    The log includes five levels of debug, info, warning, error, and critical.
+    You can control whether to output the log to the console and file through the log_console and log_file parameters.
+    Additional implementation method `log`, which is equivalent to warning
     """
     _instance_lock = threading.Lock()
     _process_lock = multiprocessing.Lock()
     _instance = None
 
     def __new__(cls, log_file=None, history_file=None):
-        """
-        单例模式，保证只有一个日志记录器
-        :param log_file: 日志文件路径，如果不指定则默认为当前目录下的log.txt
-        """
         if not cls._instance:
             with cls._process_lock:
                 with cls._instance_lock:
@@ -30,7 +26,6 @@ class Logger:
                         cls._instance.logger = logging.getLogger(__name__)
                         cls._instance.logger.setLevel(logging.DEBUG)
 
-                        # 创建文件处理器，将日志写入指定文件
                         if log_file:
                             log_file_path = os.path.abspath(log_file)
                         else:
@@ -45,25 +40,21 @@ class Logger:
                         cls._instance.history_handler = logging.FileHandler(history_file_path)
                         cls._instance.history_handler.setLevel(logging.DEBUG)
 
-                        # 创建控制台处理器，将日志打印到控制台
                         cls._instance.console_handler = logging.StreamHandler()
                         cls._instance.console_handler.setLevel(logging.ERROR)
 
-                        # 创建格式器，设置日志格式
                         formatter_history = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
                         cls._instance.log_handler.setFormatter(formatter_history)
                         cls._instance.console_handler.setFormatter(formatter_history)
                         formatter_history = logging.Formatter('%(asctime)s -  %(message)s')
                         cls._instance.history_handler.setFormatter(formatter_history)
 
-                        # 将处理器添加到日志记录器中
                         cls._instance.logger.addHandler(cls._instance.log_handler)
                         cls._instance.logger.addHandler(cls._instance.console_handler)
         return cls._instance
 
     def debug(self, message, log_console=True, log_file=True):
         """
-        记录debug级别的日志，下同
         :param message:
         :param log_console:
         :param log_file:
@@ -140,7 +131,6 @@ class Logger:
 
     def log(self, message, log_console=True, log_file=True):
         """
-        等价于warning
         :param message:
         :param log_console:
         :param log_file:
@@ -149,7 +139,12 @@ class Logger:
         self.warning(message, log_console, log_file)
 
     def history(self, message):
-        self.logger.info(message)  # 额外在log中保存一份
+        """
+        will also call `self.logger.info(message)`
+        :param message:
+        :return:
+        """
+        self.logger.info(message)
         self.logger.removeHandler(self.console_handler)
         self.logger.removeHandler(self.log_handler)
         self.logger.addHandler(self.history_handler)
@@ -160,7 +155,6 @@ class Logger:
 
     def set_level(self, level: Union[int, str]):
         """
-        设置日志记录器的日志级别
         :param level:
         :return:
         """
