@@ -1,5 +1,5 @@
 <div align="center">
-    <img src="./images/logo_stable-diffusion-xl.jpg" height=400 alt=""/>
+    <img src="./images/logo_stable-diffusion-xl.jpg" height=400 alt="logo"/>
 </div>
 
 # AISimuToolKit: Use language models to simulate experiments
