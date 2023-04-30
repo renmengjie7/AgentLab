@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "AiSimuToolKit"
+description = "Use language models to simulate experiments"
+requires-python = ">=3.10"
+authors = [
+    { name = "Ren Mengjie", email = "renmengjie22@mails.ucas.ac.cn" },
+    { name = "Guo Shiguang", email = "guoshiguang22@mails.ucas.ac.cn" }
+]
+dependencies = [
+    "fastapi==0.95.1",
+    "openai==0.27.4",
+    "pandas==1.5.3",
+    "PyYAML==6.0",
+    "Requests==2.28.2",
+    "scikit_learn==1.2.2",
+    "setuptools==65.6.3",
+    "torch==1.13.1",
+    "transformers==4.24.0"
+]
+
+[project.optional-dependencies]
+tests = [
+  'pytest',
+]
+
+[tool.setuptools_scm]
+root = "."
+
+[tool.black]
+line-length = 120
+target-version = ['py310']
