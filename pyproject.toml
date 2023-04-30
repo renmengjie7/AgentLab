@@ -22,11 +22,6 @@ dependencies = [
     "transformers==4.24.0"
 ]
 
-[project.optional-dependencies]
-tests = [
-  'pytest',
-]
-
 [tool.setuptools_scm]
 root = "."
 
