@@ -9,7 +9,7 @@ setup(
     keywords=["pip", "AISimuToolKit"],  # keywords
     description="ICIP's private utils.",  # description
     long_description="ICIP's private utils. The development version will be released when it is sufficiently refined",
-    license="MIT Licence",
+    license="Apache License 2.0",
     url="http://git.cipsup.cn/aisimulationplatform/toolkit/aisimulation",  # github
     author="Ren & Guo", 
     author_email="renmengjie22@mails.ucas.ac.cn,guoshiguang22@mails.ucas.edu.cn",
