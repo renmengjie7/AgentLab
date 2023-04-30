@@ -338,7 +338,7 @@ class Agent:
                  enumerate(self.mailbox) if message['timestep'] <= timestep]
         messages = '\n'.join(items)
 
-        clear_mailbox_prompt = self.get_background_prompt(need_memory=False, need_status=False)
+        clear_mailbox_prompt = self.get_background_prompt(need_relevant_memory=False, need_status=False)
 
         clear_mailbox_prompt += f"Here's messages {self.name} received that might have to deal with \n{messages}\n"
         clear_mailbox_prompt += f"Please give a list of messages that {self.name} does not need to process. " \
@@ -378,34 +378,36 @@ class Agent:
         content = message["content"]
         self._save(experience=content, source="mailbox", interactant=interactant)
 
-    def select_message(self) -> dict:
+    # TODO 修里面的bug
+    def select_message(self, timestep: int) -> dict:
         """
         return give the most important and urgent message
         return the first message when parse fialed
         """
         items = [f"{idx}. timestep{message['timestep']}, content {message['content']}\n" for idx, message in
-                 enumerate(self.mailbox)]
+                 enumerate(self.mailbox) if message['timestep'] <= timestep]
         if len(items) == 0:
-            return None
+            return {}
         messages = '\n'.join(items)
         content = f"  Here's messages {self.name} received that might have to deal with\n{messages}\n Please give {self.name}'s priority for importance and urgency consideration. Your reply should be a direct load json in the format of  {{\"number\": \"message number\", \"reason\":\"why\"}}"
+        continued = True
         for i in range(0, 5):
-            continued = True
             try:
                 answer = json.loads(self._probe(message=content))
                 answer_id = int(answer['number'])
                 if answer_id < len(items):
                     continued = False
                     break
-                answer = items[answer_id]
-            except JSONDecodeError as e:
+                answer = items[answer_id]  # TODO never use answer
+            except JSONDecodeError as e:  # TODO 如果错误在别的地方呢，比如int(answer['number'])
                 pass
         if continued:
             self.logger.warning(f"agent_{self.agent_id + 1} get most important and urgent message from mailbox failed")
-            return items[0]
-        self.save_message2memory(message=self.mailbox[answer_id])
-        self.mailbox = [message for idx, message in enumerate(self.mailbox) if idx != answer_id]
-        return self.mailbox[answer_id]
+            return items[0]  # TODO return a string here
+        self.save_message2memory(message=self.mailbox[answer_id])  # TODO 可能赋值前引用
+        most_import_urgent_message = self.mailbox[answer_id]
+        self.mailbox.pop(answer_id)
+        return most_import_urgent_message
 
     def check_mailbox(self, timestep: int) -> dict:
         """
@@ -416,7 +418,7 @@ class Agent:
         # clear mailbox
         self.clear_mailbox(timestep=timestep)
         # select mailbox
-        return self.select_message()
+        return self.select_message(timestep=timestep)
 
     def run(self, timestep: int):
         """_summary_ do what now ?
@@ -437,6 +439,8 @@ class Agent:
             item_json = {key.lower(): value for key, value in item_json.items()}
             content = item_json.get("content", "")
             receiver = item_json.get("interactant", "")
+            if content == "" or receiver == "":
+                continue
             if receiver in others_name:
                 Courier.send(msg=content, sender=self.name, receiver=receiver, timestep=timestep + 1)
                 self._save(experience=content, source="think", interactant=receiver)
@@ -447,60 +451,73 @@ class Agent:
         from AISimuToolKit.exp.agents.Courier import Courier
         others_name = list(set(Courier.all_receivers_name()) - {self.name})
 
-        think_what_to_do_next = self.get_background_prompt(message.get("content", None))
+        message_content = message.get("content", None) if message is not None else None
+        think_what_to_do_next_prompt = self.get_background_prompt(message_content, need_recent_memory=True)
 
-        if message is not None:
-            think_what_to_do_next += f"The following is send from {message['from']}, please read about it and decide what would {self.name}want to do\n"
-            think_what_to_do_next += "\n{}\n".format(message["content"])
+        if message is not None and message != {}:
+            think_what_to_do_next_prompt += f"The following is send from {message['from']}, please read about it and decide what would {self.name}want to do\n"
+            think_what_to_do_next_prompt += "{}\n".format(message["content"])
         else:
-            think_what_to_do_next += "What do you want to do next?\n"
+            think_what_to_do_next_prompt += "What do you want to do next?\n"
 
-        think_what_to_do_next += "Choose interactant's name from {}.\n".format(
+        think_what_to_do_next_prompt += "Choose interactant's name from {}.\n".format(
             others_name)
-        think_what_to_do_next += "output example:\n{'interactant':'name','content':''}\n{'interactant':'name2','content':''}\n"
-        think_what_to_do_next += "Do nothing else."
+        think_what_to_do_next_prompt += "output example:\n{\"interactant\":\"name\",\"content\":\"\"}\n{\"interactant\":\"name2\",\"content\":\"\"}\n"
 
-        self.logger.debug(think_what_to_do_next)
-        answer = self._chat(think_what_to_do_next)
+        self.logger.debug(think_what_to_do_next_prompt)
+        answer = self._chat(think_what_to_do_next_prompt)
         self.logger.info(answer)
         try:
             self.act_as_think(answer, others_name, timestep)
         except:
             self.logger.warning("get an unformatted string,try to fix it")
             try:
-                fix_prompt = "Format sentences below,output example:\n{'interactant':'name','content':''}\n{'interactant':'name2','content':''}\n"
-                fix_prompt += answer
+                fix_prompt = answer
+                fix_prompt += "Format sentences above,output example:\n{\"interactant\":\"name\",\"content\":\"\"}\n{\"interactant\":\"name2\",\"content\":\"\"}\n"
                 fixed_answer = self._chat(fix_prompt)
                 self.act_as_think(fixed_answer, others_name, timestep)
                 self.logger.info("Fixed it successfully")
             except:
                 self.logger.warning("can not fix it,do nothing")
 
-    def get_background_prompt(self, content: str = None, need_memory: bool = True, need_status: bool = True) -> str:
+    def get_background_prompt(self, content: str = None, need_relevant_memory: bool = True, need_status: bool = True,
+                              need_recent_memory: bool = False) -> str:
         self.summarize()
-        memory_about_message = self.memory.retrieve_by_query(weights=self.retrieve_weight, query=content)
-        memory_about_message = "\n".join(
-            [str(idx + 1) + ":" + item["experience"] for idx, item in enumerate(memory_about_message)])
         background_prompt = f"Act as you are {self.name}:{self.summary}.\n "
-        if need_memory:
-            background_prompt += f"Here are some experience might be useful:\n{memory_about_message}\n"
+        if need_relevant_memory:
+            memory_about_message = self.memory.retrieve_by_query(weights=self.retrieve_weight, query=content)
+            memory_about_message = self.format_memory(memory_about_message)
+            background_prompt += f"Here are some relevant experience:\n{memory_about_message}\n"
+        if need_recent_memory:
+            recent_memory = self.memory.retrieve_by_recentness(num=3)
+            recent_memory = self.format_memory(recent_memory)
+            background_prompt += f"Here are some recent experience:\n{recent_memory}\n"
         if need_status:
             background_prompt += f"{self.name}'s status is '{self.status}'\n"
         self.logger.debug(background_prompt)
         return background_prompt
+
+    def format_memory(self, memory_about_message):
+        memory_list = []
+        from AISimuToolKit.exp.agents.Courier import Courier
+        agents_name = Courier.all_receivers_name()
+        for idx, item in enumerate(memory_about_message):
+            format_memory = str(idx + 1) + "."
+            if item["interactant"] in agents_name:
+                format_memory += "Message with {}:".format(item["interactant"])
+            format_memory += item["experience"]
+            memory_list.append(format_memory)
+        return "\n".join(memory_list)
 
     def receive(self, msg: str, sender: str, timestep: int, ) -> None:
         # TODO 
         self.mailbox.append({"from": sender, "content": msg, "timestep": timestep})
 
     def change_status(self, timestep):
-        change_status_prompt = self.get_background_prompt("Change your state based on your recent memory",
-                                                          need_status=False)
-        change_status_prompt += "Your current status is '{}'\n".format(self.status)
-        change_status_prompt += "\nChange your state based on your recent memory\n"
-        change_status_prompt += "output example:\nstatus:''\n"
-        change_status_prompt += "Do nothing else."
+        change_status_prompt = self.get_background_prompt("Change your state based on your recent memory")
+        change_status_prompt += "Change your state based on your recent memory,status must be a specific action.A status must be very short."
+        change_status_prompt += "Do nothing else.\n"
         self.logger.debug(change_status_prompt)
         answer = self._chat(change_status_prompt)
-        self.status = answer.split(":")[1]
+        self.status = answer
         self.logger.info("agent {} change status to {}".format(self.name, self.status))
