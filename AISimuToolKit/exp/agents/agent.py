@@ -333,11 +333,21 @@ class Agent:
         """
         items = [f"{idx}. timestep_{message['timestep']}, content: {message['content']}" for idx, message in enumerate(self.mailbox)]
         messages = '\n'.join(items)
-        content = f" \n\n Here's messages {self.name} received that might have to deal with \n{messages}\n Please give a list of messages that {self.name} does not need to process. Your reply should be a direct loadable json in the format of [{{\"number\": \"message number\", \"reason\":\"why\"}}]."
-        try:
-            answers = json.loads(self._probe(message=content))
-            answer_ids = [int(answer['number']) for answer in answers]
-        except JSONDecodeError as e:
+        content = f" \n\n Here's messages {self.name} received that might have to deal with \n{messages}\n Please give a list of messages that {self.name} does not need to process. Your reply should be a direct loadable json in the format of [{{\"number\": \"message number\", \"reason\":\"why\"}}]. If nothing, reply []"
+        for i in range(0, 5):
+            try:
+                answers = json.loads(self._probe(message=content))
+                answer_ids = [int(answer['number']) for answer in answers]
+                continued = False
+                for _id in answer_ids:
+                    if _id >= len(items):
+                        continued = True
+                        break
+                if not continued:
+                    break
+            except JSONDecodeError as e:
+                pass
+        if continued:
             self.logger.warning(f"agent_{self.agent_id+1} clear mailbox failed")
             return False
         new_mailbox = []
@@ -364,16 +374,23 @@ class Agent:
             return None
         messages = '\n'.join(items)
         content = f"  Here's messages {self.name} received that might have to deal with\n{messages}\n Please give {self.name}'s priority for importance and urgency consideration. Your reply should be a direct load json in the format of  {{\"number\": \"message number\", \"reason\":\"why\"}}"
-        try:
-            answer = json.loads(self._probe(message=content))
-            answer_id = int(answer['number'])
-            answer = items[answer_id]
-        except JSONDecodeError as e:
+        for i in range(0,5):
+            continued = True
+            try:
+                answer = json.loads(self._probe(message=content))
+                answer_id = int(answer['number'])
+                if answer_id < len(items):
+                    continued = False
+                    break
+                answer = items[answer_id]
+            except JSONDecodeError as e:
+                pass
+        if continued:
             self.logger.warning(f"agent_{self.agent_id+1} get most important and urgent message from mailbox failed")
             return items[0]
         self.save_message2memory(message=self.mailbox[answer_id])
         self.mailbox = [message for idx, message in enumerate(self.mailbox) if idx!=answer_id]
-        return answer
+        return self.mailbox[answer_id]
 
     def check_mailbox(self, timestep: int, 
                       prompt: str='') -> dict:
@@ -382,7 +399,6 @@ class Agent:
         give the most important and urgent message, and clear the messages that don't need to be done
         :return:
         """
-
         # clear mailbox
         self.clear_mailbox(timestep=timestep)
         # select mailbox
