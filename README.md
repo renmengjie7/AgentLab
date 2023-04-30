@@ -62,6 +62,7 @@ python demo_meeting.py
 - Add environment
     - Social 
     - Physical
+- Fine-grained time scheduling
 - Better serial and parallel logic including Automatic identification group
 - Explore the finetune parameter to make the model remember these experiences 
 - Support more LLMs

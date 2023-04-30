@@ -310,16 +310,6 @@ class Agent:
         """
         self.recieve(content=f"{self.name} read {text}")
 
-    def eat(self, food: List[str], time: str = '', prompt: str = 'You ate {} {}'):
-        """_summary_ Simulate human eating
-
-        Args:
-            text (List[str]): _description_ food list
-            time (str, optional): _description_. Defaults to ''. 
-            prompt (str, optional): _description_. Defaults to 'You ate {} {}'.
-        """
-        self._save(experience=prompt.format(','.join(food), time), source="eat")
-
     def _generate_natural_prompt(self, raw_prompt: str) -> str:
         pass
 
@@ -336,11 +326,12 @@ class Agent:
         for idx, agent in enumerate(agents):
             agent.recieve_info(content=experience)
 
-    def check_mailbox(self, timestep: int):
+    def check_mailbox(self, timestep: int, prompt: str='') -> dict:
         """
         The information in mailbox is read and stored in memory, and mailbox is emptied
-        the format of mailbox is [{"from":agent_id,"content":content,"replyable":True,"timestep:0}]
-        :return:
+        the format of mailbox is [{"from":agent_id,"content":content,"replyable":True,"timestep":0}]
+        拿出最重要最紧急的需要处理的事情, 并且清楚不需要处理的事情
+        :return: a message or None
         """
         messages = []
         while self.mailbox and self.mailbox[0]["timestep"] <= timestep:
@@ -351,42 +342,66 @@ class Agent:
             content = message["content"]
             self._save(experience=content, source="mailbox", interactant=interactant)
         return messages
+    
+    def run(self, timestep: int):
+        """_summary_ do what now ?
 
-    def react(self, timestep: int):
+        Args:
+            timestep (int): _description_
+        """
+        # TODO Fine-grained time scheduling 不同的事务会有不同的时间
+        # something in mail
+        message = self.check_mailbox(timestep)
+        if message is not None:
+            self.react(message, timestep=timestep)
+        else:
+            # TODO status 当前在做的事情, 自然语言描述, 判断后一步做什么
+            # TODO status是否有必要, 会不会本身在memory中???
+            pass
+        
+    def process_message(self, message: dict)->dict:
+        """
+        do what? object? direct or polling, third person
+        {"what": "", "object": []}
+        """
+        pass
+
+    def react(self, message: dict, timestep: int):
         from AISimuToolKit.exp.agents.Courier import Courier
-        messages = self.check_mailbox(timestep)
-        if len(messages) == 0:
-            return
+        # 预测的要做的事情, 塞到memory中, 交互对象也塞到
+        # 问语言模型交互对象
         self.summarize()
-        for message in messages:
-            if not message["replyable"]:
-                continue
-            memory_about_message = self.memory.retrieve_by_query(weights=self.retrieve_weight, query=message["content"])
-            memory_about_message = "\n".join(
-                [str(idx + 1) + ":" + item["experience"] for idx, item in enumerate(memory_about_message)])
-            background_prompt = "{}.\n Here are some experience might be useful:\n{}\nThe following is send from {}, please read about it and decide who would {} like to talk to\n".format(
-               self.summary, memory_about_message, message["from"], self.name)
-            background_prompt += "\n{}\n".format(message["content"])
-            select_prompt = background_prompt + "\nSelect one or more or none of the people {} want to communicate with next from the given list\n{}\n".format(self.name,
-                list(set(Courier.all_receivers_name()) - {self.name}))
+        # 你现在要处理message, 你第一步怎么做( 轮询: 交互对象 )
+        result = self.process_message(message=message)
+        # save memory
+        
+            # memory_about_message = self.memory.retrieve_by_query(weights=self.retrieve_weight, query=message["content"])
+            # memory_about_message = "\n".join(
+            #     [str(idx + 1) + ":" + item["experience"] for idx, item in enumerate(memory_about_message)])
+            # background_prompt = "{}.\n Here are some experience might be useful:\n{}\nThe following is send from {}, please read about it and decide who would {} like to talk to\n".format(
+            #    self.summary, memory_about_message, message["from"], self.name)
+            # background_prompt += "\n{}\n".format(message["content"])
+            # select_prompt = background_prompt + "\nSelect one or more or none of the people {} want to communicate with next from the given list\n{}\n".format(self.name,
+            #     list(set(Courier.all_receivers_name()) - {self.name}))
 
-            for name in list(set(Courier.all_receivers_name()) - {self.name}):
-                check_if_talk = self._chat(background_prompt + "\n" + "Do {} want to talk to {}".format(self.name, name))
-                self.logger.info(
-                    "agent_{} is deciding whether to talk to {}...{}".format(self.agent_id, name, check_if_talk))
-                check_if_talk = self._chat(
-                    "Check if 'I' want to communicate with {} in the following sentence,\noutput example: yes/no\ndo nothing else.\n".format(
-                        name) + check_if_talk)
-                self.logger.info("agent_{} is formatting output {}".format(self.agent_id, check_if_talk))
-                if "yes" in check_if_talk.lower():
-                    sentence = self._chat(
-                        background_prompt + "\n" + "You are talking to {} ,what you want to say is:".format(name))
-                    sentence = self._chat(
-                        "Narrate the following conversation in the same tone that 'I' would speak to 'you'\n{}".format(
-                            sentence))
-                    self.logger.history("agent_{} talk to {} that {}".format(self.agent_id, name, sentence))
-                    Courier.send(msg=sentence, sender=self.name, receiver=name, replyable=True,
-                                 timestep=timestep + 1)
+            # for name in list(set(Courier.all_receivers_name()) - {self.name}):
+            #     check_if_talk = self._chat(background_prompt + "\n" + "Do {} want to talk to {}".format(self.name, name))
+            #     self.logger.info(
+            #         "agent_{} is deciding whether to talk to {}...{}".format(self.agent_id, name, check_if_talk))
+            #     check_if_talk = self._chat(
+            #         "Check if 'I' want to communicate with {} in the following sentence,\noutput example: yes/no\ndo nothing else.\n".format(
+            #             name) + check_if_talk)
+            #     self.logger.info("agent_{} is formatting output {}".format(self.agent_id, check_if_talk))
+            #     if "yes" in check_if_talk.lower():
+            #         sentence = self._chat(
+            #             background_prompt + "\n" + "You are talking to {} ,what you want to say is:".format(name))
+            #         sentence = self._chat(
+            #             "Narrate the following conversation in the same tone that 'I' would speak to 'you'\n{}".format(
+            #                 sentence))
+            #         self.logger.history("agent_{} talk to {} that {}".format(self.agent_id, name, sentence))
+            #         Courier.send(msg=sentence, sender=self.name, receiver=name, replyable=True,
+            #                      timestep=timestep + 1)
 
     def receive(self, msg: str, sender: str, timestep: int, replyable: bool = True, ) -> None:
+        # TODO 
         self.mailbox.append({"from": sender, "content": msg, "replyable": replyable, "timestep": timestep})
