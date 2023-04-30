@@ -20,7 +20,7 @@ def main():
     for timestep in range(30):
         exp.logger.info(f"=============timestep: {timestep}=============")
         for agent in exp.agents:
-            agent.react(timestep=timestep)
+            agent.run(timestep=timestep)
 
 
 if __name__ == '__main__':

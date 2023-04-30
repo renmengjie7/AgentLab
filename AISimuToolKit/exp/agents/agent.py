@@ -8,6 +8,7 @@ import json
 import os.path
 import re
 from typing import List
+from json import JSONDecodeError
 
 from AISimuToolKit.exp.agents.memory import Memory
 from AISimuToolKit.model.model import ApiBase
@@ -325,23 +326,67 @@ class Agent:
         self._save(experience=experience)
         for idx, agent in enumerate(agents):
             agent.recieve_info(content=experience)
-
-    def check_mailbox(self, timestep: int, prompt: str='') -> dict:
+            
+    def clear_mailbox(self, timestep: int) -> bool:
         """
-        The information in mailbox is read and stored in memory, and mailbox is emptied
-        the format of mailbox is [{"from":agent_id,"content":content,"replyable":True,"timestep":0}]
-        拿出最重要最紧急的需要处理的事情, 并且清楚不需要处理的事情
-        :return: a message or None
+        clear the messages that don't need to be done
         """
-        messages = []
-        while self.mailbox and self.mailbox[0]["timestep"] <= timestep:
-            messages.append(self.mailbox.pop(0))
+        items = [f"{idx}. timestep_{message['timestep']}, content: {message['content']}" for idx, message in enumerate(self.mailbox)]
+        messages = '\n'.join(items)
+        content = f" \n\n Here's messages {self.name} received that might have to deal with \n{messages}\n Please give a list of messages that {self.name} does not need to process. Your reply should be a direct loadable json in the format of [{{\"number\": \"message number\", \"reason\":\"why\"}}]."
+        try:
+            answers = json.loads(self._probe(message=content))
+            answer_ids = [int(answer['number']) for answer in answers]
+        except JSONDecodeError as e:
+            self.logger.warning(f"agent_{self.agent_id+1} clear mailbox failed")
+            return False
+        new_mailbox = []
+        for idx, message in enumerate(self.mailbox):
+            if idx not in answer_ids:
+                new_mailbox.append(message)
+            else:
+                self.save_message2memory(message)
+        self.mailbox= new_mailbox
+        return True
+    
+    def save_message2memory(self, message: dict):
+        interactant = message["from"]
+        content = message["content"]
+        self._save(experience=content, source="mailbox", interactant=interactant)
+    
+    def select_message(self) -> dict:
+        """
+        return give the most important and urgent message
+        return the first message when parse fialed
+        """
+        items = [f"{idx}. timestep{message['timestep']}, content {message['content']}\n" for idx, message in enumerate(self.mailbox)]
+        if len(items) == 0:
+            return None
+        messages = '\n'.join(items)
+        content = f"  Here's messages {self.name} received that might have to deal with\n{messages}\n Please give {self.name}'s priority for importance and urgency consideration. Your reply should be a direct load json in the format of  {{\"number\": \"message number\", \"reason\":\"why\"}}"
+        try:
+            answer = json.loads(self._probe(message=content))
+            answer_id = int(answer['number'])
+            answer = items[answer_id]
+        except JSONDecodeError as e:
+            self.logger.warning(f"agent_{self.agent_id+1} get most important and urgent message from mailbox failed")
+            return items[0]
+        self.save_message2memory(message=self.mailbox[answer_id])
+        self.mailbox = [message for idx, message in enumerate(self.mailbox) if idx!=answer_id]
+        return answer
 
-        for message in messages:
-            interactant = message["from"]
-            content = message["content"]
-            self._save(experience=content, source="mailbox", interactant=interactant)
-        return messages
+    def check_mailbox(self, timestep: int, 
+                      prompt: str='') -> dict:
+        """
+        The format of mailbox is [{"from":agent_id,"content":content,"replyable":True,"timestep":0}]
+        give the most important and urgent message, and clear the messages that don't need to be done
+        :return:
+        """
+
+        # clear mailbox
+        self.clear_mailbox(timestep=timestep)
+        # select mailbox
+        return self.select_message()
     
     def run(self, timestep: int):
         """_summary_ do what now ?

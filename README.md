@@ -59,6 +59,7 @@ python demo_meeting.py
 
 
 ## 📝 TODO list
+- Decoupling prompt
 - Add environment
     - Social 
     - Physical
