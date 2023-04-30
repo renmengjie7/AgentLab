@@ -7,8 +7,8 @@
 import json
 import os.path
 import re
-from typing import List
 from json import JSONDecodeError
+from typing import List
 
 from AISimuToolKit.exp.agents.memory import Memory
 from AISimuToolKit.model.model import ApiBase
@@ -311,7 +311,8 @@ class Agent:
             text (str): _description_
             prompt (str, optional): _description_. Defaults to 'You read'.
         """
-        self.recieve(content=f"{self.name} read {text}")
+        # self.recieve(content=f"{self.name} read {text}")
+        self._save(experience=f"{self.name} read {text}", source="read")
 
     def _generate_natural_prompt(self, raw_prompt: str) -> str:
         pass
@@ -328,17 +329,28 @@ class Agent:
         self._save(experience=experience)
         for idx, agent in enumerate(agents):
             agent.recieve_info(content=experience)
-            
+
     def clear_mailbox(self, timestep: int) -> bool:
         """
         clear the messages that don't need to be done
         """
-        items = [f"{idx}. timestep_{message['timestep']}, content: {message['content']}" for idx, message in enumerate(self.mailbox)]
+        items = [f"{idx}. timestep_{message['timestep']}, content: {message['content']}" for idx, message in
+                 enumerate(self.mailbox) if message['timestep'] <= timestep]
         messages = '\n'.join(items)
-        content = f" \n\n Here's messages {self.name} received that might have to deal with \n{messages}\n Please give a list of messages that {self.name} does not need to process. Your reply should be a direct loadable json in the format of [{{\"number\": \"message number\", \"reason\":\"why\"}}]. If nothing, reply []"
+
+        clear_mailbox_prompt = self.get_background_prompt(need_memory=False, need_status=False)
+
+        clear_mailbox_prompt += f"Here's messages {self.name} received that might have to deal with \n{messages}\n"
+        clear_mailbox_prompt += f"Please give a list of messages that {self.name} does not need to process. " \
+                                f"Your reply should be a direct loadable json in the format of " \
+                                f"[{{\"number\": \"message number\", \"reason\":\"why\"}}]. If nothing, reply []\n"
+        clear_mailbox_prompt += "Do nothing else."
+
+        answer_ids = []
+        continued = True
         for i in range(0, 5):
             try:
-                answers = json.loads(self._probe(message=content))
+                answers = json.loads(self._chat(clear_mailbox_prompt))
                 answer_ids = [int(answer['number']) for answer in answers]
                 continued = False
                 for _id in answer_ids:
@@ -347,10 +359,10 @@ class Agent:
                         break
                 if not continued:
                     break
-            except JSONDecodeError as e:
+            except:
                 pass
         if continued:
-            self.logger.warning(f"agent_{self.agent_id+1} clear mailbox failed")
+            self.logger.warning(f"agent_{self.agent_id + 1} clear mailbox failed")
             return False
         new_mailbox = []
         for idx, message in enumerate(self.mailbox):
@@ -358,25 +370,26 @@ class Agent:
                 new_mailbox.append(message)
             else:
                 self.save_message2memory(message)
-        self.mailbox= new_mailbox
+        self.mailbox = new_mailbox
         return True
-    
+
     def save_message2memory(self, message: dict):
         interactant = message["from"]
         content = message["content"]
         self._save(experience=content, source="mailbox", interactant=interactant)
-    
+
     def select_message(self) -> dict:
         """
         return give the most important and urgent message
         return the first message when parse fialed
         """
-        items = [f"{idx}. timestep{message['timestep']}, content {message['content']}\n" for idx, message in enumerate(self.mailbox)]
+        items = [f"{idx}. timestep{message['timestep']}, content {message['content']}\n" for idx, message in
+                 enumerate(self.mailbox)]
         if len(items) == 0:
             return None
         messages = '\n'.join(items)
         content = f"  Here's messages {self.name} received that might have to deal with\n{messages}\n Please give {self.name}'s priority for importance and urgency consideration. Your reply should be a direct load json in the format of  {{\"number\": \"message number\", \"reason\":\"why\"}}"
-        for i in range(0,5):
+        for i in range(0, 5):
             continued = True
             try:
                 answer = json.loads(self._probe(message=content))
@@ -388,16 +401,15 @@ class Agent:
             except JSONDecodeError as e:
                 pass
         if continued:
-            self.logger.warning(f"agent_{self.agent_id+1} get most important and urgent message from mailbox failed")
+            self.logger.warning(f"agent_{self.agent_id + 1} get most important and urgent message from mailbox failed")
             return items[0]
         self.save_message2memory(message=self.mailbox[answer_id])
-        self.mailbox = [message for idx, message in enumerate(self.mailbox) if idx!=answer_id]
+        self.mailbox = [message for idx, message in enumerate(self.mailbox) if idx != answer_id]
         return self.mailbox[answer_id]
 
-    def check_mailbox(self, timestep: int, 
-                      prompt: str='') -> dict:
+    def check_mailbox(self, timestep: int) -> dict:
         """
-        The format of mailbox is [{"from":agent_id,"content":content,"replyable":True,"timestep":0}]
+        The format of mailbox is [{"from":agent_id,"content":content,"timestep":0}]
         give the most important and urgent message, and clear the messages that don't need to be done
         :return:
         """
@@ -426,8 +438,7 @@ class Agent:
             content = item_json.get("content", "")
             receiver = item_json.get("interactant", "")
             if receiver in others_name:
-                Courier.send(msg=content, sender=self.name, receiver=receiver, replyable=True,
-                             timestep=timestep + 1)
+                Courier.send(msg=content, sender=self.name, receiver=receiver, timestep=timestep + 1)
                 self._save(experience=content, source="think", interactant=receiver)
 
     def react(self, message: dict, timestep: int) -> None:
@@ -474,13 +485,13 @@ class Agent:
         if need_memory:
             background_prompt += f"Here are some experience might be useful:\n{memory_about_message}\n"
         if need_status:
-            background_prompt += f"{self.name}'s status is '{self.status}'"
+            background_prompt += f"{self.name}'s status is '{self.status}'\n"
         self.logger.debug(background_prompt)
         return background_prompt
 
-    def receive(self, msg: str, sender: str, timestep: int, replyable: bool = True, ) -> None:
+    def receive(self, msg: str, sender: str, timestep: int, ) -> None:
         # TODO 
-        self.mailbox.append({"from": sender, "content": msg, "replyable": replyable, "timestep": timestep})
+        self.mailbox.append({"from": sender, "content": msg, "timestep": timestep})
 
     def change_status(self, timestep):
         change_status_prompt = self.get_background_prompt("Change your state based on your recent memory",
