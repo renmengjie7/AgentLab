@@ -364,14 +364,14 @@ class Agent:
             memory_about_message = self.memory.retrieve_by_query(weights=self.retrieve_weight, query=message["content"])
             memory_about_message = "\n".join(
                 [str(idx + 1) + ":" + item["experience"] for idx, item in enumerate(memory_about_message)])
-            background_prompt = "Act as you are {}:{}.\nHere are some experience might be useful:\n{}\nThe following is send from {}, please read about it and decide who would you like to talk to\n".format(
-                self.name, self.summary, memory_about_message, message["from"])
+            background_prompt = "{}.\n Here are some experience might be useful:\n{}\nThe following is send from {}, please read about it and decide who would {} like to talk to\n".format(
+               self.summary, memory_about_message, message["from"], self.name)
             background_prompt += "\n{}\n".format(message["content"])
-            select_prompt = background_prompt + "\nSelect one or more or none of the people you want to communicate with next from the given list\n{}\n".format(
+            select_prompt = background_prompt + "\nSelect one or more or none of the people {} want to communicate with next from the given list\n{}\n".format(self.name,
                 list(set(Courier.all_receivers_name()) - {self.name}))
 
             for name in list(set(Courier.all_receivers_name()) - {self.name}):
-                check_if_talk = self._chat(background_prompt + "\n" + "Do you want to talk to {}".format(name))
+                check_if_talk = self._chat(background_prompt + "\n" + "Do {} want to talk to {}".format(self.name, name))
                 self.logger.info(
                     "agent_{} is deciding whether to talk to {}...{}".format(self.agent_id, name, check_if_talk))
                 check_if_talk = self._chat(

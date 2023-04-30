@@ -2,7 +2,6 @@ import json
 from typing import List
 
 import pandas as pd
-from AISimuToolKit.exp.toolkit.TimeStep import TimeStep
 from sklearn.metrics import pairwise_distances
 
 from AISimuToolKit.model.embedding import BertSentenceEmbedding
@@ -50,7 +49,7 @@ class Memory:
             self.logger.info("Remove column {} from memory".format(column_name))
 
     # TODO Whether need to display the interaction object, the natural language description seems to be OK, for now all set to blank
-    def store(self, timestep: TimeStep = None, experience: str = None, question: str = None, answer: str = None,
+    def store(self, timestep=None, experience: str = None, question: str = None, answer: str = None,
               interactant: str = '', source: str = None, importance: float = 5, *args, **kwargs) -> object:
         """
         Store memory, where either pair of experience, [question, answer] can be empty, but not both. 
