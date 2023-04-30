@@ -32,7 +32,7 @@ python demo_meeting.py
         cd src/deploy/
         python deploy.py
         ```
-2. Serial and parallel experiment, see [demo](#section-demo)
+2. Serial and parallel experiment, see [demo](#-demo)
 3. Memory compression => summary, reflect and finetune
     - **<u>summary</u>**
     - **<u>reflect</u>** 
@@ -41,7 +41,7 @@ python demo_meeting.py
 4. A kit for simulation experiments
 
 
-## 👀 Demo {#section-demo}
+## 👀 Demo
 1. **Serial example**    [demo_leaderless_discuss.py](demo_leaderless_discuss.py)  
 **<u>Background</u>** Four people, Alice, Sophia, Jerre and Benjamin with different profiles are interviewing to be volunteers for the Olympics. This is a leaderless panel. The topic of discussion was "Minority language volunteers take half an hour to get to the site. As the only volunteer on site, now how will you inform foreigners of minority language that they must wear masks before entering the site"  
 **<u>Result</u>**
