@@ -14,10 +14,10 @@ def main():
                           output_dir="experiments")
 
     exp.agents[0].receive(
-        f"{exp.agents[0].name} wants to hold a project progress docking meeting this afternoon. {exp.agents[0].name} is so busy he/she don't have time to schedule meetings herself/himself. {exp.agents[0].name} needs his/her secretary, Bob, to arrange a meeting for the rest of the project, including Carol and Dave, in the conference room at 3:00 this afternoon.",
+        f"{exp.agents[0].name} needs to hold a project progress docking meeting this afternoon. {exp.agents[0].name} is so busy he/she don't have time to schedule meetings herself/himself. {exp.agents[0].name} needs his/her secretary, Bob, to arrange a meeting for the rest of the project, including Carol and Dave, in the conference room at 3:00 this afternoon.",
         sender="a mysterious force", timestep=0)
     
-    for timestep in range(30):
+    for timestep in range(1,30):
         exp.logger.info(f"=============timestep: {timestep}=============")
         for agent in exp.agents:
             agent.run(timestep=timestep)

@@ -39,7 +39,8 @@ class Agent:
         self.model = model
         self.path = agent_path
         self.logger = Logger()
-        self.memory = Memory(memory_path=os.path.join(agent_path, "memory.jsonl"), extra_columns=misc["extra_columns"])
+        self.memory = Memory(memory_path=os.path.join(
+            agent_path, "memory.jsonl"), extra_columns=misc["extra_columns"])
         self.retrieve_weight = misc.get("retrieve_weight", {
             "recentness": 1.0,
             "importance": 1.0,
@@ -153,11 +154,13 @@ class Agent:
 
         if interactant is None:
             interactant = self.name
-        self.memory.store(interactant=interactant, experience=experience, source=source, importance=importance)
+        self.memory.store(interactant=interactant, experience=experience,
+                          source=source, importance=importance)
 
     def get_importance(self, experience: str) -> float:
         importance = self._chat(self.importance_prompt.format(experience))
-        self.logger.debug(f"store into memory,and automatically get its importance: {importance}")
+        self.logger.debug(
+            f"store into memory,and automatically get its importance: {importance}")
         try:
             importance = float(importance)
             self.logger.debug(f"convert importance to float: {importance}")
@@ -172,7 +175,8 @@ class Agent:
                 importance = float(importance)
                 self.logger.debug(f"convert importance to float: {importance}")
             except Exception:
-                self.logger.warning("cannot convert importance to float,set to 5.0 by default")
+                self.logger.warning(
+                    "cannot convert importance to float,set to 5.0 by default")
                 importance = 5.0
         return importance
 
@@ -199,9 +203,11 @@ class Agent:
         :return:
         """
         self.logger.history(f"agent_{self.agent_id} reflected from memory")
-        weighted_memory = self.memory.retrieve_by_query(weights=self.retrieve_weight, num=self.reflect_nums)
+        weighted_memory = self.memory.retrieve_by_query(
+            weights=self.retrieve_weight, num=self.reflect_nums)
 
-        high_level_questions_prompt = "\n".join([item["experience"] for item in weighted_memory])
+        high_level_questions_prompt = "\n".join(
+            [item["experience"] for item in weighted_memory])
 
         high_level_questions_prompt += "Given only the information above, what are 3 most salient high-level " \
                                        "questions we can answer about the subjects in the statements?"
@@ -209,7 +215,8 @@ class Agent:
         high_level_questions = self._chat(high_level_questions_prompt)
 
         for question in high_level_questions.split("\n"):
-            self.logger.info(f"agent_{self.agent_id} reflected from question: {question}")
+            self.logger.info(
+                f"agent_{self.agent_id} reflected from question: {question}")
             weighted_memory_to_reflect = self.memory.retrieve_by_query(
                 weights=self.retrieve_weight, num=self.reflect_nums, query=question)
 
@@ -223,7 +230,8 @@ class Agent:
 
             for insight in insights.split("\n"):
                 insight = insight.strip()
-                self._save(experience=insight, source="reflect", accu_importance=False)
+                self._save(experience=insight, source="reflect",
+                           accu_importance=False)
 
     def summarize(self) -> None:
         """
@@ -232,7 +240,8 @@ class Agent:
         """
         memory = self.memory.retrieve_by_recentness(num=self.summary_nums)
         memory.reverse()
-        concatenated_memory = "\n".join([item["experience"] for item in memory])
+        concatenated_memory = "\n".join(
+            [item["experience"] for item in memory])
         # TODO won't summarize until reach the length limit
         # TODO need config for different model limit
         if len(concatenated_memory.split(' ')) < 2000:
@@ -244,7 +253,8 @@ class Agent:
             weights=self.retrieve_weight, num=self.summary_nums,
             query="{}’s core characteristics.".format(self.name))
 
-        prompt = "How would one describe {}’s core characteristics given the following statements?\n".format(self.name)
+        prompt = "How would one describe {}’s core characteristics given the following statements?\n".format(
+            self.name)
         prompt += "\n".join([item["experience"] for item in weighted_memory])
         summary = self._chat(prompt).split("\n")
 
@@ -252,7 +262,8 @@ class Agent:
             weights=self.retrieve_weight, num=self.summary_nums,
             query="{}’s current daily occupation.".format(self.name))
 
-        prompt = "What is {}’s current daily occupation given the following statements?\n".format(self.name)
+        prompt = "What is {}’s current daily occupation given the following statements?\n".format(
+            self.name)
         prompt += "\n".join([item["experience"] for item in weighted_memory])
         summary.extend(self._chat(prompt).split("\n"))
 
@@ -269,7 +280,8 @@ class Agent:
         prompt += "\n".join(summary)
         self.summary = self._chat(prompt)
 
-        self.logger.history("agent_{} summarize: {}".format(self.agent_id, " ".join(self.summary.split("\n"))))
+        self.logger.history("agent_{} summarize: {}".format(
+            self.agent_id, " ".join(self.summary.split("\n"))))
 
     def _chat(self, formatted_prompt: str) -> str:
         """
@@ -299,9 +311,11 @@ class Agent:
         """
         if message is None:
             message = question + '\n'.join([answer for answer in answers])
-        answer = self._probe(message=message, prompt=prompt, decide_by=decide_by)
+        answer = self._probe(
+            message=message, prompt=prompt, decide_by=decide_by)
         if save:
-            self._save(experience=f'{message}. choosed {answer}', source="decide")
+            self._save(
+                experience=f'{message}. choosed {answer}', source="decide")
         return answer
 
     def read(self, text: str):
@@ -334,16 +348,21 @@ class Agent:
         """
         clear the messages that don't need to be done
         """
-        items = [f"{idx}. timestep_{message['timestep']}, content: {message['content']}" for idx, message in
-                 enumerate(self.mailbox) if message['timestep'] <= timestep]
+        items = [f"{idx}. {message['content']}. received in timestep{message['timestep']}" for idx, message in
+                 enumerate(self.mailbox) if message['timestep'] < timestep]
+        if len(items):
+            return True
         messages = '\n'.join(items)
+        # TODO 参数有待测试, 使用什么memory组合比较合适
+        clear_mailbox_prompt = self.get_background_prompt(need_relevant_memory=False,
+                                                          need_recent_memory=False,
+                                                          need_status=False)
 
-        clear_mailbox_prompt = self.get_background_prompt(need_relevant_memory=False, need_status=False)
-
-        clear_mailbox_prompt += f"Here's messages {self.name} received that might have to deal with \n{messages}\n"
+        clear_mailbox_prompt += f"\n\nThe following are messages {self.name} received that might have to deal with, starts with number, content and timestep\n\n{messages}"
         clear_mailbox_prompt += f"Please give a list of messages that {self.name} does not need to process. " \
                                 f"Your reply should be a direct loadable json in the format of " \
-                                f"[{{\"number\": \"message number\", \"reason\":\"why\"}}]. If nothing, reply []\n"
+                                f"[{{\"number\": \"message number\", \"reason\":\"why\"}}]." \
+                                f"If nothing, reply []\n"
         clear_mailbox_prompt += "Do nothing else."
 
         answer_ids = []
@@ -362,7 +381,8 @@ class Agent:
             except:
                 pass
         if continued:
-            self.logger.warning(f"agent_{self.agent_id + 1} clear mailbox failed")
+            self.logger.warning(
+                f"agent_{self.agent_id + 1} clear mailbox failed")
             return False
         new_mailbox = []
         for idx, message in enumerate(self.mailbox):
@@ -376,7 +396,16 @@ class Agent:
     def save_message2memory(self, message: dict):
         interactant = message["from"]
         content = message["content"]
-        self._save(experience=content, source="mailbox", interactant=interactant)
+        self._save(experience=content, source="mailbox",
+                   interactant=interactant)
+
+    def format_answer(self, content, example):
+        """
+        Use LLM to format the content it produces
+        """
+        str_ = f"{content} Format sentences above,output example: {example}"\
+            f'Do nothing else'
+        return self._chat(str_)
 
     # TODO 修里面的bug
     def select_message(self, timestep: int) -> dict:
@@ -384,28 +413,47 @@ class Agent:
         return give the most important and urgent message
         return the first message when parse fialed
         """
-        items = [f"{idx}. timestep{message['timestep']}, content {message['content']}\n" for idx, message in
-                 enumerate(self.mailbox) if message['timestep'] <= timestep]
+        example = f'{{\"number\": \"message number\", \"reason\":\"why\"}}'
+        items = [f"{idx}. {message['content']}. received in timestep{message['timestep']}" for idx, message in
+                 enumerate(self.mailbox) if message['timestep'] < timestep]
         if len(items) == 0:
             return {}
         messages = '\n'.join(items)
-        content = f"  Here's messages {self.name} received that might have to deal with\n{messages}\n Please give {self.name}'s priority for importance and urgency consideration. Your reply should be a direct load json in the format of  {{\"number\": \"message number\", \"reason\":\"why\"}}"
+        content = f"  The following are messages {self.name} received that might have to deal with, starts with number, content and timestep\n\n{messages}" \
+            f"\n Please give {self.name}'s priority for importance and urgency consideration. Your reply should be a direct load json in the format of {example}" \
+            f"Do nothing else"
         continued = True
         for i in range(0, 5):
             try:
-                answer = json.loads(self._probe(message=content))
+                answer_str = self._probe(message=content)
+                # format error
+                answer = json.loads(answer_str)
+                # content error
                 answer_id = int(answer['number'])
                 if answer_id < len(items):
                     continued = False
                     break
-                answer = items[answer_id]  # TODO never use answer
-            except JSONDecodeError as e:  # TODO 如果错误在别的地方呢，比如int(answer['number'])
-                pass
+            # format error
+            except JSONDecodeError as e:
+                try:
+                    formated_answer = self.format_answer(
+                        content=answer_str, example=example)
+                    answer = json.loads(formated_answer)
+                    answer_id = int(answer['number'])
+                    if answer_id < len(items):
+                        continued = False
+                        break
+                except:
+                    continue
+            # content error
+            except ValueError as e:
+                continue
         if continued:
-            self.logger.warning(f"agent_{self.agent_id + 1} get most important and urgent message from mailbox failed")
-            return items[0]  # TODO return a string here
-        self.save_message2memory(message=self.mailbox[answer_id])  # TODO 可能赋值前引用
+            self.logger.warning(
+                f"agent_{self.agent_id + 1} get most important and urgent message from mailbox failed, use default first message")
+            answer_id = 0
         most_import_urgent_message = self.mailbox[answer_id]
+        self.save_message2memory(message=most_import_urgent_message)
         self.mailbox.pop(answer_id)
         return most_import_urgent_message
 
@@ -436,14 +484,17 @@ class Agent:
         from AISimuToolKit.exp.agents.Courier import Courier
         for item in answer.split("\n"):
             item_json = json.loads(item)
-            item_json = {key.lower(): value for key, value in item_json.items()}
+            item_json = {key.lower(): value for key,
+                         value in item_json.items()}
             content = item_json.get("content", "")
             receiver = item_json.get("interactant", "")
             if content == "" or receiver == "":
                 continue
             if receiver in others_name:
-                Courier.send(msg=content, sender=self.name, receiver=receiver, timestep=timestep + 1)
-                self._save(experience=content, source="think", interactant=receiver)
+                Courier.send(msg=content, sender=self.name,
+                             receiver=receiver, timestep=timestep)
+                self._save(experience=content, source="think",
+                           interactant=receiver)
 
     def react(self, message: dict, timestep: int) -> None:
         # 预测的要做的事情, 塞到memory中, 交互对象也塞到
@@ -451,8 +502,10 @@ class Agent:
         from AISimuToolKit.exp.agents.Courier import Courier
         others_name = list(set(Courier.all_receivers_name()) - {self.name})
 
-        message_content = message.get("content", None) if message is not None else None
-        think_what_to_do_next_prompt = self.get_background_prompt(message_content, need_recent_memory=True)
+        message_content = message.get(
+            "content", None) if message is not None else None
+        think_what_to_do_next_prompt = self.get_background_prompt(
+            message_content, need_recent_memory=True)
 
         if message is not None and message != {}:
             think_what_to_do_next_prompt += f"The following is send from {message['from']}, please read about it and decide what would {self.name}want to do\n"
@@ -480,12 +533,14 @@ class Agent:
             except:
                 self.logger.warning("can not fix it,do nothing")
 
-    def get_background_prompt(self, content: str = None, need_relevant_memory: bool = True, need_status: bool = True,
+    def get_background_prompt(self, content: str = None,
+                              need_relevant_memory: bool = True, need_status: bool = True,
                               need_recent_memory: bool = False) -> str:
         self.summarize()
         background_prompt = f"Act as you are {self.name}:{self.summary}.\n "
         if need_relevant_memory:
-            memory_about_message = self.memory.retrieve_by_query(weights=self.retrieve_weight, query=content)
+            memory_about_message = self.memory.retrieve_by_query(
+                weights=self.retrieve_weight, query=content)
             memory_about_message = self.format_memory(memory_about_message)
             background_prompt += f"Here are some relevant experience:\n{memory_about_message}\n"
         if need_recent_memory:
@@ -504,20 +559,23 @@ class Agent:
         for idx, item in enumerate(memory_about_message):
             format_memory = str(idx + 1) + "."
             if item["interactant"] in agents_name:
+                # TODO 这样的Message with格式会让LLM混乱
                 format_memory += "Message with {}:".format(item["interactant"])
             format_memory += item["experience"]
             memory_list.append(format_memory)
         return "\n".join(memory_list)
 
     def receive(self, msg: str, sender: str, timestep: int, ) -> None:
-        # TODO 
-        self.mailbox.append({"from": sender, "content": msg, "timestep": timestep})
+        self.mailbox.append(
+            {"from": sender, "content": msg, "timestep": timestep})
 
     def change_status(self, timestep):
-        change_status_prompt = self.get_background_prompt("Change your state based on your recent memory")
+        change_status_prompt = self.get_background_prompt(
+            "Change your state based on your recent memory")
         change_status_prompt += "Change your state based on your recent memory,status must be a specific action.A status must be very short."
         change_status_prompt += "Do nothing else.\n"
         self.logger.debug(change_status_prompt)
         answer = self._chat(change_status_prompt)
         self.status = answer
-        self.logger.info("agent {} change status to {}".format(self.name, self.status))
+        self.logger.info("agent {} change status to {}".format(
+            self.name, self.status))
