@@ -54,8 +54,8 @@ python demo_meeting.py
 
 
 2. **Parallel example** [demo_meeting.py](demo_meeting.py)  
-**<u>Background</u>**  
-**<u>Result</u>**
+**<u>Background</u>**  Alice needs hold a project progress docking meeting this afternoon.She is so busy she don't have time to schedule meetings herself. Alice needs her secretary, Bob, to arrange a meeting for the rest of the project, including Carol and Dave, in the conference room at 3:00 this afternoon.
+**<u>Result</u>** Bob can send the meeting notification, but the subsequent freedom is too high. More restrictions and testing are needed...
 
 
 ## 📝 TODO list
