@@ -350,7 +350,7 @@ class Agent:
         """
         items = [f"{idx}. {message['content']}. received in timestep{message['timestep']}" for idx, message in
                  enumerate(self.mailbox) if message['timestep'] < timestep]
-        if len(items):
+        if len(items)==0:
             return True
         messages = '\n'.join(items)
         # TODO 参数有待测试, 使用什么memory组合比较合适
@@ -448,13 +448,17 @@ class Agent:
             # content error
             except ValueError as e:
                 continue
+            except Exception as e:
+                continue
         if continued:
             self.logger.warning(
                 f"agent_{self.agent_id + 1} get most important and urgent message from mailbox failed, use default first message")
             answer_id = 0
         most_import_urgent_message = self.mailbox[answer_id]
-        self.save_message2memory(message=most_import_urgent_message)
+        # TODO 不能放在这, 后面summarize会使用
+        # self.save_message2memory(message=most_import_urgent_message)
         self.mailbox.pop(answer_id)
+        most_import_urgent_message['id'] = answer_id
         return most_import_urgent_message
 
     def check_mailbox(self, timestep: int) -> dict:
@@ -474,7 +478,7 @@ class Agent:
         Args:
             timestep (int): _description_
         """
-        # TODO Fine-grained time scheduling 不同的事务会有不同的时间
+        # TODO Fine-grained time scheduling 不同的事务会有不同的时间duration
         # something in mail
         message = self.check_mailbox(timestep)
         self.react(message=message, timestep=timestep)
@@ -504,19 +508,27 @@ class Agent:
 
         message_content = message.get(
             "content", None) if message is not None else None
-        think_what_to_do_next_prompt = self.get_background_prompt(
-            message_content, need_recent_memory=True)
-
+        # TODO 信息冗余
+        think_what_to_do_next_prompt = self.get_background_prompt(content=message_content,
+                                                                  need_recent_memory=False,
+                                                                  need_relevant_memory=False,
+                                                                  need_status=False)
+        # TODO save to memory in the past tense, can also use LLM to convert in a single step
+        past = 'And describe this as something that have happened'
         if message is not None and message != {}:
-            think_what_to_do_next_prompt += f"The following is send from {message['from']}, please read about it and decide what would {self.name}want to do\n"
+            think_what_to_do_next_prompt += f"The following is send from {message['from']}, please read about it and decide what would {self.name} want to do\n.Please state in the third person declarative voice what {self.name} will do in the next step.\n {past}\n"
             think_what_to_do_next_prompt += "{}\n".format(message["content"])
         else:
-            think_what_to_do_next_prompt += "What do you want to do next?\n"
+            think_what_to_do_next_prompt += f"What do {self.name} want to do next?\nPlease state in the third person declarative voice what {self.name} will do in the next step.\n {past}\n"
 
+        # TODO 是否会导致next step的动作一定与人交互? 不能独处?
         think_what_to_do_next_prompt += "Choose interactant's name from {}.\n".format(
             others_name)
         think_what_to_do_next_prompt += "output example:\n{\"interactant\":\"name\",\"content\":\"\"}\n{\"interactant\":\"name2\",\"content\":\"\"}\n"
-
+        
+        if message is not None and message != {}:
+            self.save_message2memory(message=message)
+            
         self.logger.debug(think_what_to_do_next_prompt)
         answer = self._chat(think_what_to_do_next_prompt)
         self.logger.info(answer)
@@ -571,7 +583,10 @@ class Agent:
 
     def change_status(self, timestep):
         change_status_prompt = self.get_background_prompt(
-            "Change your state based on your recent memory")
+            "Change your state based on your recent memory",
+            need_recent_memory=False,
+            need_relevant_memory=False,
+            need_status=True)
         change_status_prompt += "Change your state based on your recent memory,status must be a specific action.A status must be very short."
         change_status_prompt += "Do nothing else.\n"
         self.logger.debug(change_status_prompt)

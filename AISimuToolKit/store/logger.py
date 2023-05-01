@@ -41,7 +41,7 @@ class Logger:
                         cls._instance.history_handler.setLevel(logging.DEBUG)
 
                         cls._instance.console_handler = logging.StreamHandler()
-                        cls._instance.console_handler.setLevel(logging.DEBUG)
+                        cls._instance.console_handler.setLevel(logging.ERROR)
 
                         formatter_history = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
                         cls._instance.log_handler.setFormatter(formatter_history)
