@@ -11,6 +11,7 @@ from typing import List
 
 from AISimuToolKit.exp.agents.Courier import Courier
 from AISimuToolKit.exp.agents.agent import Agent
+from AISimuToolKit.exp.agents.agent_collection import AgentCollection
 from AISimuToolKit.model.register import get_model_apis
 from AISimuToolKit.store.logger import Logger
 from AISimuToolKit.utils.utils import generate_experiment_id, get_fromat_len, parse_yaml_config, save_config
@@ -20,7 +21,7 @@ class Experiment:
     def __init__(self, id: str, path: str, agents: List[Agent], config: dict, attenuation_coe: float = 0.7):
         self.id = id
         self.path = path
-        self.agents = agents
+        self.agents = AgentCollection(agents)
         # config passed in by the user
         self.config = config
         self.logger = Logger()

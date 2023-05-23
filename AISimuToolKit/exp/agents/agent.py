@@ -24,7 +24,7 @@ class Agent:
     def __init__(self, agent_id: int,
                  name: str,
                  profile: list,
-                 role: str,
+                 group: str,
                  model: ApiBase,
                  exp_id: str,
                  agent_path: str,
@@ -33,12 +33,14 @@ class Agent:
         self.agent_id = agent_id
         self.name = name
         self.profile_list = profile
-        self.role = role
+        self.group = group
         self.exp_id = exp_id
         self.model_config = model_config
         self.model = model
         self.path = agent_path
+
         self.logger = Logger()
+
         self.memory = Memory(memory_path=os.path.join(
             agent_path, "memory.jsonl"), extra_columns=misc["extra_columns"])
         self.retrieve_weight = misc.get("retrieve_weight", {
@@ -79,7 +81,7 @@ class Agent:
             agent_id=cls.idx,
             name=config['name'],
             profile=config['profile'],
-            role=config['role'],
+            group=config['group'],
             model=model,
             exp_id=exp_id,
             agent_path=path,
@@ -350,7 +352,7 @@ class Agent:
         """
         items = [f"{idx}. {message['content']}. received in timestep{message['timestep']}" for idx, message in
                  enumerate(self.mailbox) if message['timestep'] < timestep]
-        if len(items)==0:
+        if len(items) == 0:
             return True
         messages = '\n'.join(items)
         # TODO 参数有待测试, 使用什么memory组合比较合适
@@ -403,8 +405,8 @@ class Agent:
         """
         Use LLM to format the content it produces
         """
-        str_ = f"{content} Format sentences above,output example: {example}"\
-            f'Do nothing else'
+        str_ = f"{content} Format sentences above,output example: {example}" \
+               f'Do nothing else'
         return self._chat(str_)
 
     # TODO 修里面的bug
@@ -420,8 +422,8 @@ class Agent:
             return {}
         messages = '\n'.join(items)
         content = f"  The following are messages {self.name} received that might have to deal with, starts with number, content and timestep\n\n{messages}" \
-            f"\n Please give {self.name}'s priority for importance and urgency consideration. Your reply should be a direct load json in the format of {example}" \
-            f"Do nothing else"
+                  f"\n Please give {self.name}'s priority for importance and urgency consideration. Your reply should be a direct load json in the format of {example}" \
+                  f"Do nothing else"
         continued = True
         for i in range(0, 5):
             try:
@@ -489,7 +491,7 @@ class Agent:
         for item in answer.split("\n"):
             item_json = json.loads(item)
             item_json = {key.lower(): value for key,
-                         value in item_json.items()}
+            value in item_json.items()}
             content = item_json.get("content", "")
             receiver = item_json.get("interactant", "")
             if content == "" or receiver == "":
@@ -525,10 +527,10 @@ class Agent:
         think_what_to_do_next_prompt += "Choose interactant's name from {}.\n".format(
             others_name)
         think_what_to_do_next_prompt += "output example:\n{\"interactant\":\"name\",\"content\":\"\"}\n{\"interactant\":\"name2\",\"content\":\"\"}\n"
-        
+
         if message is not None and message != {}:
             self.save_message2memory(message=message)
-            
+
         self.logger.debug(think_what_to_do_next_prompt)
         answer = self._chat(think_what_to_do_next_prompt)
         self.logger.info(answer)
