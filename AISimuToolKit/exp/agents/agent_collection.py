@@ -11,6 +11,18 @@ from exp.agents.agent import Agent
 from AISimuToolKit.store.logger import Logger
 
 
+class AgentCollectionWrapper:
+    def __init__(self, agents):
+        self.agents = agents
+
+    def receive(self, msg: str, sender: str, timestep: int):
+        for agent in self.agents:
+            agent.receive(msg, sender, timestep)
+
+    def __iter__(self):
+        return iter(self.agents)
+
+
 class AgentGroup:
     def __init__(self, group_name: str, group_agents: Union[List[Agent], Agent]):
         if isinstance(group_agents, Agent):
@@ -26,18 +38,6 @@ class AgentGroup:
 
     def all(self):
         return AgentCollectionWrapper(self.agents.values())
-
-
-class AgentCollectionWrapper:
-    def __init__(self, agents):
-        self.agents = agents
-
-    def receive(self, msg: str, sender: str, timestep: int):
-        for agent in self.agents:
-            agent.receive(msg, sender, timestep)
-
-    def __iter__(self):
-        return iter(self.agents)
 
 
 class AgentCollection:
@@ -59,6 +59,8 @@ class AgentCollection:
         for agent in agents:
             if agent.group is None:
                 continue
+            if agent.group == "all":
+                raise ValueError("group name 'all' is reserved")
             if agent.group not in self.groups:
                 self.groups[agent.group] = AgentGroup(group_name=agent.group, group_agents=[agent])
             else:
@@ -71,7 +73,7 @@ class AgentCollection:
     def get_agent_by_name(self, name):
         return self.agents[name]
 
-    def all(self):
+    def all(self) -> AgentCollectionWrapper:
         return AgentCollectionWrapper(self.agents)
 
     def __getitem__(self, key):

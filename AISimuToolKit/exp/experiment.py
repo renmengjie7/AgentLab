@@ -18,7 +18,7 @@ from AISimuToolKit.utils.utils import generate_experiment_id, get_fromat_len, pa
 
 
 class Experiment:
-    def __init__(self, id: str, path: str, agents: List[Agent], config: dict, attenuation_coe: float = 0.7):
+    def __init__(self, id: str, path: str, agents: List[Agent], config: dict):
         self.id = id
         self.path = path
         self.agents = AgentCollection(agents)
