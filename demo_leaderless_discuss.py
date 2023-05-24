@@ -14,17 +14,19 @@ def main():
 
     # Only one person can speak at each round
     for i in range(1, 21):
-        # who to say
-        idx = exp.choose_next_one(
-            message="Please consider his/her characteristics and experience, predict a number from 1 to 100, indicating the probability of he/she speaking at the next moment. The greater the value, the higher the probability. The answer should only contain the number")
-        # what to say
-        answer = exp.probe(agent=exp.agents[idx],
-                           content=f"What would {exp.agents[idx].name} say in the next moment? Please express what {exp.agents[idx].name} might say directly in the first person.Please try not to repeat yourself and others\n(There is no need to give any explanation)")
-        # broadcast
-        exp.agents[idx].talk2(content=answer, agents=[agent for idx_, agent in enumerate(exp.agents) if idx_ != idx])
-        # log
-        print(Fore.GREEN + f"round{i} {exp.agents[idx].name} said {answer}")
-        print(Style.RESET_ALL)
+        exp.scheduler.run()
+        # # who to say
+        # idx = exp.choose_next_one()
+        # # what to say
+        # answer = exp.probe(agent=exp.agents[idx],
+        #                    content=f"What would {exp.agents[idx].name} say in the next moment?"
+        #                            f" Please express what {exp.agents[idx].name} might say directly in the first person."
+        #                            f"Please try not to repeat yourself and others\n(There is no need to give any explanation)")
+        # # talk2
+        # exp.agents[idx].talk2(content=answer, agents=[agent for idx_, agent in enumerate(exp.agents) if idx_ != idx])
+        # # log
+        # print(Fore.GREEN + f"round{i} {exp.agents[idx].name} said {answer}")
+        # print(Style.RESET_ALL)
 
 
 if __name__ == '__main__':

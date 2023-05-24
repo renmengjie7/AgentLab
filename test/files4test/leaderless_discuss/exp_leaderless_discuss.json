@@ -2,7 +2,8 @@
     "experiment_name": "leaderless discussion",
     "description": "Just an example of serial emulation",
     "experiment_settings": {
-        "attenuation_coe": 0.7
+        "attenuation_coe": 0.7,
+        "schedular": "bidding"
     },
     "agent_list": [
         {

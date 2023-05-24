@@ -2,6 +2,7 @@
     "experiment_name": "meeting",
     "description": "Simulate the process of determining the time for a meeting in life",
     "experiment_settings": {
+        "schedular": "demand"
     },
     "agent_list": [
         {

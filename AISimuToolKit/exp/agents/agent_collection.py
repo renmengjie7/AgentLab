@@ -76,6 +76,20 @@ class AgentCollection:
     def all(self) -> AgentCollectionWrapper:
         return AgentCollectionWrapper(self.agents)
 
+    def get_group_by_group_name(self, group_name: str):
+        return self.groups[group_name]
+
+    def get_group_by_agent(self, agent: Union[str, Agent, int]):
+        if isinstance(agent, Agent):
+            agent = agent.name
+        if isinstance(agent, int):
+            agent = self.id2name[agent]
+        group_name = "all"
+        for group in self.groups.values():
+            if agent in group.agents.keys() and group.group_name != "all":
+                group_name = group
+        return self.groups[group_name]
+
     def __getitem__(self, key):
         try:
             if isinstance(key, int):

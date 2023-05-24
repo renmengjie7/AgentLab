@@ -12,9 +12,18 @@ from typing import List
 from AISimuToolKit.exp.agents.Courier import Courier
 from AISimuToolKit.exp.agents.agent import Agent
 from AISimuToolKit.exp.agents.agent_collection import AgentCollection
+from AISimuToolKit.exp.scheduler.scheduler import RandomScheduler, SequentialScheduler, BiddingSchedular, \
+    DemandScheduler
 from AISimuToolKit.model.register import get_model_apis
 from AISimuToolKit.store.logger import Logger
 from AISimuToolKit.utils.utils import generate_experiment_id, get_fromat_len, parse_yaml_config, save_config
+
+Scheduler = {
+    "random": RandomScheduler,
+    "sequential": SequentialScheduler,
+    "bidding": BiddingSchedular,
+    "demand": DemandScheduler
+}
 
 
 class Experiment:
@@ -22,12 +31,11 @@ class Experiment:
         self.id = id
         self.path = path
         self.agents = AgentCollection(agents)
+        self.scheduler = Scheduler[config["experiment_settings"].get("scheduler")](self.agents,
+                                                                                   config["experiment_settings"])
         # config passed in by the user
         self.config = config
         self.logger = Logger()
-        # continuous speak needs a attenuation coefficient
-        self.attenuation_coe = 0.7
-        self.continuous_count = {i: 0 for i in range(0, len(agents))}
 
     def get_agent_ids(self):
         return [agent.agent_id for agent in self.agents]
@@ -61,16 +69,9 @@ class Experiment:
         exp = Experiment(id=exp_id,
                          path=exp_path,
                          agents=agents,
-                         attenuation_coe=expe_config["experiment_settings"].get("attenuation_coe", 0.7),
                          config=expe_config)
         save_config(config=expe_config, path=f'{exp.path}/init_config.json')
         return exp
-
-    def get_role_list(self):
-        role_list = set()  # TODO team...
-        for agent in self.agents:
-            role_list.add(agent.role)
-        return list(role_list)
 
     @staticmethod
     def load_agents(agent_list: List[dict],
@@ -117,42 +118,6 @@ class Experiment:
                         history_file=os.path.join(exp_path, "history.txt"))
         return exp_path
 
-    def probe(self, agent: Agent, content: str, prompt: str = "{}'s profile is: {}.\n{}"):
-        """probe an agent"""
-        return agent.probed(content=content, prompt=prompt)
-
-    def choose_next_one(self,
-                        message=str,
-                        agents_idx: List[int] = None,
-                        prompt: str = "{}'s profile is: {}.\n{}") -> int:
-        """
-        TODO cue a person directly and that person's score will be higher
-        In a list of scenarios, only one can be selected to take some action
-        """
-        agents_idx = [i for i in range(0, len(self.agents))] if agents_idx is None else agents_idx
-        agents = [self.agents[i] for i in agents_idx]
-        max_score = 0
-        max_idx = 0
-        for idx, agent in enumerate(agents):
-            answer = self.probe(agent=agent, content=message, prompt=prompt)
-            try:
-                answer = int(answer)
-                self.logger.info(f"agent_{idx + 1} score is {answer}")
-                answer *= (self.attenuation_coe ** self.continuous_count[idx])
-                self.logger.info(f"agent_{idx + 1} score is {answer} after attenuation")
-            except ValueError as e:
-                self.logger.error(f"Failed to convert '{answer}' to an integer: {e}")
-                continue
-            if max_score <= answer:
-                max_idx = idx
-                max_score = answer
-        for i in agents_idx:
-            if i == max_idx:
-                self.continuous_count[i] += 1
-            else:
-                self.continuous_count[i] = 0
-        return max_idx
-
     def inject_background(self, message: str, prompt: str = "{} {}"):
         """_summary_ 
 
@@ -161,4 +126,4 @@ class Experiment:
             prompt (str, optional): _description_. Defaults to "{} {}". first is name, second is message
         """
         for agent in self.agents:
-            agent.recieve_info(prompt.format(agent.name, message))
+            agent.receive_info(prompt.format(agent.name, message))

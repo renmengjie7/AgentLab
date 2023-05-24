@@ -242,13 +242,12 @@ class Agent:
         """
         memory = self.memory.retrieve_by_recentness(num=self.summary_nums)
         memory.reverse()
-        concatenated_memory = "\n".join(
-            [item["experience"] for item in memory])
+        concatenated_memory = "\n".join([item["experience"] for item in memory])
         # TODO won't summarize until reach the length limit
         # TODO need config for different model limit
         if len(concatenated_memory.split(' ')) < 2000:
             self.summary = concatenated_memory
-            return concatenated_memory
+            return
 
         self.logger.history(f"agent_{self.agent_id} begin his/her summarize")
         weighted_memory = self.memory.retrieve_by_query(
@@ -333,18 +332,18 @@ class Agent:
     def _generate_natural_prompt(self, raw_prompt: str) -> str:
         pass
 
-    def recieve_info(self, content):
+    def receive_info(self, content):
         """Received some kind of message"""
         self._save(experience=content)
 
-    def talk2(self, content, agents: List['Agent']):
+    def talk2(self, message, agents: List['Agent']):
         """
         TODO If conversation is involved, the context of the communication needs to be preserved
         """
-        experience = f"{self.name} saied to {','.join([agent.name for agent in agents])} that {content}"
+        experience = f"{self.name} saied to {','.join([agent.name for agent in agents])} that {message}"
         self._save(experience=experience)
-        for idx, agent in enumerate(agents):
-            agent.recieve_info(content=experience)
+        for agent in agents:
+            agent.receive_info(content=experience)
 
     def clear_mailbox(self, timestep: int) -> bool:
         """
@@ -391,22 +390,20 @@ class Agent:
             if idx not in answer_ids:
                 new_mailbox.append(message)
             else:
-                self.save_message2memory(message)
+                self.save_mailbox_message2memory(message)
         self.mailbox = new_mailbox
         return True
 
-    def save_message2memory(self, message: dict):
+    def save_mailbox_message2memory(self, message: dict):
         interactant = message["from"]
         content = message["content"]
-        self._save(experience=content, source="mailbox",
-                   interactant=interactant)
+        self._save(experience=content, source="mailbox", interactant=interactant)
 
     def format_answer(self, content, example):
         """
         Use LLM to format the content it produces
         """
-        str_ = f"{content} Format sentences above,output example: {example}" \
-               f'Do nothing else'
+        str_ = f"{content}\n\n Format sentences above,output example: {example}."
         return self._chat(str_)
 
     # TODO 修里面的bug
@@ -458,12 +455,12 @@ class Agent:
             answer_id = 0
         most_import_urgent_message = self.mailbox[answer_id]
         # TODO 不能放在这, 后面summarize会使用
-        # self.save_message2memory(message=most_import_urgent_message)
+        # self.save_mailbox_message2memory(message=most_import_urgent_message)
         self.mailbox.pop(answer_id)
         most_import_urgent_message['id'] = answer_id
         return most_import_urgent_message
 
-    def check_mailbox(self, timestep: int) -> dict:
+    def check_mailbox_and_select(self, timestep: int) -> dict:
         """
         The format of mailbox is [{"from":agent_id,"content":content,"timestep":0}]
         give the most important and urgent message, and clear the messages that don't need to be done
@@ -474,17 +471,11 @@ class Agent:
         # select mailbox
         return self.select_message(timestep=timestep)
 
-    def run(self, timestep: int):
-        """_summary_ do what now ?
-
-        Args:
-            timestep (int): _description_
-        """
-        # TODO Fine-grained time scheduling 不同的事务会有不同的时间duration
-        # something in mail
-        message = self.check_mailbox(timestep)
-        self.react(message=message, timestep=timestep)
-        self.change_status(timestep=timestep)
+    def check_mailbox_and_read_all(self, timestep: int) -> dict:
+        self.clear_mailbox(timestep=timestep)
+        for item in self.mailbox:
+            self.save_mailbox_message2memory(message=item)
+        self.mailbox = []
 
     def act_as_think(self, answer, others_name, timestep):
         from AISimuToolKit.exp.agents.Courier import Courier
@@ -497,43 +488,31 @@ class Agent:
             if content == "" or receiver == "":
                 continue
             if receiver in others_name:
-                Courier.send(msg=content, sender=self.name,
-                             receiver=receiver, timestep=timestep)
-                self._save(experience=content, source="think",
-                           interactant=receiver)
+                Courier.send(msg=content, sender=self.name, receiver=receiver, timestep=timestep)
+                self._save(experience=content, source="think", interactant=receiver)
 
-    def react(self, message: dict, timestep: int) -> None:
+    def reply_on_demand(self, message: dict, timestep: int) -> None:
         # 预测的要做的事情, 塞到memory中, 交互对象也塞到
         # 问语言模型交互对象
         from AISimuToolKit.exp.agents.Courier import Courier
         others_name = list(set(Courier.all_receivers_name()) - {self.name})
 
-        message_content = message.get(
-            "content", None) if message is not None else None
-        # TODO 信息冗余
-        think_what_to_do_next_prompt = self.get_background_prompt(content=message_content,
-                                                                  need_recent_memory=False,
-                                                                  need_relevant_memory=False,
-                                                                  need_status=False)
-        # TODO save to memory in the past tense, can also use LLM to convert in a single step
-        past = 'And describe this as something that have happened'
         if message is not None and message != {}:
-            think_what_to_do_next_prompt += f"The following is send from {message['from']}, please read about it and decide what would {self.name} want to do\n.Please state in the third person declarative voice what {self.name} will do in the next step.\n {past}\n"
+            think_what_to_do_next_prompt = f"The following is send from {message['from']}, please read about it and decide what would {self.name}want to do\n"
             think_what_to_do_next_prompt += "{}\n".format(message["content"])
         else:
-            think_what_to_do_next_prompt += f"What do {self.name} want to do next?\nPlease state in the third person declarative voice what {self.name} will do in the next step.\n {past}\n"
+            think_what_to_do_next_prompt = "What do you want to do next?\n"
 
-        # TODO 是否会导致next step的动作一定与人交互? 不能独处?
-        think_what_to_do_next_prompt += "Choose interactant's name from {}.\n".format(
-            others_name)
-        think_what_to_do_next_prompt += "output example:\n{\"interactant\":\"name\",\"content\":\"\"}\n{\"interactant\":\"name2\",\"content\":\"\"}\n"
+        think_what_to_do_next_prompt += "Choose interactant's name from {}.\n".format(others_name)
 
-        if message is not None and message != {}:
-            self.save_message2memory(message=message)
+        output_format = "output example:\n{\"interactant\":\"name\",\"content\":\"\"}\n{\"interactant\":\"name2\",\"content\":\"\"}\n"
 
-        self.logger.debug(think_what_to_do_next_prompt)
-        answer = self._chat(think_what_to_do_next_prompt)
-        self.logger.info(answer)
+        message_content = message.get("content", None) if message is not None else None
+        answer = self.chat(message=think_what_to_do_next_prompt,
+                           query=message_content,
+                           need_recent_memory=True,
+                           output_format=output_format)
+
         try:
             self.act_as_think(answer, others_name, timestep)
         except:
@@ -547,14 +526,28 @@ class Agent:
             except:
                 self.logger.warning("can not fix it,do nothing")
 
-    def get_background_prompt(self, content: str = None,
+    def chat(self, message: str, query: str = None, need_relevant_memory: bool = True, need_status: bool = True,
+             need_recent_memory: bool = False, output_format: str = None) -> str:
+        prompt = self.get_background_prompt(query=query, need_relevant_memory=need_relevant_memory,
+                                            need_status=need_status, need_recent_memory=need_recent_memory)
+        prompt += message + "\n"
+        if output_format is not None:
+            prompt += f"output example:\n{output_format}\n"
+
+        self.logger.info("Chat with {}:{}".format(self.name, prompt))
+        answer = self._chat(prompt)
+        answer = f"{answer}\n\n Format sentences above,output example: {output_format}."
+        answer = self._chat(answer)
+        self.logger.info(self.name + ":" + answer)
+        return answer
+
+    def get_background_prompt(self, query: str = None,
                               need_relevant_memory: bool = True, need_status: bool = True,
                               need_recent_memory: bool = False) -> str:
         self.summarize()
         background_prompt = f"Act as you are {self.name}:{self.summary}.\n "
         if need_relevant_memory:
-            memory_about_message = self.memory.retrieve_by_query(
-                weights=self.retrieve_weight, query=content)
+            memory_about_message = self.memory.retrieve_by_query(weights=self.retrieve_weight, query=query)
             memory_about_message = self.format_memory(memory_about_message)
             background_prompt += f"Here are some relevant experience:\n{memory_about_message}\n"
         if need_recent_memory:
@@ -580,12 +573,11 @@ class Agent:
         return "\n".join(memory_list)
 
     def receive(self, msg: str, sender: str, timestep: int, ) -> None:
-        self.mailbox.append(
-            {"from": sender, "content": msg, "timestep": timestep})
+        self.mailbox.append({"from": sender, "content": msg, "timestep": timestep})
 
-    def change_status(self, timestep):
+    def change_status(self):
         change_status_prompt = self.get_background_prompt(
-            "Change your state based on your recent memory",
+            query="Change your state based on your recent memory",
             need_recent_memory=False,
             need_relevant_memory=False,
             need_status=True)
@@ -594,5 +586,4 @@ class Agent:
         self.logger.debug(change_status_prompt)
         answer = self._chat(change_status_prompt)
         self.status = answer
-        self.logger.info("agent {} change status to {}".format(
-            self.name, self.status))
+        self.logger.info("agent {} change status to {}".format(self.name, self.status))
