@@ -37,7 +37,7 @@ class AgentGroup:
         self.agents.pop(agent.name)
 
     def all(self):
-        return AgentCollectionWrapper(self.agents.values())
+        return AgentCollectionWrapper(list(self.agents.values()))
 
 
 class AgentCollection:
@@ -74,7 +74,7 @@ class AgentCollection:
         return self.agents[name]
 
     def all(self) -> AgentCollectionWrapper:
-        return AgentCollectionWrapper(self.agents)
+        return AgentCollectionWrapper(list(self.agents.values()))
 
     def get_group_by_group_name(self, group_name: str):
         return self.groups[group_name]

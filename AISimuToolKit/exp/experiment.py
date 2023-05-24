@@ -125,5 +125,5 @@ class Experiment:
             message (str): _description_
             prompt (str, optional): _description_. Defaults to "{} {}". first is name, second is message
         """
-        for agent in self.agents:
+        for agent in self.agents.all():
             agent.receive_info(prompt.format(agent.name, message))

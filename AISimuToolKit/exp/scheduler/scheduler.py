@@ -135,7 +135,7 @@ class BiddingSchedular(Scheduler):
         self.name = "bidding"
         # continuous speak needs an attenuation coefficient
         self.attenuation_coe = kwargs.get("attenuation_coe", 0.7)
-        self.continuous_count = {agent.name for agent in self.agents.all()}
+        self.continuous_count = {agent.name: 0 for agent in self.agents.all()}
         self.bidding_message = "Please consider his/her characteristics and experience, predict a number from 1 to 100, indicating the probability of he/she speaking at the next moment. The greater the value, the higher the probability."
         self.bidding_output_format = "The answer should only contain the number"
         self.what_to_do_next_moment = "What would you like to say in the next moment?Please try to avoid repeating yourself and others as much as possible.\n(There is no need to give any explanation)"

@@ -81,7 +81,7 @@ class Agent:
             agent_id=cls.idx,
             name=config['name'],
             profile=config['profile'],
-            group=config['group'],
+            group=config.get('group', None),
             model=model,
             exp_id=exp_id,
             agent_path=path,
@@ -536,8 +536,9 @@ class Agent:
 
         self.logger.info("Chat with {}:{}".format(self.name, prompt))
         answer = self._chat(prompt)
-        answer = f"{answer}\n\n Format sentences above,output example: {output_format}."
-        answer = self._chat(answer)
+        if output_format is not None:
+            answer = f"{answer}\n\n Format sentences above,output example: {output_format}."
+            answer = self._chat(answer)
         self.logger.info(self.name + ":" + answer)
         return answer
 
