@@ -33,7 +33,7 @@ class Memory:
             default_cols = list(set(default_cols))
         self.memory_df = pd.DataFrame(columns=default_cols)
         self.memory_path = memory_path
-        self.bert = BertSentenceEmbedding()
+        self.embedding_model = BertSentenceEmbedding()
 
         # TODO Replace it with timestep
         self.curr_id = 0
@@ -85,7 +85,7 @@ class Memory:
             "source": source,
             "timestep": timestep,
             "importance": importance,
-            "embedding": self.bert.encode(embed_sentence),
+            "embedding": self.embedding_model.encode(embed_sentence),
             "id": self.curr_id
         }
 
@@ -163,7 +163,7 @@ class Memory:
         dropped_weights = weights.copy()
         dropped_weights.pop("similarity", None)
         if "similarity" in weights.keys() and query is not None and query != "":
-            query_embedding = self.bert.encode(query)
+            query_embedding = self.embedding_model.encode(query)
             cos_sim = 1 - pairwise_distances(query_embedding.reshape(1, -1), self.memory_df["embedding"].tolist(),
                                              metric="cosine")
             self.memory_df["similarity"] = cos_sim.reshape(-1)

@@ -28,7 +28,8 @@
                     "similarity": 1.0
                 },
                 "reflect_nums": 10,
-                "summary_nums": 10
+                "summary_nums": 10,
+                "embedding_model": "openai"
             }
         },
         {

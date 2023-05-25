@@ -19,9 +19,10 @@ def main():
     
     for timestep in range(1,30):
         exp.logger.info(f"=============timestep: {timestep}=============")
-        for agent in exp.agents:
-            agent.run(timestep=timestep)
-        exp.logger.error(exp.agents[1].mailbox)
+        exp.scheduler.run()
+        # for agent in exp.agents:
+        #     agent.run(timestep=timestep)
+        # exp.logger.error(exp.agents[1].mailbox)
 
 
 if __name__ == '__main__':

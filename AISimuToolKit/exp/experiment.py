@@ -18,7 +18,7 @@ from AISimuToolKit.model.register import get_model_apis
 from AISimuToolKit.store.logger import Logger
 from AISimuToolKit.utils.utils import generate_experiment_id, get_fromat_len, parse_yaml_config, save_config
 
-Scheduler = {
+Scheduler_dict = {
     "random": RandomScheduler,
     "sequential": SequentialScheduler,
     "bidding": BiddingSchedular,
@@ -27,12 +27,13 @@ Scheduler = {
 
 
 class Experiment:
-    def __init__(self, id: str, path: str, agents: List[Agent], config: dict):
-        self.id = id
+    def __init__(self, exp_id: str, path: str, agents: List[Agent], config: dict):
+        self.id = exp_id
         self.path = path
         self.agents = AgentCollection(agents)
-        self.scheduler = Scheduler[config["experiment_settings"].get("scheduler")](self.agents,
-                                                                                   config["experiment_settings"])
+        self.scheduler = Scheduler_dict.get(config["experiment_settings"].get("scheduler"), None)
+        if self.scheduler is not None:
+            self.scheduler = self.scheduler(self.agents, config["experiment_settings"])
         # config passed in by the user
         self.config = config
         self.logger = Logger()
@@ -46,18 +47,17 @@ class Experiment:
              model_config: str,
              output_dir: str = "experiments",
              custom_class: dict = None) -> "Experiment":
-        """_summary_ Load and instantiate an experiment from a json configuration file
-
-        Args:
-            config (str): _description_  The configuration file for the experiment
-            model_config (str): _description_ Configure the url for each model
-            output_dir (str): _description_  Storage location for logs and history
-
-        Returns:
-            _type_: _description_
         """
-        # Use the timestamp directly as the experiment ID 
-        # no need to checking if the id is duplicate
+        Load and instantiate an experiment from a json configuration file
+        :param config: The configuration file for the experiment
+        :param model_config: Configure the url for each model
+        :param output_dir: Storage location for logs and history
+        :param custom_class:
+        :return:
+        """
+
+        # Use the timestamp as the experiment ID directly
+        # no need to check whether the id is duplicated
         exp_id = generate_experiment_id()
         exp_path = Experiment.mk_exp_dir(output_dir, exp_id)
         with open(config, 'r') as file:
@@ -66,7 +66,7 @@ class Experiment:
                                         model_config=model_config, expe_settings=expe_config["experiment_settings"],
                                         custom_class=custom_class)
         Courier(agents=agents)
-        exp = Experiment(id=exp_id,
+        exp = Experiment(exp_id=exp_id,
                          path=exp_path,
                          agents=agents,
                          config=expe_config)

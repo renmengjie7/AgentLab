@@ -1,6 +1,7 @@
 import copy
 import json
 import os
+from abc import ABC, abstractmethod
 from typing import List
 
 import openai
@@ -26,7 +27,7 @@ def rawtext2dialog(text: str):
     return diaglogue
 
 
-class ApiBase:
+class ApiBase(ABC):
     _instance = None
 
     def __new__(cls, *args, **kwargs):
@@ -36,9 +37,11 @@ class ApiBase:
             cls.logger = Logger()
         return cls._instance
 
+    @abstractmethod
     def chat(self, *args, **kwargs):
         raise NotImplementedError
 
+    @abstractmethod
     def finetune(self, *args, **kwargs):
         """
         Use a specific file under a specific experiment to finetune for an agent
@@ -49,6 +52,7 @@ class ApiBase:
         raise NotImplementedError
 
     @classmethod
+    @abstractmethod
     def get_backend(cls):
         raise NotImplementedError
 
@@ -69,15 +73,16 @@ class GPT_35_API(PublicApiBase):
     def __new__(cls,
                 config: dict = None,
                 *args, **kwargs):
-        """config为None只有在已经实例化后才能正常init时
-        if config is None, init is normal only when it has been instantiated
-        """
-        if config is None and cls._instance is None:
-            raise Exception('config is None, please init first')
         if cls._instance is None:
             cls._instance = super().__new__(cls)
-            openai.api_base = config['url'][0]
-            openai.api_key = config['key'][0]
+            if config is not None:
+                openai.api_base = config['url'][0]
+                openai.api_key = config['key'][0]
+            else:
+                openai.api_base = os.environ.get('OPENAI_API_BASE')
+                openai.api_key = os.environ.get('OPENAI_API_KEY')
+                openai.organization = os.environ.get('OPENAI_ORGANIZATION')
+                openai.proxy = os.environ.get('OPENAI_PROXY')
         return cls._instance
 
     def chat(self, query: str, config: dict = None, *args, **kwargs):

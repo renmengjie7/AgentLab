@@ -4,28 +4,33 @@
 @file: embedding.py
 @time: 2023/4/25 10:35
 """
+import os
+from abc import ABC, abstractmethod
 
-from threading import Lock
-
+import numpy
+import openai
 import torch
 from transformers import BertTokenizer, BertModel
 
 
-class BertSentenceEmbedding:
+class BaseEmbedding(ABC):
+    @abstractmethod
+    def encode(self, sentence):
+        pass
+
+
+class BertSentenceEmbedding(BaseEmbedding):
     __instance = None
-    __lock = Lock()
 
     def __new__(cls, device='cuda'):
         if not BertSentenceEmbedding.__instance:
-            with BertSentenceEmbedding.__lock:
-                if not BertSentenceEmbedding.__instance:
-                    instance = super().__new__(cls)
-                    instance.tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
-                    instance.device = torch.device(device) if torch.cuda.is_available() else torch.device('cpu')
-                    instance.model = BertModel.from_pretrained('bert-base-uncased', output_hidden_states=True).to(
-                        instance.device)
-                    instance.model.eval()
-                    BertSentenceEmbedding.__instance = instance
+            instance = super().__new__(cls)
+            instance.tokenizer = BertTokenizer.from_pretrained('embedding_model-base-uncased')
+            instance.device = torch.device(device) if torch.cuda.is_available() else torch.device('cpu')
+            instance.model = BertModel.from_pretrained('embedding_model-base-uncased', output_hidden_states=True).to(
+                instance.device)
+            instance.model.eval()
+            BertSentenceEmbedding.__instance = instance
         return BertSentenceEmbedding.__instance
 
     def encode(self, sentence):
@@ -37,3 +42,28 @@ class BertSentenceEmbedding:
             sentence_embedding = torch.mean(embeddings, dim=0)
             torch.cuda.empty_cache()
         return sentence_embedding.cpu().numpy()
+
+
+class OpenAIEmbedding(BaseEmbedding):
+    _instance = None
+
+    def __new__(cls, config: dict = None, *args, **kwargs):
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+            if config is not None:
+                openai.api_base = config['url'][0]
+                openai.api_key = config['key'][0]
+            else:
+                openai.api_base = os.environ.get('OPENAI_API_BASE')
+                openai.api_key = os.environ.get('OPENAI_API_KEY')
+                openai.organization = os.environ.get('OPENAI_ORGANIZATION')
+                openai.proxy = os.environ.get('OPENAI_PROXY')
+        return cls._instance
+
+    def encode(self, sentence):
+        response = openai.Embedding.create(
+            model="text-embedding-ada-002",
+            input=sentence
+        )
+
+        return numpy.array(response["data"][0]["embedding"])
