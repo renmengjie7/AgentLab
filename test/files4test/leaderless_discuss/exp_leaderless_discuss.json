@@ -8,8 +8,8 @@
             "extra_memory_cols": [],
             "embedding_model": "openai",
             "openai_embedding_settings": {
-                "api_key": null,
-                "api_base": null,
+                "api_key": "CIPS_API_KEY",
+                "api_base": "http://8.219.106.213:5556/v1",
                 "organization": null,
                 "proxy": null
             },

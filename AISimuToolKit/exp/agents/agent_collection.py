@@ -30,13 +30,13 @@ class AgentGroup:
         self.group_name = group_name
         self.agents = {agent.name: agent for agent in group_agents}
 
-    def add_agent(self, agent: Agent):
+    def add_agent(self, agent: Agent) -> None:
         self.agents[agent.name] = agent
 
-    def remove_agent(self, agent: Agent):
+    def remove_agent(self, agent: Agent) -> None:
         self.agents.pop(agent.name)
 
-    def all(self):
+    def all(self) -> AgentCollectionWrapper:
         return AgentCollectionWrapper(list(self.agents.values()))
 
 
@@ -67,10 +67,10 @@ class AgentCollection:
                 self.groups[agent.group].add_agent(agent)
         self.logger = Logger()
 
-    def get_agent_by_id(self, agent_id):
+    def get_agent_by_id(self, agent_id: int) -> Agent:
         return self.agents[agent_id]
 
-    def get_agent_by_name(self, name):
+    def get_agent_by_name(self, name: str) -> Agent:
         return self.agents[name]
 
     def all(self) -> AgentCollectionWrapper:
@@ -79,7 +79,7 @@ class AgentCollection:
     def get_group_by_group_name(self, group_name: str):
         return self.groups[group_name]
 
-    def get_group_by_agent(self, agent: Union[str, Agent, int]):
+    def get_group_by_agent(self, agent: Union[str, Agent, int]) -> AgentGroup:
         if isinstance(agent, Agent):
             agent = agent.name
         if isinstance(agent, int):

@@ -1,9 +1,37 @@
+import inspect
 import logging
 import multiprocessing
 import os
 import threading
 from typing import Union
-import inspect
+
+colors = {
+    'black': '\033[0;30m',
+    'red': '\033[0;31m',
+    'green': '\033[0;32m',
+    'yellow': '\033[0;33m',
+    'blue': '\033[0;34m',
+    'purple': '\033[0;35m',
+    'cyan': '\033[0;36m',
+    'white': '\033[0;37m',
+    'reset': '\033[0m'
+}
+
+
+class ColoredFormatter(logging.Formatter):
+    COLORS = {
+        'debug': '\033[0;37m',  # White
+        'info': '\033[0;37m',  # White
+        'warning': '\033[0;33m',  # Yellow
+        'error': '\033[0;31m',  # Red
+        'critical': '\033[1;31m'  # Bold Red
+    }
+    RESET = '\033[0m'  # Reset to default
+
+    def format(self, record):
+        level_color = self.COLORS.get(record.levelname.lower(), '')
+        message = super().format(record)
+        return f'{level_color}{message}{self.RESET}'
 
 
 # TODO 加入memory的功能
@@ -32,7 +60,7 @@ class Logger:
                         else:
                             log_file_path = os.path.abspath('log.txt')
                         cls._instance.log_handler = logging.FileHandler(log_file_path)
-                        cls._instance.log_handler.setLevel(logging.DEBUG)
+                        cls._instance.log_handler.setLevel(logging.INFO)
 
                         if history_file:
                             history_file_path = os.path.abspath(history_file)
@@ -42,12 +70,13 @@ class Logger:
                         cls._instance.history_handler.setLevel(logging.DEBUG)
 
                         cls._instance.console_handler = logging.StreamHandler()
-                        cls._instance.console_handler.setLevel(logging.ERROR)
+                        cls._instance.console_handler.setLevel(logging.INFO)
 
-                        formatter_history = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
-                        cls._instance.log_handler.setFormatter(formatter_history)
-                        cls._instance.console_handler.setFormatter(formatter_history)
+                        formatter_log = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+                        formatter_console = ColoredFormatter('%(asctime)s - %(levelname)s - %(message)s')
                         formatter_history = logging.Formatter('%(asctime)s -  %(message)s')
+                        cls._instance.log_handler.setFormatter(formatter_log)
+                        cls._instance.console_handler.setFormatter(formatter_console)
                         cls._instance.history_handler.setFormatter(formatter_history)
 
                         cls._instance.logger.addHandler(cls._instance.log_handler)

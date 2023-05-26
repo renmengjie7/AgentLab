@@ -55,8 +55,11 @@ class RandomScheduler(Scheduler):
         audience = kwargs.get("audience", "all")  # audience can be "all" or "group"
         for agent in next_choice:
             answer = agent.chat(message=self.what_to_do_next_moment)
-            if audience == "all":
+            self.logger.history(f"agent {agent.name} says: {answer}")
+            if audience != "all":
                 agent.talk2(message=answer, agents=self.agents.get_group_by_agent(agent).all())
+            else:
+                agent.talk2(message=answer, agents=self.agents.all())
             agent.change_status()
         self.timestep += 1
 
@@ -189,7 +192,10 @@ class BiddingSchedular(Scheduler):
         audience = kwargs.get("audience", "all")  # audience can be "all" or "group"
         for agent in next_choice:
             answer = agent.chat(message=self.what_to_do_next_moment)
-            if audience == "all":
+            self.logger.history(f"agent {agent.name} says: {answer}")
+            if audience != "all":
                 agent.talk2(message=answer, agents=self.agents.get_group_by_agent(agent).all())
+            else:
+                agent.talk2(message=answer, agents=self.agents.all())
             agent.change_status()
         self.timestep += 1

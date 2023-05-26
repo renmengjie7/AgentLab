@@ -9,6 +9,7 @@ import os.path
 import re
 from typing import List
 
+# from AISimuToolKit.exp.agents.agent_collection import AgentCollectionWrapper
 from AISimuToolKit.exp.agents.memory import Memory
 from AISimuToolKit.model.model import ApiBase
 from AISimuToolKit.store.logger import Logger
@@ -67,6 +68,7 @@ class Agent:
         # TODO add status to agent_config file
         self.status = "idle"
 
+        self.logger.info(f"Creating agent {self.name} ... This will take some time.")
         for item in self.profile_list:
             self.save(experience=item, source="init")
 
@@ -89,7 +91,7 @@ class Agent:
             model=model,
             exp_id=exp_id,
             agent_path=path,
-            model_config=agent_config['model_settings']['agent_config'],
+            model_config=agent_config['model_settings']['config'],
             **agent_config['specific_agent_settings']
         )
         return agent
@@ -144,8 +146,7 @@ class Agent:
         Args:
             experience (str): _description_ 
         """
-        self.logger.history(
-            f"agent {self.name} wrote in memory: {experience} because of {source}")
+        self.logger.debug(f"agent {self.name} wrote in memory: {experience} because of {source}")
 
         importance = self.get_importance(experience)
 
@@ -208,7 +209,7 @@ class Agent:
         Reflect on memories and create new memories
         :return:
         """
-        self.logger.history(f"agent_{self.agent_id} reflected from memory")
+        self.logger.history(f"agent {self.name} reflected from memory")
         weighted_memory = self.memory.retrieve_by_query(weights=self.retrieve_weight, num=self.reflect_nums)
 
         if self.complicated_reflection:
@@ -261,7 +262,7 @@ class Agent:
             self.summary = concatenated_memory
             return
 
-        self.logger.history(f"agent_{self.agent_id} begin his/her summarize")
+        self.logger.info(f"agent_{self.agent_id} begin his/her summarize")
         weighted_memory = self.memory.retrieve_by_query(
             weights=self.retrieve_weight, num=self.summary_nums,
             query="{}’s core characteristics.".format(self.name))
@@ -293,8 +294,7 @@ class Agent:
         prompt += "\n".join(summary)
         self.summary = self._inside_chat_wrapper(prompt)
 
-        self.logger.history("agent_{} summarize: {}".format(
-            self.agent_id, " ".join(self.summary.split("\n"))))
+        self.logger.history("agent_{} summarize: {}".format(self.agent_id, " ".join(self.summary.split("\n"))))
 
     def _inside_chat_wrapper(self, formatted_prompt: str) -> str:
         """
@@ -350,7 +350,6 @@ class Agent:
         TODO If conversation is involved, the context of the communication needs to be preserved
         """
         experience = f"{self.name} saied to {','.join([agent.name for agent in agents])} that {message}"
-        self.save(experience=experience)
         for agent in agents:
             agent.receive_info(content=experience)
 
@@ -377,6 +376,11 @@ class Agent:
             answer_ids = [int(item['number']) for item in answer]
             for item in answer_ids:
                 assert item < len(self.mailbox)
+            if len(answer_ids) == 0:
+                self.logger.debug(f"agent {self.name} cleared his/her mailbox, but no message was deleted")
+            else:
+                self.logger.debug("agent {} cleared his/her mailbox, deleted the fellowing message {}".format(
+                    self.name, "\n" + "\n".join([self.mailbox[idx]['content'] for idx in answer_ids])))
         except:
             self.logger.warning(f"agent {self.name} clear mailbox failed")
             answer_ids = []
@@ -507,12 +511,12 @@ class Agent:
         if output_format is not None:
             prompt += f"output example:\n{output_format}\n"
 
-        self.logger.info("Chat with {}:{}".format(self.name, prompt))
+        # self.logger.info("Chat with {}:{}".format(self.name, prompt))
         answer = self._inside_chat_wrapper(prompt)
         if output_format is not None:
             answer = f"{answer}\n\n Format sentences above,output example: {output_format}."
             answer = self._inside_chat_wrapper(answer)
-        self.logger.info(self.name + ":" + answer)
+        # self.logger.info(self.name + ":" + answer)
         return answer
 
     def chat_without_character(self, message):
@@ -566,4 +570,4 @@ class Agent:
                            need_relevant_memory=False,
                            need_status=True)
         self.status = answer
-        self.logger.info("agent {} change status to {}".format(self.name, self.status))
+        self.logger.history("agent {} change status to {}".format(self.name, self.status))
