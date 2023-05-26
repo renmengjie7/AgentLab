@@ -4,7 +4,7 @@ from typing import List
 import pandas as pd
 from sklearn.metrics import pairwise_distances
 
-from AISimuToolKit.model.embedding import BertSentenceEmbedding
+from AISimuToolKit.model.embedding import BertSentenceEmbedding, OpenAIEmbedding
 from AISimuToolKit.store.logger import Logger
 
 
@@ -15,7 +15,7 @@ class Memory:
     """
 
     # TODO interactant seems to be an uncommon/incorrect word. Consider replacing it
-    def __init__(self, memory_path: str, extra_columns: List[str] = None):
+    def __init__(self, memory_path: str, extra_columns: List[str] = None, embedding_model: str = None, **kwargs):
         """
         The memory store, retrieve, and export modules
         can add additional columns with the extra_columns argument
@@ -33,7 +33,8 @@ class Memory:
             default_cols = list(set(default_cols))
         self.memory_df = pd.DataFrame(columns=default_cols)
         self.memory_path = memory_path
-        self.embedding_model = BertSentenceEmbedding()
+        self.embedding_model = OpenAIEmbedding(
+            kwargs.get("openai_embedding_settings", None)) if embedding_model == "openai" else BertSentenceEmbedding
 
         # TODO Replace it with timestep
         self.curr_id = 0
@@ -153,6 +154,7 @@ class Memory:
         :param num:
         :return:
         """
+
         def compute_score(row):
             score = 0
             for col in row.index:

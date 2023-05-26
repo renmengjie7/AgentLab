@@ -7,7 +7,7 @@ ToolkitNameDict = {"recommend": RecommendSystem}
 def get_toolkit_apis(toolkit_list: list):
     toolkit_api_register = ApiRegister()
     for item in toolkit_list:
-        toolkit_api_register[item["name"]] = ExternalToolkit(toolkit_config=item["config"])
+        toolkit_api_register[item["name"]] = ExternalToolkit(toolkit_config=item["agent_config"])
 
     for item in toolkit_api_register.values():
         item.transfor_name2id(toolkit_api_register)

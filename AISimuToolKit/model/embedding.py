@@ -47,12 +47,15 @@ class BertSentenceEmbedding(BaseEmbedding):
 class OpenAIEmbedding(BaseEmbedding):
     _instance = None
 
-    def __new__(cls, config: dict = None, *args, **kwargs):
+    # TODO 需要测试赋值过程
+    def __new__(cls, openai_embedding_settings: dict = None):
         if cls._instance is None:
             cls._instance = super().__new__(cls)
-            if config is not None:
-                openai.api_base = config['url'][0]
-                openai.api_key = config['key'][0]
+            if openai_embedding_settings is not None:
+                openai.api_base = openai_embedding_settings.get("api_base", None)
+                openai.api_key = openai_embedding_settings.get("api_key", None)
+                openai.organization = openai_embedding_settings.get("organization", None)
+                openai.proxy = openai_embedding_settings.get("proxy", None)
             else:
                 openai.api_base = os.environ.get('OPENAI_API_BASE')
                 openai.api_key = os.environ.get('OPENAI_API_KEY')

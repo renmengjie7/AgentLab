@@ -48,7 +48,7 @@ def get_file_stream(file: str):
 
 def parse_yaml_config(path: str) -> dict:
     """
-    parse yaml config file
+    parse yaml agent_config file
     :param path:
     :return:
     """

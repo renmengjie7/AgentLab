@@ -4,7 +4,6 @@
 @file: experiment.py
 @time: 2023/4/18 16:32
 """
-import copy
 import json
 import os
 from typing import List
@@ -34,7 +33,7 @@ class Experiment:
         self.scheduler = Scheduler_dict.get(config["experiment_settings"].get("scheduler"), None)
         if self.scheduler is not None:
             self.scheduler = self.scheduler(self.agents, config["experiment_settings"])
-        # config passed in by the user
+        # agent_config passed in by the user
         self.config = config
         self.logger = Logger()
 
@@ -61,46 +60,44 @@ class Experiment:
         exp_id = generate_experiment_id()
         exp_path = Experiment.mk_exp_dir(output_dir, exp_id)
         with open(config, 'r') as file:
-            expe_config = json.load(file)
-        agents = Experiment.load_agents(agent_list=expe_config['agent_list'], exp_id=exp_id, exp_path=exp_path,
-                                        model_config=model_config, expe_settings=expe_config["experiment_settings"],
-                                        custom_class=custom_class)
+            exp_config = json.load(file)
+        agents = Experiment.load_agents(exp_config=exp_config, exp_id=exp_id, exp_path=exp_path,
+                                        model_config=model_config, custom_class=custom_class)
         Courier(agents=agents)
         exp = Experiment(exp_id=exp_id,
                          path=exp_path,
                          agents=agents,
-                         config=expe_config)
-        save_config(config=expe_config, path=f'{exp.path}/init_config.json')
+                         config=exp_config)
+        save_config(config=exp_config, path=f'{exp.path}/init_config.json')
         return exp
 
     @staticmethod
-    def load_agents(agent_list: List[dict],
-                    exp_path: str, exp_id: str,
-                    model_config: str, expe_settings: dict, custom_class: dict = None) -> List[Agent]:
-        configs = copy.deepcopy(agent_list)
-        agents_num = len(configs)
+    def load_agents(exp_config: dict, exp_path: str, exp_id: str,
+                    model_config: str, custom_class: dict = None) -> List[Agent]:
+        agent_list = exp_config["agent_list"]
+        exp_settings = exp_config["experiment_settings"]
+        agents_num = len(agent_list)
         format_num_len = get_fromat_len(num=agents_num)
         models = get_model_apis(exp_id=exp_id,
                                 agents=[i + 1 for i in range(agents_num)],
-                                model_names=[config['model_settings']['model_name']
-                                             for config in configs],
+                                model_names=[config['model_settings']['model_name'] for config in agent_list],
                                 model_config=model_config)
         agents = []
-        model_config = parse_yaml_config(model_config)
 
-        Agent_class = Agent
+        agent_class = Agent
         if custom_class is not None:
-            Agent_class = custom_class.get("agent", Agent)
+            agent_class = custom_class.get("agent", Agent)
 
-        for idx, config in enumerate(configs):
-            if "extra_columns" not in config["misc"]:
-                config["misc"]["extra_columns"] = expe_settings.get("extermal_memory_cols", [])
-            agents.append(Agent_class.load(
+        for idx, agent_config in enumerate(agent_list):
+            for key, value in exp_settings["global_agent_settings"].items():
+                if key not in agent_config["specific_agent_settings"]:
+                    agent_config["specific_agent_settings"][key] = value
+            agents.append(agent_class.load(
                 format_num_len=format_num_len,
-                config=config,
+                agent_config=agent_config,
                 model=models[idx],
                 exp_path=exp_path,
-                exp_id=exp_id
+                exp_id=exp_id,
             ))
         return agents
 

@@ -43,11 +43,11 @@ def main():
                                   save=False, decide_by="profile")
     exp.agents[0].read(text=f"Title: {news['title']}; Content: {news['content']}",
                        prompt='You read a news——{}')
-    
+
     # 调用私有方法用于调试
-    exp.agents[0]._save("Alice is very hungry now, she really wants to eat a McDonald's double-decker Big Mac")
-    exp.agents[0]._save("In addition, she also wants to go to the cinema to watch the latest movie in the evening")
-    exp.agents[0]._save("Since there is no seasoning at home, she still needs to buy some soy sauce before going home")
+    exp.agents[0].save("Alice is very hungry now, she really wants to eat a McDonald's double-decker Big Mac")
+    exp.agents[0].save("In addition, she also wants to go to the cinema to watch the latest movie in the evening")
+    exp.agents[0].save("Since there is no seasoning at home, she still needs to buy some soy sauce before going home")
 
     # 参考原始论文实现的反思，目前由于记忆较少，可能生成重复的反思，可以通过自定义类的方式修改
     exp.agents[0].reflect_from_memory()

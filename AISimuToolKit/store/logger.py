@@ -3,6 +3,7 @@ import multiprocessing
 import os
 import threading
 from typing import Union
+import inspect
 
 
 # TODO 加入memory的功能
@@ -88,6 +89,11 @@ class Logger:
             pass
 
     def warning(self, message, log_console=True, log_file=True):
+        caller_frame = inspect.currentframe().f_back
+        caller_info = inspect.getouterframes(caller_frame, 2)[1]
+        caller_name = caller_info.function
+        caller_class = caller_info.frame.f_locals.get('self').__class__.__name__
+        message = f'{caller_class}.{caller_name} - {message}'
         if log_console and log_file:
             self.logger.warning(message)
         elif log_console:
@@ -102,6 +108,11 @@ class Logger:
             pass
 
     def error(self, message, log_console=True, log_file=True):
+        caller_frame = inspect.currentframe().f_back
+        caller_info = inspect.getouterframes(caller_frame, 2)[1]
+        caller_name = caller_info.function
+        caller_class = caller_info.frame.f_locals.get('self').__class__.__name__
+        message = f'{caller_class}.{caller_name} - {message}'
         if log_console and log_file:
             self.logger.error(message)
         elif log_console:
@@ -116,6 +127,11 @@ class Logger:
             pass
 
     def critical(self, message, log_console=True, log_file=True):
+        caller_frame = inspect.currentframe().f_back
+        caller_info = inspect.getouterframes(caller_frame, 2)[1]
+        caller_name = caller_info.function
+        caller_class = caller_info.frame.f_locals.get('self').__class__.__name__
+        message = f'{caller_class}.{caller_name} - {message}'
         if log_console and log_file:
             self.logger.critical(message)
         elif log_console:
