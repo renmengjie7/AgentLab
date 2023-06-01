@@ -8,17 +8,17 @@ from typing import Union, List
 
 from AISimuToolKit.exp.agents.agent import Agent
 from AISimuToolKit.exp.experiment import Experiment
-from AISimuToolKit.exp.scheduler.scheduler import Scheduler
+from AISimuToolKit.exp.scheduler.base import Scheduler
 
 
 class CustomScheduler(Scheduler):
     def __init__(self, agents: List[Agent], *args, **kwargs):
         super().__init__(agents, *args, **kwargs)
 
-    def schedule(self, group: Union[List[str]] = None, *args, **kwargs) -> List[Agent]:
+    def schedule(self, group: Union[List[str], str] = None, *args, **kwargs) -> List[Agent]:
         return list(self.agents.all())
 
-    def run(self, group: Union[List[str]] = None, *args, **kwargs):
+    def run(self, group: Union[List[str], str] = None, *args, **kwargs):
         pass
 
 
