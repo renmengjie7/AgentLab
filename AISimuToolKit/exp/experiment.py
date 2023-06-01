@@ -11,11 +11,16 @@ from typing import List
 from AISimuToolKit.exp.agents.Courier import Courier
 from AISimuToolKit.exp.agents.agent import Agent
 from AISimuToolKit.exp.agents.agent_collection import AgentCollection
-from AISimuToolKit.exp.scheduler.scheduler import RandomScheduler, SequentialScheduler, BiddingSchedular, \
-    DemandScheduler
+
 from AISimuToolKit.model.register import get_model_apis
 from AISimuToolKit.store.logger import Logger
 from AISimuToolKit.utils.utils import generate_experiment_id, get_fromat_len, parse_yaml_config, save_config
+
+from AISimuToolKit.exp.scheduler.bidding import BiddingSchedular
+from AISimuToolKit.exp.scheduler.demand import DemandScheduler
+from AISimuToolKit.exp.scheduler.random import RandomScheduler
+from AISimuToolKit.exp.scheduler.sequential import SequentialScheduler
+
 
 Scheduler_dict = {
     "random": RandomScheduler,
