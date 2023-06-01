@@ -109,8 +109,7 @@ class Agent:
         Returns:
             _type_: _description_
         """
-        agent_path = os.path.join(exp_path,
-                                  f"agent_{agent_id:0{format_num_len}}")
+        agent_path = os.path.join(exp_path, f"agent_{agent_id:0{format_num_len}}")
         os.makedirs(agent_path, exist_ok=True)
         with open(os.path.join(agent_path, "agent_config.json"), "w") as f:
             json.dump(config, f)
@@ -142,9 +141,13 @@ class Agent:
 
     def save(self, experience: str, source: str = "experience", interactant: str = None,
              accu_importance: bool = True) -> None:
-        """_summary_ Save to memory
-        Args:
-            experience (str): _description_ 
+        """
+        Save the experience into memory
+        :param experience:
+        :param source:
+        :param interactant:
+        :param accu_importance:
+        :return:
         """
         self.logger.debug(f"agent {self.name} wrote in memory: {experience} because of {source}")
 
@@ -340,10 +343,6 @@ class Agent:
         """
         # self.recieve(content=f"{self.name} read {text}")
         self.save(experience=f"{self.name} read {text}", source="read")
-
-    def receive_info(self, content):
-        """Received some kind of message"""
-        self.save(experience=content)
 
     def talk2(self, message, agents: List['Agent']):
         """

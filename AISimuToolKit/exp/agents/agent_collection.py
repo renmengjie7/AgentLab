@@ -6,8 +6,7 @@
 """
 from typing import List, Union
 
-from exp.agents.agent import Agent
-
+from AISimuToolKit.exp.agents.agent import Agent
 from AISimuToolKit.store.logger import Logger
 
 

@@ -6,7 +6,7 @@
 """
 import json
 import os
-from typing import List
+from typing import List, Union
 
 from AISimuToolKit.exp.agents.Courier import Courier
 from AISimuToolKit.exp.agents.agent import Agent
@@ -15,7 +15,7 @@ from AISimuToolKit.exp.scheduler.scheduler import RandomScheduler, SequentialSch
     DemandScheduler
 from AISimuToolKit.model.register import get_model_apis
 from AISimuToolKit.store.logger import Logger
-from AISimuToolKit.utils.utils import generate_experiment_id, get_fromat_len, parse_yaml_config, save_config
+from AISimuToolKit.utils.utils import generate_experiment_id, get_fromat_len, save_config
 
 Scheduler_dict = {
     "random": RandomScheduler,
@@ -37,9 +37,6 @@ class Experiment:
         self.config = config
         self.logger = Logger()
 
-    def get_agent_ids(self):
-        return [agent.agent_id for agent in self.agents]
-
     @classmethod
     def load(cls,
              config: str,
@@ -58,11 +55,17 @@ class Experiment:
         # Use the timestamp as the experiment ID directly
         # no need to check whether the id is duplicated
         exp_id = generate_experiment_id()
-        exp_path = Experiment.mk_exp_dir(output_dir, exp_id)
+        exp_path = os.path.join(output_dir, exp_id)
+        os.makedirs(exp_path, exist_ok=True)
+
+        Logger(log_file=os.path.join(exp_path, "log.txt"), history_file=os.path.join(exp_path, "history.txt"))
         with open(config, 'r') as file:
             exp_config = json.load(file)
-        agents = Experiment.load_agents(exp_config=exp_config, exp_id=exp_id, exp_path=exp_path,
-                                        model_config=model_config, custom_class=custom_class)
+        agents = Experiment.load_agents(exp_config=exp_config,
+                                        exp_id=exp_id,
+                                        exp_path=exp_path,
+                                        model_config=model_config,
+                                        custom_class=custom_class)
         Courier(agents=agents)
         exp = Experiment(exp_id=exp_id,
                          path=exp_path,
@@ -101,26 +104,17 @@ class Experiment:
             ))
         return agents
 
-    @staticmethod
-    def mk_exp_dir(output_dir: str, exp_id: str) -> str:
-        """"
-        Experiment related directory creation
-        :return exp root dir 
+    def inject_background(self, message: str, groups: Union[List[str], str] = None):
         """
-        exp_path = os.path.join(output_dir, exp_id)
-        os.makedirs(exp_path, exist_ok=True)
-
-        # Instantiate a logger to control file location
-        logger = Logger(log_file=os.path.join(exp_path, "log.txt"),
-                        history_file=os.path.join(exp_path, "history.txt"))
-        return exp_path
-
-    def inject_background(self, message: str, prompt: str = "{} {}"):
-        """_summary_ 
-
-        Args:
-            message (str): _description_
-            prompt (str, optional): _description_. Defaults to "{} {}". first is name, second is message
+        Inject background information into the agent
+        :param message: message to be injected
+        :param groups: groups can be a list of group names or a single group name
+        :return:
         """
-        for agent in self.agents.all():
-            agent.receive_info(prompt.format(agent.name, message))
+        if groups is None:
+            groups = "all"
+        if isinstance(groups, str):
+            groups = [groups]
+        for group in groups:
+            for agent in self.agents.get_group_by_group_name(group).all():
+                agent.save(message=message)
