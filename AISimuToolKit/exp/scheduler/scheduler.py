@@ -75,7 +75,7 @@ class SequentialScheduler(Scheduler):
     def __str__(self):
         return self.name
 
-    def schedule(self, group: Union[List[str]] = None, *args, **kwargs) -> List[Agent]:
+    def schedule(self, group: Union[List[str], str] = None, *args, **kwargs) -> List[Agent]:
         choose_from_list = [self.agents]
         if group is not None:
             choose_from_list = []
@@ -98,7 +98,7 @@ class SequentialScheduler(Scheduler):
         self.sequential_count += 1
         return next_choice
 
-    def run(self, group: Union[List[str]] = None, *args, **kwargs):
+    def run(self, group: Union[List[str], str] = None, *args, **kwargs):
         next_choice = self.schedule()
         audience = kwargs.get("audience", "all")  # audience can be "all" or "group"
         for agent in next_choice:
