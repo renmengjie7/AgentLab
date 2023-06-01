@@ -19,11 +19,11 @@ class Scheduler(ABC):
         self.logger = Logger()
 
     @abstractmethod
-    def schedule(self, group: Union[List[str]] = None, *args, **kwargs) -> List[Agent]:
+    def schedule(self, group: Union[List[str], str] = None, *args, **kwargs) -> List[Agent]:
         pass
 
     @abstractmethod
-    def run(self, group: Union[List[str]] = None, *args, **kwargs):
+    def run(self, group: Union[List[str], str] = None, *args, **kwargs):
         pass
 
 
@@ -36,7 +36,7 @@ class RandomScheduler(Scheduler):
     def __str__(self):
         return self.name
 
-    def schedule(self, group: Union[List[str]] = None, *args, **kwargs) -> List[Agent]:
+    def schedule(self, group: Union[List[str], str] = None, *args, **kwargs) -> List[Agent]:
         choose_from_list = [self.agents]
         if group is not None:
             choose_from_list = []
@@ -50,7 +50,7 @@ class RandomScheduler(Scheduler):
         next_choice = [random.choice(list(choose_from.all())) for choose_from in choose_from_list]
         return next_choice
 
-    def run(self, group: Union[List[str]] = None, *args, **kwargs):
+    def run(self, group: Union[List[str], str] = None, *args, **kwargs):
         next_choice = self.schedule()
         audience = kwargs.get("audience", "all")  # audience can be "all" or "group"
         for agent in next_choice:
@@ -117,10 +117,10 @@ class DemandScheduler(Scheduler):
     def __str__(self):
         return self.name
 
-    def schedule(self, group: Union[List[str]] = None, *args, **kwargs) -> List[Agent]:
+    def schedule(self, group: Union[List[str], str] = None, *args, **kwargs) -> List[Agent]:
         return list(self.agents.all())
 
-    def run(self, group: Union[List[str]] = None, *args, **kwargs):
+    def run(self, group: Union[List[str], str] = None, *args, **kwargs):
         # TODO Fine-grained time scheduling 不同的事务会有不同的时间duration
         # something in mail
         next_choice = self.schedule()
@@ -146,7 +146,7 @@ class BiddingSchedular(Scheduler):
     def __str__(self):
         return self.name
 
-    def schedule(self, group: Union[List[str]] = None, *args, **kwargs) -> List[Agent]:
+    def schedule(self, group: Union[List[str], str] = None, *args, **kwargs) -> List[Agent]:
         """
         TODO cue a person directly and that person's score will be higher
         In a list of scenarios, only one can be selected to take some action
@@ -187,7 +187,7 @@ class BiddingSchedular(Scheduler):
             next_choice.append(highest_bidder)
         return next_choice
 
-    def run(self, group: Union[List[str]] = None, *args, **kwargs):
+    def run(self, group: Union[List[str], str] = None, *args, **kwargs):
         next_choice = self.schedule()
         audience = kwargs.get("audience", "all")  # audience can be "all" or "group"
         for agent in next_choice:
