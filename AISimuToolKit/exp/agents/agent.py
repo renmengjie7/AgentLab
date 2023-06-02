@@ -351,6 +351,10 @@ class Agent:
         experience = f"{self.name} saied to {','.join([agent.name for agent in agents])} that {message}"
         for agent in agents:
             agent.receive_info(content=experience)
+            
+    def receive_info(self, content):
+        """Received some kind of message"""
+        self.save(experience=content)
 
     def clear_mailbox(self, timestep: int) -> bool:
         """

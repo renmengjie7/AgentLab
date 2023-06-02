@@ -61,7 +61,8 @@ class BiddingSchedular(Scheduler):
             next_choice.append(highest_bidder)
         return next_choice
 
-    def run(self, group: Union[List[str], str] = None, *args, **kwargs):
+    def run(self, group: Union[List[str], str] = None, *args, **kwargs) -> List[dict]:
+        results = []
         next_choice = self.schedule()
         audience = kwargs.get("audience", "all")  # audience can be "all" or "group"
         for agent in next_choice:
@@ -71,5 +72,7 @@ class BiddingSchedular(Scheduler):
                 agent.talk2(message=answer, agents=self.agents.get_group_by_agent(agent).all())
             else:
                 agent.talk2(message=answer, agents=self.agents.all())
+            results.append({"agent": agent.agent_id, "msg": answer})
             agent.change_status()
         self.timestep += 1
+        return results

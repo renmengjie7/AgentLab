@@ -109,7 +109,7 @@ class Experiment:
             ))
         return agents
 
-    def inject_background(self, message: str, groups: Union[List[str], str] = None):
+    def inject_background(self, message: str, groups: Union[List[str], str] = None, prompt: str = "{} {}"):
         """
         Inject background information into the agent
         :param message: message to be injected
@@ -122,4 +122,4 @@ class Experiment:
             groups = [groups]
         for group in groups:
             for agent in self.agents.get_group_by_group_name(group).all():
-                agent.save(message=message)
+                agent.receive_info(prompt.format(agent.name, message))
