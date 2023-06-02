@@ -4,3 +4,4 @@
 /experiments
 /.pypirc
 /docs/build/
+__pycache__/

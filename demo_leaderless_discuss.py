@@ -14,7 +14,7 @@ def main():
         message='is at school interviewing for the Olympics. This is a leaderless panel. The topic of discussion was "Minority language volunteers take half an hour to get to the site. As the only volunteer on site, now how will you inform foreigners of minority language that they must wear masks before entering the site". Ask you to discuss a solution')
 
     # Only one person can speak at each round
-    for i in range(1, 10):
+    for i in range(1, 20):
         exp.scheduler.run()
         # # who to say
         # idx = exp.choose_next_one()
