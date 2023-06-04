@@ -27,7 +27,7 @@ def reset_exp() -> Experiment:
     Agent.idx=0         
     exp = Experiment.load(config="exp_leaderless_discuss.json",
                           model_config="model.yaml",
-                          output_dir="/home/renmengjie2021/projects/AISimulation/AISimuToolKit/experiments")
+                          output_dir="experiments")
     exp.inject_background(
         message='is at school interviewing for the Olympics. This is a leaderless panel. The topic of discussion was "Minority language volunteers take half an hour to get to the site. As the only volunteer on site, now how will you inform foreigners of minority language that they must wear masks before entering the site". Ask you to discuss a solution')
     return exp
@@ -138,7 +138,7 @@ class UI:
         datas = self.exp.scheduler.run()
         self.messages.extend(datas)
         message = ""
-        for data in self.messages.reverse():
+        for data in self.messages:
             agent, msg = data["agent"], data["msg"]
             avatar = self.get_avatar((agent - 1) % 4 + 1)
             message = (
