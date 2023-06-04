@@ -25,8 +25,8 @@ def cover_img(background, img, place: Tuple[int, int]):
             
 def reset_exp() -> Experiment:   
     Agent.idx=0         
-    exp = Experiment.load(config="exp_leaderless_discuss.json",
-                          model_config="model.yaml",
+    exp = Experiment.load(config="/home/renmengjie2021/projects/AISimulation/AISimuToolKit/test/files4test/leaderless_discuss/exp_leaderless_discuss.json",
+                          model_config="/home/renmengjie2021/projects/AISimulation/AISimuToolKit/test/files4test/leaderless_discuss/model.yaml",
                           output_dir="/home/renmengjie2021/projects/AISimulation/AISimuToolKit/experiments")
     exp.inject_background(
         message='is at school interviewing for the Olympics. This is a leaderless panel. The topic of discussion was "Minority language volunteers take half an hour to get to the site. As the only volunteer on site, now how will you inform foreigners of minority language that they must wear masks before entering the site". Ask you to discuss a solution')
@@ -51,7 +51,7 @@ class UI:
         self.text_now = None
 
     def get_avatar(self, idx):
-        img = cv2.imread(f"imgs/{idx}.png", cv2.IMREAD_UNCHANGED)
+        img = cv2.imread(f"/home/renmengjie2021/projects/AISimulation/AISimuToolKit/test/files4test/leaderless_discuss/imgs/{idx}.png", cv2.IMREAD_UNCHANGED)
         base64_str = cv2.imencode(".png", img)[1].tostring()
         return "data:image/png;base64," + base64.b64encode(base64_str).decode("utf-8")
 
@@ -105,7 +105,7 @@ class UI:
         :return: [empty image, empty message]
         """
         self.exp = reset_exp()
-        background = cv2.imread("imgs/background.png")
+        background = cv2.imread("/home/renmengjie2021/projects/AISimulation/AISimuToolKit/test/files4test/leaderless_discuss/imgs/background.png")
         self.messages = []
         return [cv2.cvtColor(background, cv2.COLOR_BGR2RGB), ""]
 
@@ -115,8 +115,8 @@ class UI:
         :param data:
         :return: the new image
         """
-        img = cv2.imread("imgs/speaking.png", cv2.IMREAD_UNCHANGED)
-        background = cv2.imread("imgs/background.png")
+        img = cv2.imread("/home/renmengjie2021/projects/AISimulation/AISimuToolKit/test/files4test/leaderless_discuss/imgs/speaking.png", cv2.IMREAD_UNCHANGED)
+        background = cv2.imread("/home/renmengjie2021/projects/AISimulation/AISimuToolKit/test/files4test/leaderless_discuss/imgs/background.png")
         
         for data in datas:
             if data["agent"]==1:
@@ -138,7 +138,7 @@ class UI:
         datas = self.exp.scheduler.run()
         self.messages.extend(datas)
         message = ""
-        for data in self.messages.reverse():
+        for data in self.messages:
             agent, msg = data["agent"], data["msg"]
             avatar = self.get_avatar((agent - 1) % 4 + 1)
             message = (
