@@ -91,7 +91,7 @@
             "model_settings": {
                 "model_name": "GPT-3.5-turbo",
                 "config": {
-                    "temperature": 0.6
+                    "temperature": 0.7
                 }
             },
             "specific_agent_settings": {
@@ -116,7 +116,7 @@
             "model_settings": {
                 "model_name": "GPT-3.5-turbo",
                 "config": {
-                    "temperature": 0.6
+                    "temperature": 0.7
                 }
             },
             "specific_agent_settings": {

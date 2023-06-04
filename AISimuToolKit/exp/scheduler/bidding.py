@@ -72,7 +72,7 @@ class BiddingSchedular(Scheduler):
                 agent.talk2(message=answer, agents=self.agents.get_group_by_agent(agent).all())
             else:
                 agent.talk2(message=answer, agents=self.agents.all())
-            results.append({"agent": agent.agent_id, "msg": answer})
+            results.append({"agent": agent, "msg": answer})
             agent.change_status()
         self.timestep += 1
         return results

@@ -8,6 +8,16 @@ from typing import Dict, List, Tuple
 import itertools
 
 
+def preprocess_datas(datas):
+    results = []
+    for data in datas:
+        msg = data["msg"].split(f"{data['agent'].name}:")[1] if f"{data['agent'].name}:" in data["msg"] else data["msg"]
+        results.append({
+            "agent": data["agent"],
+            "msg": msg[1:-1] if msg.startswith('"') and msg.endswith('"') else msg
+        })
+    return results
+
 
 def cover_img(background, img, place: Tuple[int, int]):
     """
@@ -29,7 +39,7 @@ def reset_exp() -> Experiment:
                           model_config="/home/renmengjie2021/projects/AISimulation/AISimuToolKit/test/files4test/leaderless_discuss/model.yaml",
                           output_dir="/home/renmengjie2021/projects/AISimulation/AISimuToolKit/experiments")
     exp.inject_background(
-        message='is at school interviewing for the Olympics. This is a leaderless panel. The topic of discussion was "Minority language volunteers take half an hour to get to the site. As the only volunteer on site, now how will you inform foreigners of minority language that they must wear masks before entering the site". Ask you to discuss a solution')
+        message='Now you’re interviewing Olympic volunteers at school.This is a leaderless group.The topic of the discussion was "As the only volunteer on site, now how do you tell foreigners who speak minority languages to wear masks when entering the site when It takes half an hour forminority language volunteers to get to the site?" Ask you to discuss a solution to this problem.')
     return exp
             
 
@@ -119,13 +129,13 @@ class UI:
         background = cv2.imread("/home/renmengjie2021/projects/AISimulation/AISimuToolKit/test/files4test/leaderless_discuss/imgs/background.png")
         
         for data in datas:
-            if data["agent"]==1:
+            if data["agent"].agent_id==1:
                 cover_img(background, img, (10, 30))
-            elif data["agent"]==2:
+            elif data["agent"].agent_id==2:
                 cover_img(background, img, (10, 55))
-            elif data["agent"]==3:
+            elif data["agent"].agent_id==3:
                 cover_img(background, img, (40, 30))
-            elif data["agent"]==4:
+            elif data["agent"].agent_id==4:
                 cover_img(background, img, (40, 55))
         return cv2.cvtColor(background, cv2.COLOR_BGR2RGB)
 
@@ -136,10 +146,11 @@ class UI:
         :return: [new image, new message]
         """
         datas = self.exp.scheduler.run()
+        datas = preprocess_datas(datas=datas)
         self.messages.extend(datas)
         message = ""
         for data in self.messages:
-            agent, msg = data["agent"], data["msg"]
+            agent, msg = data["agent"].agent_id, data["msg"]
             avatar = self.get_avatar((agent - 1) % 4 + 1)
             message = (
                 message +
