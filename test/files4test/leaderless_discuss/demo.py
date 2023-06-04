@@ -35,8 +35,8 @@ def cover_img(background, img, place: Tuple[int, int]):
             
 def reset_exp() -> Experiment:   
     Agent.idx=0         
-    exp = Experiment.load(config="/home/renmengjie2021/projects/AISimulation/AISimuToolKit/test/files4test/leaderless_discuss/exp_leaderless_discuss.json",
-                          model_config="/home/renmengjie2021/projects/AISimulation/AISimuToolKit/test/files4test/leaderless_discuss/model.yaml",
+    exp = Experiment.load(config="exp_leaderless_discuss.json",
+                          model_config="model.yaml",
                           output_dir="/home/renmengjie2021/projects/AISimulation/AISimuToolKit/experiments")
     exp.inject_background(
         message='Now you’re interviewing Olympic volunteers at school.This is a leaderless group.The topic of the discussion was "As the only volunteer on site, now how do you tell foreigners who speak minority languages to wear masks when entering the site when It takes half an hour forminority language volunteers to get to the site?" Ask you to discuss a solution to this problem.')
@@ -61,7 +61,7 @@ class UI:
         self.text_now = None
 
     def get_avatar(self, idx):
-        img = cv2.imread(f"/home/renmengjie2021/projects/AISimulation/AISimuToolKit/test/files4test/leaderless_discuss/imgs/{idx}.png", cv2.IMREAD_UNCHANGED)
+        img = cv2.imread(f"imgs/{idx}.png", cv2.IMREAD_UNCHANGED)
         base64_str = cv2.imencode(".png", img)[1].tostring()
         return "data:image/png;base64," + base64.b64encode(base64_str).decode("utf-8")
 
@@ -115,7 +115,7 @@ class UI:
         :return: [empty image, empty message]
         """
         self.exp = reset_exp()
-        background = cv2.imread("/home/renmengjie2021/projects/AISimulation/AISimuToolKit/test/files4test/leaderless_discuss/imgs/background.png")
+        background = cv2.imread("imgs/background.png")
         self.messages = []
         return [cv2.cvtColor(background, cv2.COLOR_BGR2RGB), ""]
 
@@ -125,8 +125,8 @@ class UI:
         :param data:
         :return: the new image
         """
-        img = cv2.imread("/home/renmengjie2021/projects/AISimulation/AISimuToolKit/test/files4test/leaderless_discuss/imgs/speaking.png", cv2.IMREAD_UNCHANGED)
-        background = cv2.imread("/home/renmengjie2021/projects/AISimulation/AISimuToolKit/test/files4test/leaderless_discuss/imgs/background.png")
+        img = cv2.imread("imgs/speaking.png", cv2.IMREAD_UNCHANGED)
+        background = cv2.imread("imgs/background.png")
         
         for data in datas:
             if data["agent"].agent_id==1:
