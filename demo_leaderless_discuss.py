@@ -11,7 +11,9 @@ def main():
                           model_config="test/files4test/leaderless_discuss/model.yaml",
                           output_dir="experiments")
     exp.inject_background(
-        message='is at school interviewing for the Olympics. This is a leaderless panel. The topic of discussion was "Minority language volunteers take half an hour to get to the site. As the only volunteer on site, now how will you inform foreigners of minority language that they must wear masks before entering the site". Ask you to discuss a solution')
+        message='is at school interviewing for the Olympics. This is a leaderless panel. The topic of discussion was'
+                ' "Minority language volunteers take half an hour to get to the site. As the only volunteer on site,'
+                'now how will you inform foreigners of minority language that they must wear masks before entering the site". Ask you to discuss a solution')
 
     # Only one person can speak at each round
     for i in range(1, 20):

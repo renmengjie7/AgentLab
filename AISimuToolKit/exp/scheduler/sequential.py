@@ -20,6 +20,8 @@ class SequentialScheduler(Scheduler):
 
     def schedule(self, group: Union[List[str], str] = None, *args, **kwargs) -> List[Agent]:
         choose_from_list = [self.agents]
+        if isinstance(group, str):
+            group = [group]
         if group is not None:
             choose_from_list = []
             for group_name in group:
@@ -42,7 +44,7 @@ class SequentialScheduler(Scheduler):
         return next_choice
 
     def run(self, group: Union[List[str], str] = None, *args, **kwargs):
-        next_choice = self.schedule()
+        next_choice = self.schedule(group=group)
         audience = kwargs.get("audience", "all")  # audience can be "all" or "group"
         for agent in next_choice:
             answer = agent.chat(message=self.what_to_do_next_moment)

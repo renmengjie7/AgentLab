@@ -19,6 +19,7 @@ class CustomScheduler(Scheduler):
         return list(self.agents.all())
 
     def run(self, group: Union[List[str], str] = None, *args, **kwargs):
+        next_choice = self.schedule(group=group, *args, **kwargs)
         pass
 
 
