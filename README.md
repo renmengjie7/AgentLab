@@ -1,4 +1,4 @@
-# 🥳 AISimuToolKit: Use language models to simulate experiments
+# 🥳 AgentLab: A large language model-based simulation toolkit for social science research
 
 <p align="center">
     <a href="https://pypi.org/project/AISimuToolKit/">
