@@ -2,7 +2,28 @@
     "experiment_name": "meeting",
     "description": "Simulate the process of determining the time for a meeting in life",
     "experiment_settings": {
-        "scheduler": "demand"
+        "scheduler": "demand",
+        "global_agent_settings": {
+            "extra_memory_cols": [],
+            "embedding_model": "openai",
+            "openai_embedding_settings": {
+                "api_key": "",
+                "api_base": "",
+                "organization": null,
+                "proxy": null
+            },
+            "complicated_reflection": false,
+            "calculate_importance": true,
+            "retrieve_weight": {
+                "recentness": 1.0,
+                "importance": 1.0,
+                "similarity": 1.0
+            },
+            "reflect_threshold": 100,
+            "reflect_nums": 10,
+            "summary_nums": 10,
+            "importance_prompt": "Here's a step-by-step instruction to rate the importance of an experience from 0 (least important) to 10 (most important) based on the perspectives mentioned earlier:\n1. Personal growth:\nConsider the impact of the experience on your personal growth. Did it contribute to new insights, skills, or abilities? Rate the importance from 0 to 10.\n2. Emotional impact:\nReflect on the emotions associated with the experience. Were they positive or negative? How strong were these emotions? Rate the importance from 0 to 10.\n3. Influence on future decisions:\nThink about how the experience has shaped your future choices or decision-making. Rate the importance from 0 to 10 based on its influence on your actions.\n4. Social relationships:\nEvaluate the impact of the experience on your relationships with others. Did it lead to new connections or change existing ones? Rate the importance from 0 to 10.\n5. Lasting memories:\nRecall the details and emotions associated with the experience. How memorable is it for you? Rate the importance from 0 to 10 based on how vividly you remember it.\n6. Comparison to other experiences:\nCompare the experience to other significant events in your life. Rate its importance from 0 to 10 relative to these other experiences.\n7. Values and beliefs:\nConsider how the experience aligns with or challenges your values and beliefs. Rate its importance from 0 to 10 based on this alignment or challenge.\nOnce you have rated the importance of the experience in each of these categories, calculate the average score by adding up the individual ratings and dividing by the total number of categories (7).\nOnly output the average score without any explaination.\n\nExperience: {}"
+        }
     },
     "agent_list": [
         {
@@ -27,7 +48,7 @@
                     "temperature": 0.7
                 }
             },
-            "misc": {
+            "specific_agent_settings": {
                 "retrieve_weight": {
                     "recentness": 1.0,
                     "importance": 1.0,
@@ -57,7 +78,7 @@
                     "temperature": 0.7
                 }
             },
-            "misc": {
+            "specific_agent_settings": {
                 "retrieve_weight": {
                     "recentness": 1.0,
                     "importance": 1.0,
@@ -85,7 +106,7 @@
                     "temperature": 0.7
                 }
             },
-            "misc": {
+            "specific_agent_settings": {
                 "retrieve_weight": {
                     "recentness": 1.0,
                     "importance": 1.0,
@@ -114,7 +135,7 @@
                     "temperature": 0.7
                 }
             },
-            "misc": {
+            "specific_agent_settings": {
                 "retrieve_weight": {
                     "recentness": 1.0,
                     "importance": 1.0,

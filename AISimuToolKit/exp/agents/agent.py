@@ -79,7 +79,6 @@ class Agent:
              model: ApiBase,
              exp_id: str,
              exp_path) -> "Agent":
-        cls.idx += 1
         path = cls.save_agent_config(agent_id=cls.idx, config=agent_config,
                                      exp_path=exp_path, format_num_len=format_num_len)
 
@@ -94,6 +93,7 @@ class Agent:
             model_config=agent_config['model_settings']['config'],
             **agent_config['specific_agent_settings']
         )
+        cls.idx += 1
         return agent
 
     @staticmethod
